@@ -1,3 +1,6 @@
+<script type="text/javascript" language="javascript" src="/javascripts/multi_column_controls.js" defer  ></script>
+<link rel="stylesheet" type="text/css" href="/stylesheets/touch-fancy.css">
+
 <script>
 <% if @patient_id %>
     var tt_cancel_destination = "/patients/show/<%=@patient_id%>"; // /properties"
@@ -12,7 +15,7 @@
     holder.style.display = "table";
     holder.style.cursor = "pointer";
 
-    __$("keyboard").appendChild(holder);
+    document.appendChild(holder);
     
     var row = document.createElement("div");
     row.style.display = "table-row";
@@ -27,7 +30,7 @@
     
     var cell2 = document.createElement("div");
     cell2.style.display = "table-cell";
-    cell2.id = "lblSelectAll";
+    cell2.id = "lblSelectAlls";
     cell2.innerHTML = "Select All";
     cell2.style.verticalAlign = "middle";
     cell2.style.fontSize = "36px";
@@ -73,6 +76,7 @@
   }
     
   function checkAll(){
+   
     var elements = __$("tt_currentUnorderedListOptions").getElementsByTagName("li");
     
     for(var i = 0; i < elements.length; i++){
@@ -92,7 +96,7 @@
     }
   }
     
-  // setTimeout("addSelectAllButton()", 500);
+  setTimeout("addSelectAllButton();", 200);
      
 </script>
 
@@ -101,13 +105,24 @@
   #holder {
     -moz-user-select: none;
   }
-</style>
+  .inputPage{
+
+    width: 100%;
+  }
+  .keyboard{
+
+    width: 96%;
+  }
+  #clearButton{
+    display: none;
+}
+  </style>
 
 
 <form method = 'post' action = "/user/change_activities/<%=@patient_id%>">
   <%= select_tag 'user[activities][]',
     options_for_select(@privileges, @activities),
     :helpText => "Select activities" ,
-    :selectAll => true,
-    :multiple =>  true %> 
+    :tt_onLoad =>"selectAll = true; createMultipleSelectControl()",
+    :multiple =>  true %>
 </form>
