@@ -295,6 +295,13 @@ clinic_holidays = clinic_holidays.split(',').map{|day|day.to_date}.join(',')
     //buildConceptsHash();
     setTimeout(function(){ readableMessage()}, 50);
   }
+  
+	function goNextPageIfSingleOption(){
+		document.getElementById('touchscreenInput0').value="Other";
+		updateTouchscreenInputForSelect(document.getElementById('0'));
+		document.getElementById('time_until_next_visit').value="0";
+		gotoNextPage();
+	}
 </script>
 
 <%= hidden_field_tag "lmp", "#{@pregnancystart}" %>
@@ -316,10 +323,19 @@ clinic_holidays = clinic_holidays.split(',').map{|day|day.to_date}.join(',')
   actual = periods.collect{|p, v| [v, p] if p > trimester || p == 0}
 %>
 
-  <%= select_tag("time_until_next_visit", options_for_select(actual),
-    {:helpText => 'Gestation Weeks at Next Visit',
-      :tt_onLoad => "transformMessages(); showCategory('Next Appointment'); calculateGivenRange('#{params[:start_date]}','#{params[:end_date]}')",
-      :tt_onUnLoad => "setAppointmentDate();"}) %>
+	<% if actual.size != 1 %>
+		<%= select_tag("time_until_next_visit", options_for_select(actual),
+		{:helpText => 'Gestation Weeks at Next Visit',
+		:tt_onLoad => "transformMessages(); showCategory('Next Appointment'); calculateGivenRange('#{params[:start_date]}','#{params[:end_date]}')",
+		:tt_onUnLoad => "setAppointmentDate();"}) %>
+
+	<% else %>
+		<%= select_tag("time_until_next_visit", options_for_select(actual),
+		{:helpText => 'Gestation Weeks at Next Visit',
+		:tt_onLoad => "transformMessages(); showCategory('Next Appointment'); calculateGivenRange('#{params[:start_date]}','#{params[:end_date]}');goNextPageIfSingleOption()",
+		:tt_onUnLoad => "setAppointmentDate();"}) %>
+
+	<% end %>
 
   <%
   absolute_min = params[:start_date].to_date.year rescue Date.today.year

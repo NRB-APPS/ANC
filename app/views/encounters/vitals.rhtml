@@ -15,6 +15,12 @@
     text-decoration:underline;
     margin-right:10px;
   }
+  .helper {
+  display: block;
+  float:right;
+  background-color: #DEDEDE;
+  }
+
   .lowWeightForHeight{color:black;background:red;}
   .medWeightForHeight {color:black;background:yellow;}
   .lowBMI {color:black;background:red;}
@@ -248,6 +254,8 @@
     }
   }
 
+
+
   function checkText(pos){
    if (pos == 1){
 
@@ -345,7 +353,8 @@ end
 
   <% if current_user.activities.include?("Weight and Height") %>
     <% if params[:weight] %>
-      <label for='weight'>Weight (KG)</label>
+
+      
       <%= text_field_tag "observations[][value_coded_or_text]", nil,
         {:id => "weight",
         :field_type => 'number',
@@ -354,12 +363,13 @@ end
         :absoluteMin => 20,
         :absoluteMax => 200,
         :condition => "if(#{options.length} > 2){getSelected().match(/Weight/)}else{true}",
-        :tt_onLoad => "showCategory('Vitals'); parsedConceptName = 'Weight'; if(conceptHash){}else{transformMessages()};timedEvent = setTimeout('checkText(1)', 100);",
+        :tt_onLoad => "parsedConceptName = 'Weight'; if(conceptHash){}else{transformMessages()};timedEvent = setTimeout('checkText(1)', 100);",
         :tt_onUnLoad => "parsedConceptName = ''",
         :units => 'kg',
         :validationRule => "([0-9]+(\\.[0-9]))|Unknown$",
         :validationMessage => "You must enter a valid decimal number",
-        :tt_pageStyleClass => "NumbersWithUnknownAndDecimal"} %>
+        :tt_pageStyleClass => "NumbersWithUnknownAndDecimal",
+        :helpText => "Weight (Kg) <span class='helper'>Task: Vitals</span>"} %>
       <%= hidden_field_tag("observations[][concept_name]", "WEIGHT (KG)") %>
       <%= hidden_field_tag("observations[][patient_id]", @patient.id) %>
       <%= hidden_field_tag("observations[][obs_datetime]", session_date) %>
@@ -377,7 +387,7 @@ end
 
       <% else %>
 
-        <label for='height'>Height (CM)</label>
+       
         <%= text_field_tag "observations[][value_coded_or_text]", nil,
           {:id => "height",
           :field_type => 'number',
@@ -388,10 +398,11 @@ end
           :condition => "if(#{options.length} > 2){getSelected().match(/Height/)}else{true}",
           :units => 'cm',
           :tt_onUnLoad => "parsedConceptName = ''",
-          :tt_onLoad  => "showCategory('Vitals');  parsedConceptName = 'Height'; if(conceptHash){}else{transformMessages()};",
+          :tt_onLoad  => "parsedConceptName = 'Height'; if(conceptHash){}else{transformMessages()};",
           :validationRule => "^([0-9]+)|Unknown$",
           :validationMessage => "You must enter numbers only (for example 157)",
-          :tt_pageStyleClass => "Numeric NumbersWithUnknown"} %>
+          :tt_pageStyleClass => "Numeric NumbersWithUnknown",
+          :helpText => "Height (Cm) <span class='helper'>Task: Vitals</span>"} %>
         <%= hidden_field_tag("observations[][concept_name]", "HEIGHT (CM)") %>
         <%= hidden_field_tag("observations[][patient_id]", @patient.id) %>
         <%= hidden_field_tag("observations[][obs_datetime]", session_date) %>
@@ -478,13 +489,14 @@ end
 
     <% end %>
   <% end %>
-  <label for='showSummary'>Summary </label>
+  
   <%= text_field_tag :showSummary, nil,
     {
-    :tt_onLoad => "growthIndicators(); showCategory('Vitals'); __$('keyboard').style.display = 'none'",
+    :tt_onLoad => "growthIndicators(); __$('keyboard').style.display = 'none'",
     :optional => "true",
     :tt_pageStyleClass => "NoControls NoKeyboard",
-    :condition => "if(__$('weight')){__$('weight').value.toLowerCase() != 'unknown'}"
+    :condition => "if(__$('weight')){__$('weight').value.toLowerCase() != 'unknown'}",
+    :helpText => "Summary (Cm) <span class='helper'>Task: Vitals</span>"
   } %>
 
   <%= submit_tag "Finish" %>
