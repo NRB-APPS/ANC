@@ -545,9 +545,11 @@ class GenericPeopleController < ApplicationController
   end
   
   def occupations
-    ['','Driver','Housewife','Messenger','Business','Farmer','Salesperson','Teacher',
+    values = ['','Driver','Housewife','Messenger','Business','Farmer','Salesperson','Teacher',
       'Student','Security guard','Domestic worker', 'Police','Office worker',
-      'Preschool child','Mechanic','Prisoner','Craftsman','Healthcare Worker','Soldier'].sort.concat(["Other","Unknown"])
+     'Mechanic','Prisoner','Craftsman','Healthcare Worker','Soldier'].sort.concat(["Other"])
+    values.concat(["Unknown"]) if !session[:datetime].blank?
+    values
   end
 
   def edit
