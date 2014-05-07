@@ -347,7 +347,10 @@ function createSingleSelectControl(){
             li.setAttribute("class", "highlighted");
         }
     }
-
+    __$("clearButton").onclick = function(){
+        var elements = __$("parent" + tstCurrentPage).getElementsByTagName("li");
+        elements[0].click();
+    }
 }
 
 function checkAllItems(){
@@ -390,5 +393,10 @@ function checkSelections(){
 
     setTimeout( 'checkSelections()', 500);
 }
-
-setTimeout( 'checkSelections()', 1000);
+try{
+    if (selectAll){
+        setTimeout( 'checkSelections()', 1000);
+    }
+}catch(e){
+    
+}

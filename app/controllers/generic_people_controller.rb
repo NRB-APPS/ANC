@@ -6,6 +6,8 @@ class GenericPeopleController < ApplicationController
 
 	def new
 		@occupations = occupations
+    i=0
+    @month_names = [[]] +Date::MONTHNAMES[1..-1].collect{|month|[month,i+=1]} + [["Unknown","Unknown"]]
 	end
 
 	def identifiers
