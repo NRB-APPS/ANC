@@ -167,12 +167,13 @@
 
       $("inputFrame" + tstCurrentPage).appendChild(div);
     }
-
+   
     if(pos == 1){
       alreadyNoted = false;
       bp = ($("touchscreenInput" + tstCurrentPage).value.trim().length > 0 ? $("touchscreenInput" +
         tstCurrentPage).value.trim() : "?") +
         "/" + ($("diastolic_blood_pressure").value.trim().length > 0 ? $("diastolic_blood_pressure").value.trim() : "?");
+       $("bp").innerHTML = "Blood Pressure: <i style='font-size: 1.2em; float: right;'>" + bp + "</i>";
     } else if(pos == 2){
       bp = ($("systolic_blood_pressure").value.trim().length > 0 ? $("systolic_blood_pressure").value.trim() : "?") +
         "/" + ($("touchscreenInput" + tstCurrentPage).value.trim().length > 0 ? $("touchscreenInput" +
@@ -184,10 +185,8 @@
       } else if(parseInt(__$("touchscreenInput" + tstCurrentPage).value) <= 90){
         alreadyNoted = false;
       }
-      
+      $("bp").innerHTML = "Blood Pressure: <i style='font-size: 1.2em; float: right;'>" + bp + "</i>";
     }
-
-    $("bp").innerHTML = "Blood Pressure: <i style='font-size: 1.2em; float: right;'>" + bp + "</i>";
 
     timedEvent = setTimeout('calculateBP(' + pos + ')', 500);
   }
@@ -249,26 +248,24 @@
     }
   }
 
-  function updateNext(){
-    $("weight").onchange=function(){checkText();};
-       $("nextButton").style.display = "none"
-  }
-  function checkText(){
-    var bp;
+  function checkText(pos){
+   if (pos == 1){
 
     if(!$('status')){
+      $("touchscreenInput" + tstCurrentPage).value = ""
       var div = document.createElement("div");
       div.id = "status";
       div.className = "statusLabel";
 
       $("inputFrame" + tstCurrentPage).appendChild(div);
     }
-
-
     value = $("touchscreenInput" + tstCurrentPage).value
     if (value.length > 0){
       $("status").style.display = "inline"
       $("status").innerHTML = "Measured Weight = " + value + " Kg"
+     if (value.length == 4){
+       return
+     }
     }
     else{
        $("status").style.display = "none"
@@ -279,7 +276,8 @@
     else{
        $("nextButton").style.display = "none"
     }
-    timedEvent = setTimeout('checkText()', 500)
+    }
+    setTimeout('checkText(' + pos + ')', 500);
   }
    
   
@@ -356,7 +354,7 @@ end
         :absoluteMin => 20,
         :absoluteMax => 200,
         :condition => "if(#{options.length} > 2){getSelected().match(/Weight/)}else{true}",
-        :tt_onLoad => "showCategory('Vitals'); parsedConceptName = 'Weight'; if(conceptHash){}else{transformMessages()};timedEvent = setTimeout('checkText()', 500);",
+        :tt_onLoad => "showCategory('Vitals'); parsedConceptName = 'Weight'; if(conceptHash){}else{transformMessages()};timedEvent = setTimeout('checkText(1)', 100);",
         :tt_onUnLoad => "parsedConceptName = ''",
         :units => 'kg',
         :validationRule => "([0-9]+(\\.[0-9]))|Unknown$",
