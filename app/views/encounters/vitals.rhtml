@@ -7,9 +7,12 @@
   #summary {
     padding:10px;
     font-size:1.8em;
+    width:98% ! important;
   }
   #charts {
     position: absolute;
+    width: 95% ! important;
+    height: 65% ! important;
   }
   .title {
     text-decoration:underline;
@@ -37,6 +40,7 @@
 <script src="/javascripts/jquery-1.3.2.min.js" type="text/javascript"></script>
 <script language="javascript" type="text/javascript" src="/javascripts/jquery.js"></script>
 <script language="javascript" type="text/javascript" src="/javascripts/jquery.flot.js"></script>
+<%= javascript_include_tag "Highcharts/js/jquery.min.js" %>
 <script language="javascript">
   jQuery.noConflict();
  
@@ -131,30 +135,40 @@
 
     document.getElementById('bmi').value = currentBmi;
 
-    displayText = "<div style='padding: 10px;'><span class='title'>BMI:</span>";
+
+
+    displayText = "<div style='padding: 10px; font-size:18px;'><table width='100%'><tr valign='top'><td><table width='50%'><tr><th>Current Vitals </th></tr>";
+
+    displayText += "<tr><td>Weight :" + currentWeight + " Kg</td></tr>";
+    displayText += "<tr><td>Height :" + currentHeight + " Cm</td></tr>";
+    displayText += "<tr><td><span class='title'>BMI:</span>";
     if (currentBmi > 40.0) {
-      displayText += "<span class=''>" + currentBmi + "</span>" +
-        "<br/><br/><span>Obesity Class III</span>";
+      displayText += "<span class=''>" + currentBmi + "</span></td></tr>" +
+        "<tr><td><span>Comment : Obesity Class III</span></td></tr>";
     } else if (currentBmi >= 35.0 && currentBmi <= 39.9) {
-      displayText += "<span class=''>" + currentBmi + "</span>" +
-        "<br/><br/><span>Obesity Class II</span>";
+      displayText += "<span class=''>" + currentBmi + "</span></td></tr>" +
+        "<tr><td><span>Comment : Obesity Class II</span></td></tr>";
     } else if (currentBmi >= 30.0 && currentBmi <= 34.9) {
-      displayText += "<span class=''>" + currentBmi + "</span>" +
-        "<br/><br/><span>Obesity Class I</span>";
+      displayText += "<span class=''>" + currentBmi + "</span></td></tr>" +
+        "<tr><td><span>Comment : Obesity Class I</span></td></tr>";
     } else if (currentBmi >= 25.0 && currentBmi <= 29.9) {
-      displayText += "<span class=''>" + currentBmi + "</span>" +
-        "<br/><br/><span>Pre-obesity</span>";
+      displayText += "<span class=''>" + currentBmi + "</span></td></tr>" +
+        "<tr><td><span>Comment : Pre-obesity</span></td></tr>";
     } else if (currentBmi > 18.5 && currentBmi <= 24.9) {
-      displayText += "<span class=''>" + currentBmi + "</span>" +
-        "<br/><br/><span> Normal weight</span>";
+      displayText += "<span class=''>" + currentBmi + "</span></td></tr>" +
+        "<tr><td><span> Normal weight</span></td></tr>";
     } else if (currentBmi > 17.0) {
-      displayText += "<span class='lowBMI'>" + currentBmi + "</span>" +
-        "<br/><br/><span class='recommendation'> Eligible for counseling</span>";
+      displayText += "<span class='lowBMI'>" + currentBmi + "</span></td></tr>" +
+        "<tr><td><span class='recommendation'> Comment : Eligible for counseling</span></td></tr>";
     } else {
       displayText += "<span class='lowBMI'>" + currentBmi +
-        "</span><br/><br/><span class='recommendation'>Eligible for therapeutic feeding</span>";
+        "</span></td></tr><tr><td><span class='recommendation'>Comment : Eligible for therapeutic feeding</span></td></tr>";
     }
-    displayText += "</div>";
+    displayText += "</table></td><td><table width='50%'><tr><th>Last Vitals</th></td></tr>";
+    displayText += "<tr><td>Weight : <%= @vital["weight"] rescue "none" %> </td></tr>"
+    displayText += "<tr><td>Height : <%= @vital["height"] rescue "none" %> </td></tr>"
+    displayText += "<tr><td><span class='title'>BMI :</span> <%= @vital["bmi"] rescue "none" %> </td></tr>"
+    displayText += "</table></td></tr></table></div>";
   }
  
 </script>
@@ -271,18 +285,22 @@
     if (value.length > 0){
       $("status").style.display = "inline"
       $("status").innerHTML = "Measured Weight = " + value + " Kg"
-     if (value.length == 4){
-       return
-     }
     }
     else{
        $("status").style.display = "none"
     }
     if  (value.indexOf(".") > 1){
        $("nextButton").style.display = "inline"
+        if (value.split('.')[1].length == 1){
+       return
+     }
     }
     else{
        $("nextButton").style.display = "none"
+        if (value.length < 1){
+         $("status").innerHTML = ""
+         $("status").style.display = "none"
+       }
     }
     }
     setTimeout('checkText(' + pos + ')', 500);
@@ -418,10 +436,10 @@ end
 
       <% options = default.merge({
           :id => "systolic_blood_pressure",
-          :helptext => "Systolic Blood Pressure (mm Hg)",
+          :helptext => "Systolic Blood Pressure (mm Hg) <span class='helper'>Task: Vitals</span>",
           :field_type => "number",
           :tt_pageStyleClass => "NumbersWithUnknown",
-          :tt_onLoad => "timedEvent1 = window.setInterval('bpAlerts(1)', 110); timedEvent = setTimeout('calculateBP(1)', 100); showCategory('Vitals'); parsedConceptName = 'Systolic Blood Pressure'; if(conceptHash){}else{transformMessages()};",
+          :tt_onLoad => "timedEvent1 = window.setInterval('bpAlerts(1)', 110); timedEvent = setTimeout('calculateBP(1)', 100);parsedConceptName = 'Systolic Blood Pressure'; if(conceptHash){}else{transformMessages()};",
           :tt_onUnLoad => "window.clearInterval(timedEvent1); parsedConceptName = ''; clearTimeout(timedEvent); __$('diastolic_blood_pressure').setAttribute('absoluteMax', __$('systolic_blood_pressure').value)",
           :absoluteMin => 1,
           :min => 110,
@@ -437,10 +455,10 @@ end
 
       <% options = default.merge({
           :id => "diastolic_blood_pressure",
-          :helptext => "Diastolic Blood Pressure (mm Hg)",
+          :helptext => "Diastolic Blood Pressure (mm Hg) <span class='helper'>Task: Vitals</span>",
           :field_type => "number",
           :tt_pageStyleClass => "NumbersWithUnknown",
-          :tt_onLoad => "timedEvent2 = window.setInterval('bpAlerts(2)', 110); timedEvent = setTimeout('calculateBP(2)', 100); showCategory('Vitals'); parsedConceptName = 'Diastolic Blood Pressure'",
+          :tt_onLoad => "timedEvent2 = window.setInterval('bpAlerts(2)', 110); timedEvent = setTimeout('calculateBP(2)', 100);parsedConceptName = 'Diastolic Blood Pressure'",
           :tt_onUnLoad => "window.clearInterval(timedEvent2);  clearTimeout(timedEvent); parsedConceptName =''",
           :absoluteMin => 1,
           :min => 60,
@@ -496,7 +514,7 @@ end
     :optional => "true",
     :tt_pageStyleClass => "NoControls NoKeyboard",
     :condition => "if(__$('weight')){__$('weight').value.toLowerCase() != 'unknown'}",
-    :helpText => "Summary (Cm) <span class='helper'>Task: Vitals</span>"
+    :helpText => "Summary <span class='helper'>Task: Vitals</span>"
   } %>
 
   <%= submit_tag "Finish" %>
