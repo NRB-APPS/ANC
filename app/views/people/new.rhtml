@@ -1,3 +1,6 @@
+<script type="text/javascript" language="javascript" src="/javascripts/multi_column_controls.js" defer  ></script>
+
+
 <style>
 
   .tt_controls_year_of_birth #qwerty { display:none; }
@@ -57,10 +60,21 @@
   .azButton .numericKeyboard #char {
     display: block;
   }
+  li.highlighted {
+    background-color: lightblue;
+  }
+  li {
+    /*padding: 5px;*/
+    cursor: pointer;
+    font-size: 1.5em;
+    margin: 2px;
+    -moz-user-select: none;
+  }
 
 </style>
 
 <script>
+  selectAll = false;
 <% if params[:relation] %>
     var tt_cancel_destination = "/patients/relationships?patient_id=<%=h params[:relation] -%>"
 <% else %>
@@ -72,6 +86,14 @@
 
   var skipped = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
+  function showNext(){
+    __$("nextButton").style.display = "block";
+  }
+
+  function hideNext(){
+    __$("nextButton").style.display = "none";
+  }
+  
   function seen(page) {
     for (var i = page; i >= 0; i--) {
       skipped[i] = 1;
@@ -150,6 +172,10 @@
     listSuggestions(tstCurrentPage);
   }
 
+  function splitWindow(){
+    
+  }
+
 </script>
 
 <% form_for :person, @person, :url => { :action => "create" } do |f| %>
@@ -196,10 +222,11 @@
     :tt_onLoad => 'seen(tstCurrentPage);',
     :validationJS => "setDOB();"
   }  %>
-
-  <%= select_tag "person[birth_month]", month_name_options, {:helpText => 'Month of Birth',
+  <% i = 0 %>
+  <%= select_tag "person[birth_month]", options_for_select(@month_names), {:helpText => 'Month of Birth',
     :condition => '$("person_birth_year").value.toLowerCase() != "unknown"',
     :validationJS => "validateDOB();",
+    :tt_onLoad => "selectAll = false; createSingleSelectControl()",
     :tt_pageStyleClass => "NoKeyboard",
     :validationMessage => 'Please enter a valid date'}%>
 
@@ -218,7 +245,8 @@
   <%= select_tag("person[citizenship]",
     options_for_select([" ", "Malawian", "Other"], params[:citizenship]),
     :helpText =>"Nationality",
-    :tt_onLoad => 'seen(tstCurrentPage);') %>
+    :tt_onLoad => "showNext(); seen(tstCurrentPage);"
+  ) %>
 
   <%= text_field_tag "person[race]",  nil, :field_type => 'text',
     :helptext => "Specify nationality",
@@ -231,7 +259,8 @@
     <%= text_field "region" , 'region_name', :helpText => 'Region',:tt_requireNextClick => false,
       :condition => '($("person_citizenship").value == "Malawian")',
       :tt_pageStyleClass => "NoKeyboard",
-      :ajaxURL => '/people/region/Region?field=role&value=', :tt_onLoad => "$('nextButton').style.display = 'none';" if ask_home_village %></p>
+      :ajaxURL => '/people/region/Region?field=role&value=',
+      :tt_onLoad => "hideNext(); splitWindow()" if ask_home_village %></p>
 
   <%= text_field_tag "person[addresses][address2]", params[:address2], {:id => 'address2',
     :tt_requireNextClick => false,
@@ -269,8 +298,10 @@
   <%= text_field "p[addresses]" , 'county_district_a', :tt_onUnLoad => '$("person_addresses_county_district").value = $("p_addresses_county_district_a").value', :condition => '$("address2").value == "Other"', :ajaxURL => '/person_addresses/traditional_authority?search_string=' , :helpText => 'Specify Ancestral Traditional Authority (T/A) or area of residence' , :tt_pageStyleClass => "azButton", :allowFreeText => true, :tt_onLoad => "$('nextButton').style.display = 'block';" if ask_home_village   %></p>
 
   <p><label for="filter_region">Current Region</label></br>
-    <%= text_field "filter" , 'region', :xhelpText => 'Region', :tt_requireNextClick => false, :ajaxURL => '',
-      :tt_onLoad => "set_ajaxURL_for_suggestions('/people/region/Region?filter_value=','');$('nextButton').style.display = 'none';" %></p>
+    <%= text_field "filter" , 'region', :xhelpText => 'Region', :tt_requireNextClick => false,
+      :ajaxURL => '',
+      :tt_pageStyleClass => "NoKeyboard",
+      :tt_onLoad => "set_ajaxURL_for_suggestions('/people/region/Region?filter_value=',''); hideNext();" %></p>
 
 
   <%= text_field_tag "person[addresses][state_province]", params[:state_province], {
@@ -362,7 +393,7 @@
     :id => "occupation",
     :allowFreeText => false,
     :tt_pageStyleClass => "NoKeyboard",
-    :tt_onLoad => 'seen(tstCurrentPage);',
+    :tt_onLoad => "seen(tstCurrentPage); selectAll = false; createSingleSelectControl()",
     :ttMatchFromBeginning => "true")%>
 
   <!-- Make sure patient is created -->
