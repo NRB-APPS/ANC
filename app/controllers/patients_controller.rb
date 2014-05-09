@@ -318,7 +318,22 @@ class PatientsController < ApplicationController
 
   def graphs
     @currentWeight = params[:currentWeight]
-    render :template => "graphs/#{params[:data]}", :layout => false
+    @patient = Patient.find(params[:id])
+    concept_id = ConceptName.find_by_name("Weight (Kg)").concept_id
+    session_date = (session[:datetime].to_date rescue Date.today).strftime('%Y-%m-%d 23:59:59')
+    obs = []
+    
+    Observation.find_by_sql("
+          SELECT * FROM obs WHERE person_id = #{@patient.id}
+          AND concept_id = #{concept_id} AND voided = 0 AND obs_datetime <= '#{session_date}' LIMIT 10").each {|weight|
+          obs <<  [weight.obs_datetime.to_date, weight.value_text.to_f]
+          }
+     
+     obs << [session_date.to_date, @currentWeight.to_f]
+     @obs = obs.sort_by{|atr| atr[0]}.to_json
+     
+     
+    render :template => "graphs/weight_chart", :layout => false
   end
   
   def void 
