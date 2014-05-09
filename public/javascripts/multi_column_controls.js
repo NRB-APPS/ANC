@@ -1,7 +1,7 @@
 
 function createMultipleSelectControl(){
     if(__$("keyboard")){
-       
+
     //   __$("keyboard").style.display = "none";
     }
 
@@ -26,7 +26,7 @@ function createMultipleSelectControl(){
     parent.style.marginBottom = "0px";
     parent.style.overflow = "auto";
     __$("inputFrame" + tstCurrentPage).style.width = "96%";
-    
+
     __$("inputFrame" + tstCurrentPage).appendChild(parent);
 
     var table = document.createElement("div");
@@ -182,7 +182,15 @@ function createMultipleSelectControl(){
     }, 500)
 }
 
-function createSingleSelectControl(){
+function createSingleSelectControl(options_div){
+
+     var options = tstFormElements[tstCurrentPage].options;
+
+    if (typeof(options) == undefined){
+
+       options = tstFormElements[tstCurrentPage].children;
+    }
+   
     if(__$("keyboard")){
     // setTimeout("__$('keyboard').style.display = 'none'", 10);
     }
@@ -207,7 +215,7 @@ function createSingleSelectControl(){
     }else{
         parent.style.height = "77vh";
     }
-    
+
     __$("inputFrame" + tstCurrentPage).style.width = "96%";
 
     __$("inputFrame" + tstCurrentPage).appendChild(parent);
@@ -252,8 +260,8 @@ function createSingleSelectControl(){
 
     cell2.appendChild(list2);
 
-    var options = tstFormElements[tstCurrentPage].options;
-
+   
+    
     var j = 0;
 
     for(var i = 0; i < options.length; i++){
@@ -347,23 +355,23 @@ function createSingleSelectControl(){
             li.setAttribute("class", "highlighted");
         }
     }
-    __$("clearButton").onclick = function(){
-        var elements = __$("parent" + tstCurrentPage).getElementsByTagName("li");
-        elements[0].click();
-    }
+// __$("clearButton").onclick = function(){
+//   var elements = __$("parent" + tstCurrentPage).getElementsByTagName("li");
+//  elements[0].click();
+//}
 }
 
 function checkAllItems(){
-    
+
     var elements = __$("parent" + tstCurrentPage).getElementsByTagName("li");
     var btnText = __$("lblSelectAll").innerHTML;
-    
+
     for(var i = 0; i < elements.length; i++){
-        
+
         var imgs = elements[i].getElementsByTagName("img")
-     
+
         if ( btnText == "Select All" && imgs.length > 0 && imgs[0].src.match(/\/touchscreentoolkit\/lib\/images\/unticked.jpg/)){
-            
+
             elements[i].click();
         }else if ( btnText == "Deselect All" && imgs.length > 0 && imgs[0].src.match(/\/touchscreentoolkit\/lib\/images\/ticked.jpg/)){
             elements[i].click();
@@ -373,8 +381,12 @@ function checkAllItems(){
 }
 
 function checkSelections(){
-    var elements = __$("parent" + tstCurrentPage).getElementsByTagName("li");
-   
+    var elements = []
+    try{
+        elements = __$("parent" + tstCurrentPage).getElementsByTagName("li");
+    }catch(e){
+        elements = []
+    }
     var checked = 0;
     var unchecked = 0;
     var btnText = __$("lblSelectAll").innerHTML;
@@ -395,8 +407,8 @@ function checkSelections(){
 }
 try{
     if (selectAll){
-        setTimeout( 'checkSelections()', 1000);
+        setTimeout( 'checkSelections()', 500);
     }
 }catch(e){
-    
+
 }

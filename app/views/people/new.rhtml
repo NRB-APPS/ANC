@@ -93,7 +93,8 @@
   function hideNext(){
     __$("nextButton").style.display = "none";
   }
-  
+
+   
   function seen(page) {
     for (var i = page; i >= 0; i--) {
       skipped[i] = 1;
@@ -172,10 +173,7 @@
     listSuggestions(tstCurrentPage);
   }
 
-  function splitWindow(){
-    
-  }
-
+ 
 </script>
 
 <% form_for :person, @person, :url => { :action => "create" } do |f| %>
@@ -226,7 +224,7 @@
   <%= select_tag "person[birth_month]", options_for_select(@month_names), {:helpText => 'Month of Birth',
     :condition => '$("person_birth_year").value.toLowerCase() != "unknown"',
     :validationJS => "validateDOB();",
-    :tt_onLoad => "selectAll = false; createSingleSelectControl()",
+    :tt_onLoad => "selectAll = false; createSingleSelectControl('')",
     :tt_pageStyleClass => "NoKeyboard",
     :validationMessage => 'Please enter a valid date'}%>
 
@@ -260,7 +258,7 @@
       :condition => '($("person_citizenship").value == "Malawian")',
       :tt_pageStyleClass => "NoKeyboard",
       :ajaxURL => '/people/region/Region?field=role&value=',
-      :tt_onLoad => "hideNext(); splitWindow()" if ask_home_village %></p>
+      :tt_onLoad => "hideNext()" if ask_home_village %></p>
 
   <%= text_field_tag "person[addresses][address2]", params[:address2], {:id => 'address2',
     :tt_requireNextClick => false,
@@ -393,7 +391,7 @@
     :id => "occupation",
     :allowFreeText => false,
     :tt_pageStyleClass => "NoKeyboard",
-    :tt_onLoad => "seen(tstCurrentPage); selectAll = false; createSingleSelectControl()",
+    :tt_onLoad => "seen(tstCurrentPage); selectAll = false; createSingleSelectControl('')",
     :ttMatchFromBeginning => "true")%>
 
   <!-- Make sure patient is created -->
