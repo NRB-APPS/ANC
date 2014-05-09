@@ -358,6 +358,16 @@ class GenericPeopleController < ApplicationController
     render :text => traditional_authorities.join('') + "<li value='Other'>Other</li>" and return
   end
 
+  def traditional_authority_for
+    district_id = District.find_by_name("#{params[:filter_value]}").id
+    traditional_authority_conditions = ["name LIKE (?) AND district_id = ?", "%#{params[:search_string]}%", district_id]
+
+    traditional_authorities = TraditionalAuthority.find(:all,:conditions => traditional_authority_conditions, :order => 'name')
+    traditional_authorities = traditional_authorities.map do |t_a|
+      t_a.name
+    end
+    render :text => (traditional_authorities + ["Other"]).join('|') and return
+  end
   # Regions containing the string given in params[:value]
   def region_of_origin
     region_conditions = ["name LIKE (?)", "%#{params[:value]}%"]
@@ -391,6 +401,17 @@ class GenericPeopleController < ApplicationController
       "<li value='#{d.name}'>#{d.name}</li>"
     end
     render :text => districts.join('') + "<li value='Other'>Other</li>" and return
+  end
+
+  def districts_for
+    region_id = Region.find_by_name("#{params[:filter_value]}").id
+    region_conditions = ["name LIKE (?) AND region_id = ? ", "%#{params[:search_string]}%", region_id]
+
+    districts = District.find(:all,:conditions => region_conditions, :order => 'name')
+    districts = districts.map do |d|
+      d.name
+    end
+    render :text => (districts + ["Other"]).join('|')  and return
   end
 
   def tb_initialization_district
@@ -549,7 +570,7 @@ class GenericPeopleController < ApplicationController
   def occupations
     values = ['','Driver','Housewife','Messenger','Business','Farmer','Salesperson','Teacher',
       'Student','Security guard','Domestic worker', 'Police','Office worker',
-     'Mechanic','Prisoner','Craftsman','Healthcare Worker','Soldier'].sort.concat(["Other"])
+      'Mechanic','Prisoner','Craftsman','Healthcare Worker','Soldier'].sort.concat(["Other"])
     values.concat(["Unknown"]) if !session[:datetime].blank?
     values
   end

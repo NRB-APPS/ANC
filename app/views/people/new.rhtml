@@ -74,6 +74,8 @@
 </style>
 
 <script>
+  var value = "";
+  var values_hash = {};
   selectAll = false;
 <% if params[:relation] %>
     var tt_cancel_destination = "/patients/relationships?patient_id=<%=h params[:relation] -%>"
@@ -94,7 +96,7 @@
     __$("nextButton").style.display = "none";
   }
 
-   
+
   function seen(page) {
     for (var i = page; i >= 0; i--) {
       skipped[i] = 1;
@@ -147,7 +149,7 @@
       if (document.getElementById('tt_page_month_of_birth') != null)
         return true
 
-      if (curr_date < dateCreate(set_dob)) 
+      if (curr_date < dateCreate(set_dob))
         return false
     }
     return true
@@ -157,7 +159,6 @@
     intyear = 0 ; intmonth = 0 ; intday = 0;
     intyear = parseInt(date_str.substring(0,4))
     intmonth = (parseInt(date_str.substring(5,7)) - 1)
-    intday = (parseInt(date_str.substring(8,10)))
 
     if (intmonth == -1)
       intmonth = (parseInt(date_str.substring(5,7).substring(1,2)) - 1)
@@ -172,8 +173,173 @@
     $('touchscreenInput'+tstCurrentPage).setAttribute('ajaxURL', url + filter_value + "&search_string=");
     listSuggestions(tstCurrentPage);
   }
+  function ajaxify(cat, selected){
 
- 
+    if (cat == "region"){
+      var url = "/people/districts_for?filter_value=" + selected + "&search_string=";
+      ajaxCustomRequest(cat, url);
+    }else if (cat == "district"){
+      var url = "/people/traditional_authority_for?filter_value=" + tstInputTarget.value + "&search_string=";
+      ajaxCustomRequest(cat, url, selected);
+    }
+  }
+
+  function ajaxCustomRequest(cat, aUrl, val) {
+
+    var httpRequest = new XMLHttpRequest();
+    httpRequest.onreadystatechange = function() {
+      handleCustomResult(cat, httpRequest, val);
+    };
+    try {
+      httpRequest.open('GET', aUrl, true);
+      httpRequest.send(null);
+    } catch(e){
+    }
+  }
+
+  function handleCustomResult(cat, aXMLHttpRequest, val) {
+    if (!aXMLHttpRequest) return;
+
+    if (aXMLHttpRequest.readyState == 4 && (aXMLHttpRequest.status == 200 ||
+      aXMLHttpRequest.status == 304)) {
+
+      var result = aXMLHttpRequest.responseText;
+			values_hash["region"] = tstInputTarget.value;
+
+      if (cat == "region"){
+
+        __$("sc2").innerHTML = ""
+        //__$("sc3").innerHTML = ""
+        var data = result.split("|");
+
+        var ul = document.createElement("ul");
+
+        for(var i = 0; i < data.length; i ++){
+
+          var li = document.createElement("li")
+          li.setAttribute("class", "district");
+          li.value = data[i]
+          li.innerHTML = data[i]
+          li.onmousedown = function(){
+            updateCustomTouchscreenInput(this);
+          }
+
+          ul.appendChild(li);
+        }
+
+        __$("sc2").appendChild(ul);
+      }else if(cat == "district"){
+
+        var data = result.split("|");
+
+        var ul = document.createElement("ul");
+
+        for(var i = 0; i < data.length; i ++){
+
+          var li = document.createElement("li")
+          li.setAttribute("class", "ta");
+          li.value = data[i];
+          li.innerHTML = data[i];
+          li.onmousedown = function(){
+            updateCustomTouchscreenInput(this);
+          }
+
+          ul.appendChild(li);
+        }
+
+     }
+    }
+  }
+
+	function verifyFields(){
+
+		__$("address2").value = values_hash["district"];
+
+		__$("region_region_name").value = values_hash["region"]
+
+		tstInputTarget.value = values_hash["region"]
+
+	}
+
+  function updateCustomTouchscreenInput(element){
+
+		values_hash["district"] = element.innerHTML
+
+    var inputTarget = tstInputTarget;
+
+		if (element.value.length>1)
+			inputTarget.value = element.value;
+		else if (element.innerHTML.length>1)
+			inputTarget.value = element.innerHTML;
+
+    highlightSelection(element.parentNode.childNodes, inputTarget)
+    tt_update(inputTarget);
+
+  }
+
+  function updateInputFields(){
+    if (value != tstInputTarget.value){
+      value = tstInputTarget.value;
+			if (value.length > 0) {
+
+      	ajaxify("region", value);
+      }
+    }
+    setTimeout("updateInputFields()", 100);
+  }
+
+  function ajaxifyDistricts(){
+    value = tstInputTarget.value
+    setTimeout("updateInputFields()", 100)
+    //__$("touchscreenInput" + tstCurrentPage).style.display = "none";
+
+    __$("viewport").style.width = "48%";
+    __$("viewport").style.borderStyle = "solid";
+    __$("viewport").style.borderWidth = "2px";
+    __$("viewport").style.borderTop = "hidden";
+    __$("viewport").style.borderLeft = "hidden";
+    __$("viewport").style.borderBottom = "hidden";
+
+    var view2 = document.createElement("div");
+    view2.id = "viewport2"
+    view2.setAttribute("class", "options");
+    view2.style.position = "absolute";
+    view2.style.top = "15.35%";
+    view2.style.left = "50%";
+    view2.style.width = "48%";
+    view2.style.borderStyle = "solid";
+    view2.style.borderWidth = "2px";
+    view2.style.borderTop = "hidden";
+    view2.style.borderLeft = "hidden";
+    view2.style.borderBottom = "hidden";
+    view2.style.borderRight = "hidden";
+
+    var sc2 = document.createElement("div");
+    sc2.setAttribute("class", "scrollable");
+    sc2.setAttribute("referstotouchscreeninputid", tstCurrentPage + 1);
+    sc2.id = "sc2";
+    view2.appendChild(sc2);
+    __$("inputFrame" + tstCurrentPage).appendChild(view2);
+
+		/*
+    var view3 = document.createElement("div");
+    view3.id = "viewport3"
+    view3.setAttribute("class", "options");
+    view3.style.position = "absolute";
+    view3.style.top = "15.35%";
+    view3.style.left = "62%";
+    view3.style.width = "37%";
+    view3.style.align = "right";
+    var sc3 = document.createElement("div");
+    sc3.setAttribute("class", "scrollable");
+    sc3.setAttribute("referstotouchscreeninputid", tstCurrentPage + 2)
+    sc3.id = "sc3";
+    view3.appendChild(sc3);
+*/
+
+   // __$("inputFrame" + tstCurrentPage).appendChild(view3)
+  }
+
 </script>
 
 <% form_for :person, @person, :url => { :action => "create" } do |f| %>
@@ -254,19 +420,25 @@
     :condition => '($("person_citizenship").value != "Malawian")'%>
   <p><label for="region_region_name">Region of Origin</label></br>
 
-    <%= text_field "region" , 'region_name', :helpText => 'Region',:tt_requireNextClick => false,
-      :condition => '($("person_citizenship").value == "Malawian")',
+  <%= text_field "region" , 'region_name', :helpText => 'Region',
+      :condition => 'false',
       :tt_pageStyleClass => "NoKeyboard",
       :ajaxURL => '/people/region/Region?field=role&value=',
-      :tt_onLoad => "hideNext()" if ask_home_village %></p>
+      :tt_onLoad => "hideNext(); ajaxifyDistricts();" if ask_home_village %></p>
 
   <%= text_field_tag "person[addresses][address2]", params[:address2], {:id => 'address2',
-    :tt_requireNextClick => false,
     :ajaxURL => '', :field_type => 'alpha',
     :helpText => 'Home District', :allowFreeText => false,
-    :condition => '$("person_citizenship").value == "Malawian"',
-    :tt_onLoad => "seen(tstCurrentPage); set_ajaxURL_for_suggestions('/people/district/District?filter_value=',document.getElementById('region_region_name').value);$('nextButton').style.display = 'none';" } if ask_home_village %>
+    :condition => 'false',
+    :tt_onLoad => "seen(tstCurrentPage);" } if ask_home_village %>
 
+  <%= text_field "temp" , 'temp', :helpText => 'Home address',
+      :condition => 'true',
+      :optional => "true",
+      :tt_BeforeUnload => "verifyFields()",
+      :tt_pageStyleClass => "NoKeyboard",
+      :ajaxURL => '/people/region/Region?field=role&value=',
+      :tt_onLoad => "showNext(); ajaxifyDistricts();" if ask_home_village %></p>
 
   <%= text_field_tag "p['address2_a']" , nil, {id => 'address2_a',
     :tt_onUnLoad => '$("address2").value = $("address2_a").value',
@@ -275,10 +447,12 @@
     :allowFreeText => true, :field_type => 'alpha', :helpText => 'Specify Home District',
     :tt_onLoad => "$('nextButton').style.display = 'block';" } if ask_home_village %>
 
-  <%= text_field "person[addresses]" , 'county_district',
+     <%= text_field "person[addresses]" , 'county_district',
     :condition => '($("address2").value != "Other") && ($("person_citizenship").value == "Malawian")',
     :helpText => 'Ancestral Traditional Authority (T/A) or area of residence',
-    :tt_requireNextClick => false, :ajaxURL => '', :tt_pageStyleClass => "azButton",
+    :tt_requireNextClick => false,
+    :ajaxURL => '',
+    :tt_pageStyleClass => "azButton",
     :tt_onLoad => "set_ajaxURL_for_suggestions('/people/traditional_authority/TraditionalAuthority?filter_value=' ,document.getElementById('address2').value);$('nextButton').style.display = 'none';" if ask_home_village  %></p>
 
   <%= text_field_tag "person[addresses][neighborhood_cell]", params[:city_village],
