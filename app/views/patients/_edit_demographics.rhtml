@@ -85,6 +85,7 @@
 
       var result = aXMLHttpRequest.responseText;
       values_hash["region"] = tstInputTarget.value;
+      values_hash["district"] = '';
 
       if (cat == "region"){
 
@@ -131,7 +132,6 @@
     }
   }
 
-
   function verifyFields(num){
 
     if (values_hash['district'] == ''){
@@ -171,7 +171,6 @@
     tt_update(inputTarget);
 
   }
-
 
   function updateInputFields(){
     if (value != tstInputTarget.value){
@@ -220,7 +219,7 @@
     view2.appendChild(sc2);
     __$("inputFrame" + tstCurrentPage).appendChild(view2);
   }
-  
+
 </script>
 
 <% form_for :person, @person, :url => { :action => "update_demographics" } do |f| %>
