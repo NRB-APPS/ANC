@@ -256,8 +256,10 @@
     if (values_hash['district'] == ''){
       values_hash["temp_region"] = values_hash["region"];
       values_hash["region"] = "";
+      region_terminal = false;
     }else{
       values_hash["temp_region"] = "";
+      region_terminal = true;
     }
         
     if (num == 1){
@@ -270,9 +272,8 @@
       __$("filter_region").value = values_hash["region"];
     }
     tstInputTarget.value = values_hash["region"];
-    values_hash["region"] = values_hash["temp_region"]
-    region_terminal = true;
-
+    values_hash["region"] = values_hash["temp_region"];
+   
   }
 
   function updateCustomTouchscreenInput(element){
