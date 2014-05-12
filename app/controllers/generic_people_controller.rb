@@ -436,9 +436,14 @@ class GenericPeopleController < ApplicationController
   
   # Landmark containing the string given in params[:value]
   def landmark
-    landmarks = PersonAddress.find(:all, :select => "DISTINCT address1" , :conditions => ["city_village = (?) AND address1 LIKE (?)", "#{params[:filter_value]}", "#{params[:search_string]}%"])
+    #landmarks = PersonAddress.find(:all, :select => "DISTINCT address1" , :conditions => ["city_village = (?) AND address1 LIKE (?)", "#{params[:filter_value]}", "#{params[:search_string]}%"])
+    # landmarks = landmarks.map do |v|
+    #  "<li value='#{v.addresss1}'>#{v.addresss1}</li>"
+    #end
+
+    landmarks = ["", "Market", "School", "Police", "Church", "Borehole", "Graveyard"]
     landmarks = landmarks.map do |v|
-      "<li value='#{v.address1}'>#{v.address1}</li>"
+      "<li value='#{v}'>#{v}</li>"
     end
     render :text => landmarks.join('') + "<li value='Other'>Other</li>" and return
   end
