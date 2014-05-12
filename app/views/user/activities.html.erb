@@ -95,7 +95,7 @@
       }
     }
   }
-    
+  selectAll = true;
   setTimeout("addSelectAllButton();", 200);
      
 </script>
@@ -123,6 +123,6 @@
   <%= select_tag 'user[activities][]',
     options_for_select(@privileges, @activities),
     :helpText => "Select activities" ,
-    :tt_onLoad =>"selectAll = true; createMultipleSelectControl()",
+    :tt_onLoad =>"createMultipleSelectControl()",
     :multiple =>  true %>
 </form>

@@ -1,3 +1,6 @@
+<script type="text/javascript" language="javascript" src="/javascripts/multi_column_controls.js" defer  ></script>
+
+
 <style>
   .tt_controls_month_of_birth #keyboard{
     display: none;
@@ -11,21 +14,235 @@
   #tt_page_occupation .options{
     height:17em;
   }
+
+  #tt_page_month_of_birth .inputFrameClass{
+    height:  24em !important;
+    margin-top: 10%;
+  }
+
+  li.highlighted {
+    background-color: lightblue;
+  }
+  li {
+    /*padding: 5px;*/
+    cursor: pointer;
+    font-size: 1.5em;
+    margin: 2px;
+    -moz-user-select: none;
+  }
 </style>
 <script>
   var tt_cancel_destination = '/patients/demographics?patient_id=<%= @patient.id%>&person_id=<%=
 @person.id %>&cat=<%= params['cat'] %>'
   var skipped = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
+  var value = "";
+  var values_hash = {};
+  selectAll = false;
+  
   function seen(page) {
     for (var i = page; i >= 0; i--) {
       skipped[i] = 1;
     }
   }
 
+  function showNext(){
+    __$("nextButton").style.display = "block";
+  }
+
+  function hideNext(){
+    __$("nextButton").style.display = "none";
+  }
+
   function set_ajaxURL_for_suggestions(url, filter_value) {
     $('touchscreenInput'+tstCurrentPage).setAttribute('ajaxURL', url + filter_value + "&search_string=");
     listSuggestions(tstCurrentPage);
+  }
+
+  function ajaxify(cat, selected){
+
+    if (cat == "region"){
+      var url = "/people/districts_for?filter_value=" + selected + "&search_string=";
+      ajaxCustomRequest(cat, url);
+    }else if (cat == "district"){
+      var url = "/people/traditional_authority_for?filter_value=" + tstInputTarget.value + "&search_string=";
+      ajaxCustomRequest(cat, url);
+    }
+  }
+
+  function ajaxCustomRequest(cat, aUrl) {
+
+    var httpRequest = new XMLHttpRequest();
+    httpRequest.onreadystatechange = function() {
+      handleCustomResult(cat, httpRequest);
+    };
+    try {
+      httpRequest.open('GET', aUrl, true);
+      httpRequest.send(null);
+    } catch(e){
+    }
+  }
+
+  function handleCustomResult(cat, aXMLHttpRequest) {
+    if (!aXMLHttpRequest) return;
+
+    if (aXMLHttpRequest.readyState == 4 && (aXMLHttpRequest.status == 200 ||
+      aXMLHttpRequest.status == 304)) {
+
+      var result = aXMLHttpRequest.responseText;
+      values_hash["region"] = tstInputTarget.value;
+      values_hash["district"] = '';
+
+      if (cat == "region"){
+
+        __$("sc2").innerHTML = ""
+
+        var data = result.split("|");
+
+        var ul = document.createElement("ul");
+
+        for(var i = 0; i < data.length; i ++){
+
+          var li = document.createElement("li")
+          li.setAttribute("class", "district");
+          li.value = data[i]
+          li.innerHTML = data[i]
+          li.onmousedown = function(){
+            updateCustomTouchscreenInput(this);
+          }
+
+          ul.appendChild(li);
+        }
+
+        __$("sc2").appendChild(ul);
+      }else if(cat == "district"){
+
+        var data = result.split("|");
+
+        var ul = document.createElement("ul");
+
+        for(var i = 0; i < data.length; i ++){
+
+          var li = document.createElement("li")
+          li.setAttribute("class", "ta");
+          li.value = data[i];
+          li.innerHTML = data[i];
+          li.onmousedown = function(){
+            updateCustomTouchscreenInput(this);
+          }
+
+          ul.appendChild(li);
+        }
+
+      }
+    }
+  }
+
+  function verifyFields(num){
+
+    if (values_hash['district'] == ''){
+      values_hash["temp_region"] = values_hash["region"];
+      values_hash["region"] = "";
+      region_terminal = false;
+    }else{
+      values_hash["temp_region"] = "";
+      region_terminal = true;
+    }
+
+    if (num == 1){
+
+      __$("address2").value = values_hash["district"];
+      __$("region_region_name").value = values_hash["region"];
+    }else if (num == 2){
+
+      __$("state_province").value = values_hash["district"];
+      __$("filter_region").value = values_hash["region"];
+    }
+    tstInputTarget.value = values_hash["region"];
+    values_hash["region"] = values_hash["temp_region"];
+
+  }
+
+  function updateCustomTouchscreenInput(element){
+
+    values_hash["district"] = element.innerHTML;
+    var inputTarget = tstInputTarget;
+
+    if (element.value.length>1)
+      inputTarget.value = element.value;
+    else if (element.innerHTML.length>1)
+      inputTarget.value = element.innerHTML;
+
+    highlightSelection(element.parentNode.childNodes, inputTarget)
+    tt_update(inputTarget);
+
+  }
+
+  function updateInputFields(){
+    if (value != tstInputTarget.value){
+      value = tstInputTarget.value;
+      if (value.length > 0) {
+
+        ajaxify("region", value);
+      }
+    }
+
+    if (region_terminal == false){
+      setTimeout("updateInputFields()", 100);
+    }
+  }
+
+  function ajaxifyDistricts(){
+    value = tstInputTarget.value
+    region_terminal = false;
+    setTimeout("updateInputFields()", 100)
+
+    __$("viewport").style.width = "48%";
+    __$("viewport").style.borderStyle = "solid";
+    __$("viewport").style.borderWidth = "2px";
+    __$("viewport").style.borderTop = "hidden";
+    __$("viewport").style.borderLeft = "hidden";
+    __$("viewport").style.borderBottom = "hidden";
+
+    var view2 = document.createElement("div");
+    view2.id = "viewport2"
+    view2.setAttribute("class", "options");
+    view2.style.position = "absolute";
+    view2.style.top = "15.35%";
+    view2.style.left = "50%";
+    view2.style.width = "48%";
+    view2.style.borderStyle = "solid";
+    view2.style.borderWidth = "2px";
+    view2.style.borderTop = "hidden";
+    view2.style.borderLeft = "hidden";
+    view2.style.borderBottom = "hidden";
+    view2.style.borderRight = "hidden";
+
+    var sc2 = document.createElement("div");
+    sc2.setAttribute("class", "scrollable");
+    sc2.setAttribute("referstotouchscreeninputid", tstCurrentPage + 1);
+    sc2.id = "sc2";
+    view2.appendChild(sc2);
+    __$("inputFrame" + tstCurrentPage).appendChild(view2);
+  }
+
+  function showSummary(field){
+    var div = document.createElement("div");
+    div.id = "status";
+    div.className = "statusLabel";
+
+    if(field == "year"){
+      
+      div.style.marginTop = "-4%";
+      div.style.textAlign = "center";
+      div.innerHTML = "<i>Year   =   1999</i>"
+      __$("inputFrame" + tstCurrentPage).appendChild(div);
+      
+    }else if (field == "day"){
+
+      div.style.textAlign = "center";
+      div.innerHTML = "<i>Year   =  " + __$("person_birth_year").value + "; Month = " + __$("person_birth_month").value + "</i>"
+      __$("inputFrame" + tstCurrentPage).appendChild(div);
+    }
   }
 
 </script>
@@ -80,8 +297,9 @@
       :tt_pageStyleClass => "Numeric NumbersOnly",
       :tt_onLoad => 'seen(tstCurrentPage);' }  %>
 
-    <%= select_tag "person[birth_month]", month_name_options,
+    <%= select_tag "person[birth_month]", options_for_select(@month_names),
       {:helpText => 'Month of Birth',
+      :tt_onLoad => "selectAll = false; createSingleSelectControl(''); showSummary('year')",
       :tt_pageStyleClass => "NoKeyboard",
       :condition => '$("person_birth_year").value.toLowerCase() != "unknown"'}%>
 
@@ -89,14 +307,18 @@
       {:helpText => 'Age Estimate',
       :absoluteMin => 1,
       :absoluteMax => age_limit,
-      :field_type => 'number',
+      :field_type => 'number',      
       :condition => '$("person_birth_year").value == "Unknown"',
       :tt_pageStyleClass => "Numeric NumbersOnly"} %>
 
-    <%= text_field_tag "person[birth_day]",  nil, :field_type => 'number', :helpText => 'Birth Day', :absoluteMin => 1, :absoluteMax => 31, :condition => '($("person_birth_year").value != "Unknown") && ($("person_birth_month").value != "Unknown")', :tt_onLoad => "getDayOfMonthPicker($('person_birth_year').value,$('person_birth_month').value)"%>
+    <%= text_field_tag "person[birth_day]",  nil,
+      :field_type => 'number',
+      :helpText => 'Birth Day', :absoluteMin => 1,
+      :absoluteMax => 31,
+      :condition => '($("person_birth_year").value != "Unknown") && ($("person_birth_month").value != "Unknown")',
+      :tt_onLoad => "getDayOfMonthPicker($('person_birth_year').value,$('person_birth_month').value); showSummary('day')"%>
 
-  <%when 'city_village
-    '%>
+  <%when 'city_village'%>
 
   <%when 'home_village'%>
 
@@ -111,19 +333,17 @@
       :tt_onLoad => "set_ajaxURL_for_suggestions('/people/landmark?filter_value=' ,document.getElementById('person_addresses_city_village').value);$('nextButton').style.display = 'block';" }%>
   <%when 'current_district' %>
 
-    <p><label for="filter_region">Current Region</label></br>
-      <%= text_field "filter" , 'region', :xhelpText => 'Region', :tt_requireNextClick => false, :ajaxURL => '',
-        :tt_onLoad => "set_ajaxURL_for_suggestions('/people/region/Region?filter_value=','');$('nextButton').style.display = 'none';" %></p>
-
+    <p><label for="filter_region">Current Address</label></br>
+      <%= text_field "filter" , 'region', :xhelpText => 'Region',
+        :ajaxURL => '/people/region/Region?field=role&value=',
+        :tt_pageStyleClass => "NoKeyboard",
+        :tt_BeforeUnLoad => "verifyFields(2)",
+        :tt_onLoad => "showNext(); ajaxifyDistricts();" %></p>
 
     <%= text_field_tag "person[addresses][state_province]", params[:state_province], {
       :id => 'state_province',
-      :field_type => 'alpha',
-      :helpText => 'Current District',
-      :tt_requireNextClick => false, :ajaxURL => '',
-      :allowFreeText => false,
-      :tt_onLoad => "seen(tstCurrentPage); set_ajaxURL_for_suggestions('/people/district/District?filter_value=' ,document.getElementById('filter_region').value);$('nextButton').style.display = 'none';" } %>
-
+      :condition => "false"
+    } %>
 
     <p><label for="filter_t_a">Traditional Authority (T/A) or area of residence</label></br>
 
@@ -161,23 +381,18 @@
 
   <%when 'home_district'%>
 
-    <p><label for="region_region_name">Region of Origin</label></br>
-      <%= text_field "region" , 'region_name',
-        :tt_requireNextClick => false,
-        :ajaxURL => '/people/region/Region?field=role&value=',
-        :tt_onLoad => "$('nextButton').style.display = 'none';" %></p>
+    <%= text_field "region" , 'region_name', :helpText => 'Home Address',
+      :tt_pageStyleClass => "NoKeyboard",
+      :ajaxURL => '/people/region/Region?field=role&value=',
+      :tt_BeforeUnLoad => "verifyFields(1)",
+      :tt_onLoad => "showNext(); ajaxifyDistricts();" if ask_home_village %></p>
 
-    <%= text_field_tag "person[addresses][address2]",
-      params[:state_province], {:field_type => 'alpha',
+    <%= text_field_tag "person[addresses][address2]", params[:address2], {:id => 'address2',
+      :ajaxURL => '', :field_type => 'alpha',
       :helpText => 'Home District',
-      :id => "address2",
-      :tt_requireNextClick => false,
-      :ajaxURL => '/search/district?search_string=',
-      :allowFreeText => true,
-      :tt_onLoad => "$('nextButton').style.display = 'none'; " +
-        "set_ajaxURL_for_suggestions('/people/district/District?filter_value='," +
-        "document.getElementById('region_region_name').value);"
-    }%>
+      :allowFreeText => false,
+      :condition => 'false' } if ask_home_village %>
+
 
     <%= text_field_tag "person[addresses][county_district]",  params[:address2],
       {:field_type => 'alpha',
