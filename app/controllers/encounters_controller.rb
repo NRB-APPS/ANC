@@ -139,7 +139,7 @@ class EncountersController < ApplicationController
     @weeks = @anc_patient.fundus(session_date.to_date).to_i rescue 0
        
     @pregnancystart = session_date.to_date - (@weeks rescue 0).week
-    last_vitals = Encounter.find_by_sql("
+    @last_vitals = Encounter.find_by_sql("
                     SELECT * FROM encounter e
                     INNER JOIN encounter_type et ON et.encounter_type_id = e.encounter_type
                     WHERE et.name = 'VITALS'
@@ -147,8 +147,9 @@ class EncountersController < ApplicationController
                     AND e.patient_id = #{params[:patient_id]}
                     AND e.encounter_datetime < '#{d.strftime('%Y-%m-%d 23:59:59')}'
                     ORDER BY e.encounter_datetime DESC LIMIT 1").first.encounter_id rescue []
-    unless last_vitals.blank?
-    Observation.find(:all, :conditions => ["encounter_id = ?", last_vitals]).each {|obs|
+    unless @last_vitals.blank?
+      @first = "false"
+    Observation.find(:all, :conditions => ["encounter_id = ?", @last_vitals]).each {|obs|
       @vital = {} if @vital.blank?
       current = obs.to_s 
       @vital["bmi"] = current.split(':')[1] if current.match(/Body/i)
@@ -156,6 +157,8 @@ class EncountersController < ApplicationController
       @vital["height"] = current.split(':')[1] if current.match(/Height/i)
       @vital["date"] = obs.obs_datetime if @vital["date"].blank?
     }
+    else
+      @first = "true"
     end
     
     @preg_encounters = @patient.encounters.find(:all, :conditions => ["voided = 0 AND encounter_datetime >= ? AND encounter_datetime <= ?",
