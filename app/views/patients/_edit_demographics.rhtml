@@ -15,6 +15,11 @@
     height:17em;
   }
 
+  #tt_page_month_of_birth .inputFrameClass{
+    height:  24em !important;
+    margin-top: 10%;
+  }
+
   li.highlighted {
     background-color: lightblue;
   }
@@ -220,6 +225,26 @@
     __$("inputFrame" + tstCurrentPage).appendChild(view2);
   }
 
+  function showSummary(field){
+    var div = document.createElement("div");
+    div.id = "status";
+    div.className = "statusLabel";
+
+    if(field == "year"){
+      
+      div.style.marginTop = "-4%";
+      div.style.textAlign = "center";
+      div.innerHTML = "<i>Year   =   1999</i>"
+      __$("inputFrame" + tstCurrentPage).appendChild(div);
+      
+    }else if (field == "day"){
+
+      div.style.textAlign = "center";
+      div.innerHTML = "<i>Year   =  " + __$("person_birth_year").value + "; Month = " + __$("person_birth_month").value + "</i>"
+      __$("inputFrame" + tstCurrentPage).appendChild(div);
+    }
+  }
+
 </script>
 
 <% form_for :person, @person, :url => { :action => "update_demographics" } do |f| %>
@@ -272,9 +297,9 @@
       :tt_pageStyleClass => "Numeric NumbersOnly",
       :tt_onLoad => 'seen(tstCurrentPage);' }  %>
 
-    <%= select_tag "person[birth_month]", month_name_options,
+    <%= select_tag "person[birth_month]", options_for_select(@month_names),
       {:helpText => 'Month of Birth',
-      :tt_onLoad => "selectAll = false; createSingleSelectControl('')",
+      :tt_onLoad => "selectAll = false; createSingleSelectControl(''); showSummary('year')",
       :tt_pageStyleClass => "NoKeyboard",
       :condition => '$("person_birth_year").value.toLowerCase() != "unknown"'}%>
 
@@ -282,11 +307,16 @@
       {:helpText => 'Age Estimate',
       :absoluteMin => 1,
       :absoluteMax => age_limit,
-      :field_type => 'number',
+      :field_type => 'number',      
       :condition => '$("person_birth_year").value == "Unknown"',
       :tt_pageStyleClass => "Numeric NumbersOnly"} %>
 
-    <%= text_field_tag "person[birth_day]",  nil, :field_type => 'number', :helpText => 'Birth Day', :absoluteMin => 1, :absoluteMax => 31, :condition => '($("person_birth_year").value != "Unknown") && ($("person_birth_month").value != "Unknown")', :tt_onLoad => "getDayOfMonthPicker($('person_birth_year').value,$('person_birth_month').value)"%>
+    <%= text_field_tag "person[birth_day]",  nil,
+      :field_type => 'number',
+      :helpText => 'Birth Day', :absoluteMin => 1,
+      :absoluteMax => 31,
+      :condition => '($("person_birth_year").value != "Unknown") && ($("person_birth_month").value != "Unknown")',
+      :tt_onLoad => "getDayOfMonthPicker($('person_birth_year').value,$('person_birth_month').value); showSummary('day')"%>
 
   <%when 'city_village'%>
 

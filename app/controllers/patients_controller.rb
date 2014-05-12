@@ -984,6 +984,8 @@ class PatientsController < ApplicationController
   def edit_demographics
     @person = Patient.find(params[:patient_id]  || params[:id] || session[:patient_id]) rescue nil
     @field = params[:field]
+    i=0
+    @month_names = [[]] +Date::MONTHNAMES[1..-1].collect{|month|[month,i+=1]} + [["Unknown","Unknown"]]
     render :partial => "edit_demographics", :field =>@field, :layout => true and return
   end
 

@@ -70,7 +70,7 @@ function createMultipleSelectControl(){
     cell2.appendChild(list2);
 
     var options = tstFormElements[tstCurrentPage].options;
-
+   
     var j = 0;
 
     for(var i = 0; i < options.length; i++){
@@ -184,11 +184,11 @@ function createMultipleSelectControl(){
 
 function createSingleSelectControl(options_div){
 
-     var options = tstFormElements[tstCurrentPage].options;
+    var options = tstFormElements[tstCurrentPage].options;
+    
+     if (typeof(options) == undefined){
 
-    if (typeof(options) == undefined){
-
-       options = tstFormElements[tstCurrentPage].children;
+        options = tstFormElements[tstCurrentPage].children;
     }
    
     if(__$("keyboard")){
@@ -259,7 +259,6 @@ function createSingleSelectControl(options_div){
     list2.margin = "0px";
 
     cell2.appendChild(list2);
-
    
     
     var j = 0;
@@ -271,6 +270,7 @@ function createSingleSelectControl(options_div){
         li.setAttribute("source_id", tstFormElements[tstCurrentPage].id)
 
         li.onclick = function(){
+            
             var img = this.getElementsByTagName("img")[0];
 
             if(__$(this.getAttribute("source_id"))){
@@ -290,9 +290,7 @@ function createSingleSelectControl(options_div){
 
                 if(__$(this.getAttribute("source_id"))){
                     __$(this.getAttribute("source_id")).options[parseInt(this.getAttribute("pos"))].selected = true;
-
-                    __$("touchscreenInput" + tstCurrentPage).value =
-                    __$(this.getAttribute("source_id")).options[parseInt(this.getAttribute("pos"))].value;
+                    updateTouchscreenInput(__$(this.getAttribute("source_id")).options[parseInt(this.getAttribute("pos"))])
                 }
             }
         }
