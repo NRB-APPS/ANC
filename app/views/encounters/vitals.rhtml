@@ -23,6 +23,10 @@
   float:right;
   background-color: #DEDEDE;
   }
+  
+#dia {
+    margin-left: 85px;
+}
 
   .lowWeightForHeight{color:black;background:red;}
   .medWeightForHeight {color:black;background:yellow;}
@@ -55,6 +59,10 @@
   var conceptHash;
   var timedEvent1;
   var timedEvent2;
+  var keyboard;
+  var sbp = 1;
+  var dbp = 0;
+  var clicked = 0;
   var first = '<%= @first %>'
 
   function $(e) {
@@ -191,8 +199,38 @@
 
       $("inputFrame" + tstCurrentPage).appendChild(div);
     }
-   
-    if(pos == 1){
+
+    if (pos == -1){
+
+      if (dbp == 1){
+        $("diastolic_blood_pressure").value = $("touchscreenInput" + tstCurrentPage).value
+         bp = ($("systolic_blood_pressure").value.trim().length > 0 ? $("systolic_blood_pressure").value.trim() : "?") +
+        "/" + ($("touchscreenInput" + tstCurrentPage).value.trim().length > 0 ? $("touchscreenInput" +
+        tstCurrentPage).value.trim() : "?");
+
+      if(parseInt(__$("touchscreenInput" + tstCurrentPage).value) > 90 && alreadyNoted == false){
+        showMessage('Client is at risk of pre-eclampsia. Please refer her for Urine Protein test.',false,false);
+        alreadyNoted = true;
+      } else if(parseInt(__$("touchscreenInput" + tstCurrentPage).value) <= 90){
+        alreadyNoted = false;
+      }
+      $("bp").innerHTML = "Blood Pressure: <i style='font-size: 1.2em; float: right;'>" + bp + "</i>";
+
+      }else{
+        $("systolic_blood_pressure").value = $("touchscreenInput" + tstCurrentPage).value
+           alreadyNoted = false;
+      bp = ($("touchscreenInput" + tstCurrentPage).value.trim().length > 0 ? $("touchscreenInput" +
+        tstCurrentPage).value.trim() : "?") +
+        "/" + ($("diastolic_blood_pressure").value.trim().length > 0 ? $("diastolic_blood_pressure").value.trim() : "?");
+       $("bp").innerHTML = "Blood Pressure: <i style='font-size: 1.2em; float: right;'>" + bp + "</i>";
+    
+      }
+      if (clicked == 1){
+        $("touchscreenInput" + tstCurrentPage).value = "";
+        clicked = 0;
+      }
+    }
+    else if(pos == 1){
       alreadyNoted = false;
       bp = ($("touchscreenInput" + tstCurrentPage).value.trim().length > 0 ? $("touchscreenInput" +
         tstCurrentPage).value.trim() : "?") +
@@ -309,7 +347,30 @@
     }
     setTimeout('checkText(' + pos + ')', 500);
   }
+  function addKeys(){
+   keyboard = document.getElementById('keyboard')
+   keyboard.innerHTML+= getButtonString('sys','Sys')
+   keyboard.innerHTML+= getButtonString('dia','Dias')
+   dia  = document.getElementById('dia')
+   sys  = document.getElementById('sys')
    
+   dia.setAttribute('onmousedown', 'changeSelected("dia")')
+   sys.setAttribute('onmousedown', 'changeSelected("sys")')
+  } 
+  
+  function changeSelected(selected){
+    bp = document.getElementById('blood_pressure');
+    clicked = 1;
+   // alert(selected)
+    if (selected == "dia"){
+      dbp = 1;
+      sbp = 0;
+    }else{
+      sbp = 1;
+      dbp = 0;
+    }
+  }
+ 
   
 </script>
 
@@ -323,6 +384,8 @@
   <%= hidden_field_tag "encounter[patient_id]", @patient.id %>
   <%= hidden_field_tag "encounter[encounter_datetime]", session_date %>
   <%= hidden_field_tag "encounter[provider_id]", session[:user_id] %>
+  <input type='hidden' name="concept[systolic blood pressure]" id="systolic_blood_pressure" />
+  <input type='hidden' name="concept[Diastolic blood pressure]" id="diastolic_blood_pressure" />
 
   <% options = [""]
 =begin
@@ -439,12 +502,12 @@ end
     <% if params[:bp] %>
 
       <% options = default.merge({
-          :id => "systolic_blood_pressure",
-          :helptext => "Systolic Blood Pressure (mm Hg) <span class='helper'>Task: Vitals</span>",
+          :id => "blood_pressure",
+          :helptext => "Blood Pressure <span class='helper'>Task: Vitals</span>",
           :field_type => "number",
           :tt_pageStyleClass => "NumbersWithUnknown",
-          :tt_onLoad => "timedEvent1 = window.setInterval('bpAlerts(1)', 110); timedEvent = setTimeout('calculateBP(1)', 100);parsedConceptName = 'Systolic Blood Pressure'; if(conceptHash){}else{transformMessages()};",
-          :tt_onUnLoad => "window.clearInterval(timedEvent1); parsedConceptName = ''; clearTimeout(timedEvent); __$('diastolic_blood_pressure').setAttribute('absoluteMax', __$('systolic_blood_pressure').value)",
+          :tt_onLoad => "timedEvent1 = window.setInterval('bpAlerts(1)', 110); timedEvent = setTimeout('calculateBP(-1)', 100);addKeys();",
+          :tt_onUnLoad => "window.clearInterval(timedEvent1); parsedConceptName = ''; clearTimeout(timedEvent);",
           :absoluteMin => 1,
           :min => 110,
           :condition => "if(#{options.length} > 2){getSelected().match(/BP/)}else{true}",
@@ -452,27 +515,8 @@ end
         }) %>
 
       <%= text_field_tag("observations[][value_coded_or_text]", nil,options) %>
-      <%= hidden_field_tag("observations[][concept_name]",  "SYSTOLIC BLOOD PRESSURE",
-        {:id => 'systolic_blood_pressure_concept_name'}) %>
-      <%= hidden_field_tag("observations[][patient_id]",    @patient.id) %>
-      <%= hidden_field_tag("observations[][obs_datetime]",  session_date) %>
-
-      <% options = default.merge({
-          :id => "diastolic_blood_pressure",
-          :helptext => "Diastolic Blood Pressure (mm Hg) <span class='helper'>Task: Vitals</span>",
-          :field_type => "number",
-          :tt_pageStyleClass => "NumbersWithUnknown",
-          :tt_onLoad => "timedEvent2 = window.setInterval('bpAlerts(2)', 110); timedEvent = setTimeout('calculateBP(2)', 100);parsedConceptName = 'Diastolic Blood Pressure'",
-          :tt_onUnLoad => "window.clearInterval(timedEvent2);  clearTimeout(timedEvent); parsedConceptName =''",
-          :absoluteMin => 1,
-          :min => 60,
-          :max => 80,
-          :condition => "/*((#{options.length} > 2) ? getSelected().match(/BP/) : true) && */" +
-            "__$('systolic_blood_pressure').value.toLowerCase() != 'unknown'"
-        }) %>
-
-      <%= text_field_tag("observations[][value_coded_or_text]", nil,options) %>
-      <%= hidden_field_tag("observations[][concept_name]",  "DIASTOLIC BLOOD PRESSURE", {:id => 'diastolic_blood_pressure_concept_name'}) %>
+      <%= hidden_field_tag("observations[][concept_name]",  "BLOOD PRESSURE",
+        {:id => 'blood_pressure_concept_name'}) %>
       <%= hidden_field_tag("observations[][patient_id]",    @patient.id) %>
       <%= hidden_field_tag("observations[][obs_datetime]",  session_date) %>
 
