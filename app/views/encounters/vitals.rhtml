@@ -55,6 +55,7 @@
   var conceptHash;
   var timedEvent1;
   var timedEvent2;
+  var first = '<%= @first %>'
 
   function $(e) {
     return document.getElementById(e);
@@ -79,9 +80,12 @@
       showWeightHeightForAge();
       showWeightForHeight();
     }
+    
     document.getElementById('inputFrame'+tstCurrentPage).innerHTML = '<div id="summary">' + displayText + '</div><div id="charts" style="height:185px;margin:2px 6px 6px;padding:2px;width:380px;"></div>' ;
+    //alert(fisrt)
+    if (first == "false"){
     jQuery('#charts').empty().load('/patients/graphs/<%= @patient.id -%>?data=weight&currentWeight=' + currentWeight);
-
+    }
   }
         
   function showWeightHeightForAge(){
