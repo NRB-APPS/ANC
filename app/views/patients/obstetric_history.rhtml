@@ -110,8 +110,210 @@
 
       }
 
+      function loadSelections(){
+        __$("keyboard").style.display = "none";
+        __$("touchscreenInput" + tstCurrentPage).style.display = "none";
+        __$("inputFrame" + tstCurrentPage).style.height = "72vh";
+        __$("inputFrame" + tstCurrentPage).style.marginTop = "5vh";
+        __$("inputFrame" + tstCurrentPage).style.background = "white";
+
+        var pregnancies = __$("enter_gravida").value;
+        var delivered_pregnancies = __$("enter_number_of_deliveries").value;
+        var aborted_pregnancies = __$("enter_number_of_abortions").value;
+
+        
+        if (pregnancies > 0){
+          
+          var headerHolder = document.createElement("div");
+          headerHolder.style.height = "8vh";
+          headerHolder.style.width = "100%";
+          headerHolder.style.borderRadius = "10px";
+                   
+          var header = document.createElement("div");
+          header.id = "header";
+          header.style.width = "100%";
+          headerHolder.appendChild(header);
+
+          var t1 = document.createElement("div");
+          t1.innerHTML = "Pregnancy";
+          t1.setAttribute("class", "h-cell");
+          header.appendChild(t1);
+
+          var t2 = document.createElement("div");
+          t2.innerHTML = "Baby count";
+          t2.setAttribute("class", "h-cell");
+          header.appendChild(t2);
+
+          var t3 = document.createElement("div");
+          t3.innerHTML = "Details available?";
+          t3.setAttribute("class", "h-cell");
+          header.appendChild(t3);
+
+          __$("inputFrame" + tstCurrentPage).appendChild(headerHolder);
+
+          var container = document.createElement("div");
+          container.id = "container";
+          
+          __$("inputFrame" + tstCurrentPage).appendChild(container);
+          var table = document.createElement("div");
+          table.id = "table";
+         
+          container.appendChild(table);
+
+          for (var p = 1; p <= pregnancies; p ++ ){
+            var row = document.createElement("div");
+            row.setAttribute("class", "data-row");
+            row.id = "row_" + p;
+            if (p % 2 == 1){
+              row.style.background = "#F8F8F8";
+            }
+
+            var cell1 = document.createElement("div");
+            cell1.id = "cell_" + p + "_1";
+            cell1.style.paddingLeft = "15%";
+            cell1.setAttribute("class", "data-cell");
+            cell1.innerHTML = p + (p == 1 ? "<sup>st</sup>" : ((p == 2 ? "<sup>nd</sup>" : (p == 3 ? "<sup>rd</sup>" : "<sup>th</sup>"))));
+            row.appendChild(cell1);
+
+            var cell2 = document.createElement("div");
+            cell2.id = "cell_" + p + "_2";
+            cell2.setAttribute("class", "data-cell");
+            cell2.innerHTML = "<button class = 'minus' onmousedown = 'decrement(" +p+")'></button> <input id = 'input_"+ p +"'  value = '1' class = 'label' id = 'label"+ p + "' >  </input> <button class = 'plus' onmousedown = 'increment("+ p +")'></button>"
+            row.appendChild(cell2);
+
+            var cell3 =  document.createElement("div");
+            cell3.id = "cell_" + p + "_3";
+            cell3.setAttribute("class", "data-cell-img");
+            cell3.innerHTML = '<img id = "img_' + p +'" onclick = "checkSelection(' + p + ')" src="/images/unticked.jpg" height="45" width="45"> ';
+            row.appendChild(cell3);
+
+            table.appendChild(row);
+           
+          }
+
+          var width  = __$("row_1").offsetWidth + "px";
+          headerHolder.style.width = width;
+          header.style.width = width;
+          
+        }
+      }
+
+      function increment(pos){
+        if (parseInt( __$("input_" + pos).value) <= 7){
+          __$("input_" + pos).value = parseInt( __$("input_" + pos).value) + 1;
+        }
+      }
+
+      function decrement(pos){
+        if (parseInt( __$("input_" + pos).value) > 1){
+          __$("input_" + pos).value = parseInt( __$("input_" + pos).value) - 1;
+        }
+      }
+
+      function checkSelection(pos){
+        if (__$("img_" + pos).src.match(/unticked/)){
+          __$("img_" + pos).src = "/images/ticked.jpg";
+        }else{
+          __$("img_" + pos).src = "/images/unticked.jpg"
+        }
+      }
 
     </script>
+
+    <style>
+      #table, #header {
+        display: table;
+        table-layout:fixed;
+        -moz-user-select: none;
+      }
+
+      #table{
+        width: 100%;
+      }
+
+      #container {
+        height: 63vh;
+        width: 100%;
+        margin-top: 1vh;
+        overflow: auto;
+        border-radius: 10px;
+      }
+
+      .h-cell{
+        display: table-cell;
+        width: 30%;
+        font-style: bold;
+        vertical-align: middle;
+        height: 8vh;
+        font-size: 25px;
+        text-align: center;
+        border-radius: 5px;
+        border-width: 1px;
+        border-color: lightgray;
+        border-style: solid;
+        background: #66CCFF;
+      }
+      .data-row{
+        display: table-row;
+        width: 100%;
+
+      }
+
+      .data-cell{
+        display: table-cell;
+        width: 33%;
+        margin: 5px;
+        height: 9vh;
+        padding-left: 10%;
+        vertical-align: middle;
+        font-size: 26px;
+        border-bottom: solid 1px gray;
+        border-right: solid 1px gray;
+      }
+
+      .plus, .plus:hover {
+        background: url('/images/up_arrow.png');
+        background-repeat:no-repeat;
+        height: 90%;
+        border-width: 0px;
+        border-style: hidden;
+        outline: none;
+        -moz-outline : none;
+      }
+
+      .minus, .minus:hover {
+        background: url('/images/down_arrow.png');
+        background-repeat:no-repeat;
+        height: 90%;
+        border-style: hidden;
+        border-width: 0px;
+        outline: none;
+        -moz-outline: none;
+      }
+
+      .label {
+        font-size: 26px;
+        background: #E6E6E6;
+        width: 35px !important;
+        text-align: center;
+        -moz-user-select: none;
+      }
+
+      .data-cell-img {
+        width: 33%;
+        display: table-cell;
+        background-repeat:no-repeat;
+        border-bottom: solid 1px gray;
+      }
+
+      .data-cell-img img{
+        float: right;
+        height: 90%;
+        margin-top: 10px;
+        padding-right: 50%;
+      }
+
+    </style>
   </head>
   <body>
     <% form_tag :controller => "patients", :action => "obstetric_counts" do |f| %>
@@ -126,7 +328,7 @@
         :min => 1,
         :tt_onLoad => "document.forms[0].reset();  transformMessages();",
         :tt_onUnLoad => "if(__$('category')){__$('content').removeChild(__$('category'))}
-    if(__$('enter_gravida').value == 1){    
+    if(__$('enter_gravida').value == 1){
     __$('enter_number_of_abortions').value = 0;
     }",
         :tt_pageStyleClass => "NumbersOnly"} %>
@@ -139,7 +341,7 @@
         :condition => "__$('enter_gravida').value > 1",
         :tt_onLoad => " __$('touchscreenInput' + " +
           "tstCurrentPage).setAttribute('absoluteMax', (__$('enter_gravida').value - 1))",
-        :tt_onUnLoad => "if(__$('enter_number_of_deliveries').value == 0){    
+        :tt_onUnLoad => "if(__$('enter_number_of_deliveries').value == 0){
     }; __$('enter_number_of_abortions').setAttribute('absoluteMax', (parseInt(__$('enter_gravida').value - parseInt(__$('enter_number_of_deliveries').value) -1 )));
     __$('enter_number_of_abortions').setAttribute('absoluteMin', (parseInt(__$('enter_gravida').value - parseInt(__$('enter_number_of_deliveries').value) -1 )));
     __$('enter_number_of_abortions').setAttribute('validationRule', '[' + (parseInt(__$('enter_gravida').value) -
@@ -161,6 +363,15 @@
         :validationRule => "[0-5]",
         :validationMessage => "Check your value"
       } %>
+
+      <%= touch_text_field_tag "known pregnancies", @patient, nil,
+        {:id => "known_pregnancies",
+        :helptext => "Select pregnancies with available information",
+        :tt_onLoad => "loadSelections();",
+        :optional => "true",
+        :condition => "__$('enter_gravida').value > 0"
+      } %>
+
       <%= submit_tag 'Finish' %>
     <% end %>
   </body>
