@@ -499,7 +499,7 @@ class Reports
       :select => ["encounter.patient_id, count(*) encounter_id, drug.name instructions, " +
           "SUM(DATEDIFF(auto_expire_date, start_date)) orderer"], :group => [:patient_id],
       :conditions => ["(drug.name REGEXP ? OR drug.name REGEXP ?)  AND drug.name REGEXP ? AND (encounter_datetime >= ? " +
-          "AND encounter_datetime <= ?) AND encounter.patient_id IN (?)", "NVP", "Neverapine", "ml",
+          "AND encounter_datetime <= ?) AND encounter.patient_id IN (?)", "NVP", "Nevirapine", "ml",
         @startdate, (@startdate.to_date + @preg_range), @cohortpatients]).collect{|o| o.patient_id}
     
   end
