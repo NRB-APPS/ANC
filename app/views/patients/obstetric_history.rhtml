@@ -9,6 +9,7 @@
       var max_delivered = 1;
       var parity;
       var parsedConceptName;
+      var data = {};
 
       //-->
 
@@ -122,7 +123,7 @@
         var aborted_pregnancies = __$("enter_number_of_abortions").value;
 
         
-        if (pregnancies > 0){
+        if (delivered_pregnancies > 0){
           
           var headerHolder = document.createElement("div");
           headerHolder.style.height = "8vh";
@@ -160,7 +161,7 @@
          
           container.appendChild(table);
 
-          for (var p = 1; p <= pregnancies; p ++ ){
+          for (var p = 1; p <= delivered_pregnancies; p ++ ){
             var row = document.createElement("div");
             row.setAttribute("class", "data-row");
             row.id = "row_" + p;
@@ -187,6 +188,9 @@
             cell3.innerHTML = '<img id = "img_' + p +'" onclick = "checkSelection(' + p + ')" src="/images/unticked.jpg" height="45" width="45"> ';
             row.appendChild(cell3);
 
+            data[p] = {};
+            data[p]["condition"] = false;
+            data[p]["count"] = 1;
             table.appendChild(row);
            
           }
@@ -199,23 +203,76 @@
       }
 
       function increment(pos){
+        
         if (parseInt( __$("input_" + pos).value) <= 7){
+
           __$("input_" + pos).value = parseInt( __$("input_" + pos).value) + 1;
+          updateInput(pos);
         }
       }
 
       function decrement(pos){
+
         if (parseInt( __$("input_" + pos).value) > 1){
+
           __$("input_" + pos).value = parseInt( __$("input_" + pos).value) - 1;
+          updateInput(pos);
         }
       }
 
       function checkSelection(pos){
+
         if (__$("img_" + pos).src.match(/unticked/)){
+          
           __$("img_" + pos).src = "/images/ticked.jpg";
+          updateInput(pos, true);
         }else{
-          __$("img_" + pos).src = "/images/unticked.jpg"
+
+          __$("img_" + pos).src = "/images/unticked.jpg";
+          updateInput(pos, false);
         }
+      }
+
+      function updateInput(pos, bool){
+        
+        if (data[pos] == undefined){
+          
+          data[pos] = {};
+        }
+        
+        data[pos]["count"] = parseInt( __$("input_" + pos).value);
+
+        if (bool != undefined)
+          data[pos]["condition"] = bool;
+       
+        __$("data").value = stringfy(data);
+      }
+
+      function stringfy(hash){
+        
+        var keys = Object.keys(hash);
+        var vals = "{";
+        var cons = "{";
+        
+        for (var i = 0; i < keys.length; i ++){
+
+          vals += keys[i] + " => ";
+          cons += keys[i] + " => ";
+          
+          if (i != keys.length - 1){
+
+            vals += data[keys[i]]["count"] + ", ";
+            cons += data[keys[i]]["condition"] + ", ";
+          } else {
+
+            vals += data[keys[i]]["count"] + "}";
+            cons += data[keys[i]]["condition"] + "}";
+          }
+        }
+
+        var string = "{'values' => " + vals + ", 'conditions' => " + cons + "}";
+      
+        return string;
       }
 
     </script>
@@ -319,6 +376,11 @@
     <% form_tag :controller => "patients", :action => "obstetric_counts" do |f| %>
 
       <%= hidden_field_tag "patient_id", @patient.id %>
+
+      <%= hidden_field_tag "data", nil,
+        {
+        :id => 'data'
+      }%>
 
       <%= touch_numeric_tag "GRAVIDA", @patient, nil,
         {:id => "enter_gravida",
