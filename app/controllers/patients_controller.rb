@@ -326,11 +326,11 @@ class PatientsController < ApplicationController
     Observation.find_by_sql("
           SELECT * FROM obs WHERE person_id = #{@patient.id}
           AND concept_id = #{concept_id} AND voided = 0 AND obs_datetime <= '#{session_date}' LIMIT 10").each {|weight|
-          obs <<  [weight.obs_datetime.to_date, weight.value_text.to_f]
-          }
+      obs <<  [weight.obs_datetime.to_date, weight.value_text.to_f]
+    }
      
-     obs << [session_date.to_date, @currentWeight.to_f]
-     @obs = obs.sort_by{|atr| atr[0]}.to_json
+    obs << [session_date.to_date, @currentWeight.to_f]
+    @obs = obs.sort_by{|atr| atr[0]}.to_json
      
      
     render :template => "graphs/weight_chart", :layout => false
@@ -869,11 +869,13 @@ class PatientsController < ApplicationController
   end
 
   def obstetric_counts
-  
-    @gravida = params[:observations].collect{|obs|  obs[:value_numeric] if obs[:concept_name].match(/gravida/i)}.compact[0]   rescue 1
-    @parity = params[:observations].collect{|obs| obs[:value_numeric] if  obs[:concept_name].match(/parity/i)}.compact[0] rescue 0
-    @abortions = params[:observations].collect{|obs| obs[:value_numeric] if  obs[:concept_name].match(/number of abortions/i)}.compact[0] rescue 0
+    
+    @calc_parity = eval(params[:data])['values'].values.inject{|sum,x| sum + x } rescue nil
    
+    @gravida = params[:observations].collect{|obs|  obs[:value_numeric] if obs[:concept_name].match(/gravida/i)}.compact[0]   rescue 1
+    @parity =  params[:observations].collect{|obs| obs[:value_numeric] if  obs[:concept_name].match(/parity/i)}.compact[0] rescue 0
+    @abortions = params[:observations].collect{|obs| obs[:value_numeric] if  obs[:concept_name].match(/number of abortions/i)}.compact[0] rescue 0
+  
     @birth_year = @anc_patient.birth_year
       
     @min_birth_year = @birth_year + 13

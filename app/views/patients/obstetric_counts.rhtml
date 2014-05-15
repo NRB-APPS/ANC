@@ -9,8 +9,16 @@
       var max_delivered = 1;
       var parity;
       var parsedConceptName;
+<%
+@pre_conditions = eval(params[:data]) || {'values' => {}, 'conditions' => {}}
 
-<%@pre_conditions = eval(params[:data]) %>
+@max =   @pre_conditions['values'].values.max rescue 1
+@max_values = {1 => "No", 2 => "Twins", 3 => "Triplets", 4 => "Quadruplet", 5 => "5", 6 => "6", 7 => "7", 8 => "8"}
+%>
+
+<% if @pre_conditions['values'] && @pre_conditions['values'].length > 0 %>
+    max_delivered = parseInt(<%= @max%>);
+<%end%>
   //-->
 
   function readableMessage(){
@@ -87,7 +95,7 @@
       }
     }
   }
-
+   
   function validateInput(preg, baby_no){
 
     if (baby_no > 1){
@@ -121,7 +129,9 @@
       <%= hidden_field_tag "encounter[encounter_datetime]", session[:datetime] || Date.today %>
       <%= hidden_field_tag "encounter[provider_id]", session[:user_id] %>
 
-      <%= touch_numeric_tag "GRAVIDA", @patient, nil,
+      <%= hidden_field_tag "parity", @calc_parity %>
+
+      <%= touch_numeric_tag "GRAVIDA", @patient, @gravida,
         {:id => "enter_gravida",
         :helptext => "Gravida",
         :absoluteMin => 0,
@@ -214,7 +224,7 @@
           :absoluteMax => 10,
           :condition => "false" } %>
 
-        <%= touch_select_tag "MULTIPLE GESTATION", @patient, options_for_select([["", ""],
+        <%= touch_select_tag "MULTIPLE GESTATION", @patient, options_for_select([[@max_values[@max], @max_values[@max]],
             ["No", "No"],
             ["Twins", "Twins"],
             ["Triplets", "Triplets"],

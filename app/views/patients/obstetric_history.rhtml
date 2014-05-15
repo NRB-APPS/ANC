@@ -198,7 +198,7 @@
           var width  = __$("row_1").offsetWidth + "px";
           headerHolder.style.width = width;
           header.style.width = width;
-          
+          updateInput(1, false);
         }
       }
 
@@ -395,7 +395,6 @@
     }",
         :tt_pageStyleClass => "NumbersOnly"} %>
 
-
       <%= touch_numeric_tag "PARITY", @patient, nil,
         {:id => "enter_number_of_deliveries",
         :helptext => "Enter Number Of Delivered Pregnancies",
@@ -431,7 +430,7 @@
         :helptext => "Select pregnancies with available information",
         :tt_onLoad => "loadSelections();",
         :optional => "true",
-        :condition => "__$('enter_gravida').value > 0"
+        :condition => "__$('enter_gravida').value > 1"
       } %>
 
       <%= submit_tag 'Finish' %>
