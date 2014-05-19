@@ -63,7 +63,7 @@ class ApplicationController < GenericApplicationController
       "BP" => [flow["BP".downcase], "/encounters/new/vitals/?patient_id=#{patient.id}&bp=1", "VITALS",
         5085, nil, "TODAY", nil, true, (current_user_activities.include?("BP".downcase))],
       
-      "ANC Visit Type" => [flow["ANC Visit Type".downcase], "/patients/visit_type/?patient_id=#{patient.id}",
+      "ANC Visit Type" => [flow["ANC Visit Type".downcase], "/patients/obstetric_history/?patient_id=#{patient.id}&with_visit_type=true",
         "ANC VISIT TYPE", nil, nil, "TODAY", nil, true, (current_user_activities.include?("ANC Visit Type".downcase))],
       
       "Obstetric History" => [flow["Obstetric History".downcase], "/patients/obstetric_history/?patient_id=#{patient.id}",
