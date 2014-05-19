@@ -1,5 +1,10 @@
-# medical_history.rhtml
-
+    <style>
+    .helper {
+  display: block;
+  float:right;
+  background-color: #DEDEDE;
+  }
+</style>
 <script type="text/javascript" language="javascript">
   <!--
   tt_cancel_show = "/patients/show/<%= @patient.id %>";
@@ -17,57 +22,57 @@
   <%= touch_select_tag "ASTHMA", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
     {:id => "ever_had_asthma?",
     :tt_requireNextClick => false,
-    :helptext => "Ever Had Asthma?",
-    :tt_onLoad => "__$('nextButton').style.display='none'; showCategory('Medical History');" } %>
+    :helptext => "Ever Had Asthma? <span class='helper'>Task: Medical History</span>",
+    :tt_onLoad => "__$('nextButton').style.display='none';" } %>
   <%= touch_select_tag "HYPERTENSION", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
     {:id => "ever_had_hypertension?", 
     :tt_requireNextClick => false,
-    :tt_onLoad => "__$('nextButton').style.display='none'; showCategory('Medical History');",
-    :helptext => "Ever Had Hypertension?" } %>
+    :tt_onLoad => "__$('nextButton').style.display='none';",
+    :helptext => "Ever Had Hypertension? <span class='helper'>Task: Medical History</span>" } %>
   <%= touch_select_tag "DIABETES", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
     {:id => "ever_had_diabetes?", 
     :tt_requireNextClick => false,
-    :tt_onLoad => "__$('nextButton').style.display='none'; showCategory('Medical History');",
-    :helptext => "Ever Had Diabetes?" } %>
+    :tt_onLoad => "__$('nextButton').style.display='none';",
+    :helptext => "Ever Had Diabetes? <span class='helper'>Task: Medical History</span>" } %>
   <%= touch_select_tag "EPILEPSY", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
     {:id => "ever_had_epilepsy?", 
     :tt_requireNextClick => false,
-    :tt_onLoad => "__$('nextButton').style.display='none'; showCategory('Medical History');",
-    :helptext => "Ever Had Epilepsy?" } %>
+    :tt_onLoad => "__$('nextButton').style.display='none';",
+    :helptext => "Ever Had Epilepsy? <span class='helper'>Task: Medical History</span>" } %>
   <%= touch_select_tag "RENAL DISEASE", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
     {:id => "ever_had_renal_disease?", 
     :tt_requireNextClick => false,
-    :tt_onLoad => "__$('nextButton').style.display='none'; showCategory('Medical History');",
-    :helptext => "Ever Had Renal Disease?" } %>
+    :tt_onLoad => "__$('nextButton').style.display='none';",
+    :helptext => "Ever Had Renal Disease? <span class='helper'>Task: Medical History</span>" } %>
 
   <%= touch_select_tag "FISTULA REPAIR", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
     {:id => "ever_had_a_fistula_repair?", 
     :tt_requireNextClick => false,
-    :tt_onLoad => "__$('nextButton').style.display='none'; showCategory('Medical History');",
-    :helptext => "Ever Had A Fistula Repair?" } %>
+    :tt_onLoad => "__$('nextButton').style.display='none';",
+    :helptext => "Ever Had A Fistula Repair? <span class='helper'>Task: Medical History</span>" } %>
 
   <%= touch_select_tag "Spine or Leg Deform", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
     {:id => "do_you_have_a_spine_or_leg_deform?", 
     :tt_requireNextClick => false,
-    :tt_onLoad => "__$('nextButton').style.display='none'; showCategory('Medical History');",
-    :helptext => "Does Client have Leg or Spine Deformity?" } %>
+    :tt_onLoad => "__$('nextButton').style.display='none';",
+    :helptext => "Does Client have Leg or Spine Deformity? <span class='helper'>Task: Medical History</span>" } %>
 
   <%= touch_select_tag "Blood transfusion", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
     {:id => "blood_transfusion", 
     :tt_requireNextClick => false,
-    :tt_onLoad => "__$('nextButton').style.display='none'; showCategory('Medical History');",
-    :helptext => "Ever had a blood transfusion?" } %>
+    :tt_onLoad => "__$('nextButton').style.display='none';",
+    :helptext => "Ever had a blood transfusion? <span class='helper'>Task: Medical History</span>" } %>
 
   <%= touch_select_tag "Sexually transmitted infection", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
     {:id => "sti", 
     :tt_requireNextClick => false,
-    :tt_onLoad => "__$('nextButton').style.display='none'; showCategory('Medical History');",
-    :helptext => "Ever had a sexually transmitted infection?" } %>
+    :tt_onLoad => "__$('nextButton').style.display='none';",
+    :helptext => "Ever had a sexually transmitted infection? <span class='helper'>Task: Medical History</span>" } %>
 
   <%= touch_select_tag "Allergy", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
     {:id => "sti",
-    :tt_onLoad => "__$('nextButton').style.display='block'; showCategory('Medical History');",
-    :helptext => "Are you allergic to any drugs?" } %>
+    :tt_onLoad => "__$('nextButton').style.display='block';",
+    :helptext => "Are you allergic to any drugs? <span class='helper'>Task: Medical History</span>" } %>
 
   <%= submit_tag 'Finish' %>
 <% end %>
