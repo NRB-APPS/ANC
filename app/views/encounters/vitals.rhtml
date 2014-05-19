@@ -501,7 +501,7 @@ end
   <% if current_user.activities.include?("BP") %>
     <% if params[:bp] %>
 
-          <%= text_field_tag :showBp, nil,
+          <%#= text_field_tag :showBp, nil,
         {
         :tt_onLoad => " __$('keyboard').style.display = 'none'",
         :optional => "true",
