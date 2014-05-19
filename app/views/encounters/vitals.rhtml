@@ -501,6 +501,17 @@ end
   <% if current_user.activities.include?("BP") %>
     <% if params[:bp] %>
 
+          <%= text_field_tag :showBp, nil,
+        {
+        :tt_onLoad => " __$('keyboard').style.display = 'none'",
+        :optional => "true",
+        :tt_pageStyleClass => "NoControls NoKeyboard",
+        :condition => "",
+        :helpText => "Blood Pressure"
+      } %>
+
+
+
       <% options = default.merge({
           :id => "blood_pressure",
           :helptext => "Blood Pressure <span class='helper'>Task: Vitals</span>",
