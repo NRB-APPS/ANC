@@ -4,8 +4,7 @@ class EncountersController < ApplicationController
   def create
    
     @patient = Patient.find(params[:encounter][:patient_id])
-    # raise params.to_yaml    
-    
+        #raise params[:observations].to_yaml
     if params[:void_encounter_id]
       @encounter = Encounter.find(params[:void_encounter_id])
       @encounter.void
@@ -22,6 +21,9 @@ class EncountersController < ApplicationController
     # Observation handling
     (params[:observations] || []).each do |observation|
 
+      if encounter.type.name == 'OBSTETRIC HISTORY' && observation[:concept_name] == "PARITY" && params[:parity].present?
+        observation[:value_numeric] = params[:parity]
+      end
       # Check to see if any values are part of this observation
       # This keeps us from saving empty observations
       values = ['coded_or_text', 'coded_or_text_multiple', 'group_id', 'boolean', 'coded', 'drug', 'datetime', 'numeric', 'modifier', 'text'].map{|value_name|
@@ -166,14 +168,14 @@ class EncountersController < ApplicationController
                     ORDER BY e.encounter_datetime DESC LIMIT 1").first.encounter_id rescue []
     unless @last_vitals.blank?
       @first = "false"
-    Observation.find(:all, :conditions => ["encounter_id = ?", @last_vitals]).each {|obs|
-      @vital = {} if @vital.blank?
-      current = obs.to_s 
-      @vital["bmi"] = current.split(':')[1] if current.match(/Body/i)
-      @vital["weight"] = current.split(':')[1] if current.match(/Weight/i)
-      @vital["height"] = current.split(':')[1] if current.match(/Height/i)
-      @vital["date"] = obs.obs_datetime if @vital["date"].blank?
-    }
+      Observation.find(:all, :conditions => ["encounter_id = ?", @last_vitals]).each {|obs|
+        @vital = {} if @vital.blank?
+        current = obs.to_s
+        @vital["bmi"] = current.split(':')[1] if current.match(/Body/i)
+        @vital["weight"] = current.split(':')[1] if current.match(/Weight/i)
+        @vital["height"] = current.split(':')[1] if current.match(/Height/i)
+        @vital["date"] = obs.obs_datetime if @vital["date"].blank?
+      }
     else
       @first = "true"
     end

@@ -401,11 +401,11 @@ function checkSelections(){
         __$("lblSelectAll").click();
     }
 
-    setTimeout( 'checkSelections()', 500);
+    setTimeout( 'checkSelections()', 200);
 }
 try{
     if (selectAll){
-        setTimeout( 'checkSelections()', 500);
+        setTimeout( 'checkSelections()', 700);
     }
 }catch(e){
 
