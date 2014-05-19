@@ -52,7 +52,23 @@ class EncountersController < ApplicationController
         Observation.create(observation)        
       end
     end
+    if params[:encounter][:encounter_type_name] == 'VITALS'
+      params[:concept].each{|concept|
 
+        concept = concept.split(':')
+       
+        if ! concept[0][1].blank?
+              obs = Observation.new(
+              :concept_name => concept[0][0],
+              :person_id => @patient.person.person_id,
+              :encounter_id => encounter.id,
+              :value_text => concept[0][1],
+              :obs_datetime => encounter.encounter_datetime)
+
+              obs.save
+        end
+      }
+    end
     # Program handling
     date_enrolled = params[:programs][0]['date_enrolled'].to_time rescue nil
     date_enrolled = session[:datetime] || Time.now() if date_enrolled.blank?

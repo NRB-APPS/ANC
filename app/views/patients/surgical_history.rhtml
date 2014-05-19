@@ -1,5 +1,10 @@
-# medical_history.rhtml
-
+<style>
+    .helper {
+  display: block;
+  float:right;
+  background-color: #DEDEDE;
+  }
+</style>
 <script type="text/javascript" language="javascript">
   <!--
   tt_cancel_show = "/patients/show/<%= @patient.id %>";
@@ -67,22 +72,20 @@
   <%= select_tag "Surgicals Available", options_for_select([["Yes", "Yes"], ["No", "NO"]]),
     {
     :id => "surgicals_available",
-    :helpText => "Ever had a surgical procedure?",
-    :tt_onLoad => "showCategory('Surgical History');"
+    :helpText => "Ever had a surgical procedure?  <span class='helper'>Task: Surgical History</span>"
   } %>
 
   <%= touch_text_field_tag "Procedure Done", @patient, nil,
     {:id => "surgical1",
-    :helptext => "Surgical procedure done before",
-    :tt_onLoad => "showCategory('Surgical History');",
+    :helptext => "Surgical procedure done before  <span class='helper'>Task: Surgical History</span>",
     :ajaxURL => "/encounters/procedure_done?search_string=",
     :condition => "__$('surgicals_available').value.toUpperCase() == 'YES'"
   } %>
 
   <%= touch_date_tag "Date received", @patient, nil,
     {:id => "date_done1",
-    :helptext => "Date Procedure Done",
-    :tt_onLoad => "showCategory('Surgical History'); initializeDate();",
+    :helptext => "Date Procedure Done  <span class='helper'>Task: Surgical History</span>",
+    :tt_onLoad => "initializeDate();",
     :condition => "__$('surgical1').value.toLowerCase().trim() != 'none' && __$('surgical1').value != '' && __$('surgicals_available').value.toUpperCase() == 'YES'" } %>
 
   <% (2..8).each do |e| %>
@@ -105,17 +108,17 @@
 
     <%= touch_text_field_tag "Procedure Done", @patient, nil,
       {:id => "surgical#{e}",
-      :helptext => "#{e}#{indice} Surgical procedure done before",
+      :helptext => "#{e}#{indice} Surgical procedure done before   <span class='helper'>Task: Surgical History</span>",
       :condition => "__$('surgical#{e - 1}').value.toLowerCase().trim() != 'none' && __$('surgical#{e - 1}').value.toLowerCase().trim() != '' && __$('surgicals_available').value.toUpperCase() == 'YES'",
       :ajaxURL => "/encounters/procedure_done?nonone=true&search_string=",
-      :tt_onLoad => "showCategory('Surgical History'); setTimeout(updateNextFinish, 20)",
+      :tt_onLoad => " setTimeout(updateNextFinish, 20)",
       :optional => "true"
     } %>
 
     <%= touch_date_tag "Date received", @patient, nil,
       {:id => "date_done#{e}",
-      :helptext => "Date #{e}#{indice} Procedure Done",
-      :tt_onLoad => "showCategory('Surgical History'); initializeDate();",
+      :helptext => "Date #{e}#{indice} Procedure Done  <span class='helper'>Task: Surgical History</span>",
+      :tt_onLoad => "initializeDate();",
       :condition => "__$('surgical#{e}').value.toLowerCase().trim() != 'none' && __$('surgical#{e}').value.toLowerCase().trim() != '' && __$('surgicals_available').value.toUpperCase() == 'YES'"
     } %>
 

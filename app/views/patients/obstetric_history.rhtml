@@ -1,6 +1,13 @@
 
 <html>
   <head>
+    <style>
+    .helper {
+  display: block;
+  float:right;
+  background-color: #DEDEDE;
+  }
+</style>
     <script type="text/javascript" language="javascript">
       <!--
       tt_cancel_show = "/patients/show/<%= @patient.id %>";
@@ -406,8 +413,7 @@ session_date = session[:datetime]? session[:datetime] : Date.today
         :id => 'data'
       }%>
 
-
-      <%  if params[:with_visit_type] && params[:with_visit_type].to_s == "true" %>
+     <%  if params[:with_visit_type] && params[:with_visit_type].to_s == "true" %>
         <%= hidden_field_tag "encounter[encounter_type_name]", "ANC VISIT TYPE" %>
         <%= hidden_field_tag "encounter[patient_id]", @patient.id %>
         <%= hidden_field_tag "encounter[encounter_datetime]", session[:datetime]? session[:datetime] : DateTime.now() %>
