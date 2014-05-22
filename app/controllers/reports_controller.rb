@@ -193,11 +193,11 @@ class ReportsController < ApplicationController
 
 		@fansida__sp___number_of_tablets_given_2 = report.fansida__sp___number_of_tablets_given_2
 
-		@fefo__number_of_tablets_given_1 = report.fefo__number_of_tablets_given_1
-
     @fefo__number_of_tablets_given_2 = report.fefo__number_of_tablets_given_2
+    
+		@fefo__number_of_tablets_given_1 = @observations_total - @fefo__number_of_tablets_given_2 #report.fefo__number_of_tablets_given_1
 
-		@albendazole = report.albendazole(1)
+    @albendazole = report.albendazole(1)
     
     @albendazole_more_than_1 = report.albendazole(">1")
     @albendazole_none = @observations_total - (@albendazole + @albendazole_more_than_1)

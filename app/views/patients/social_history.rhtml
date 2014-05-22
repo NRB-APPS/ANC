@@ -1,4 +1,10 @@
-# medical_history.rhtml
+ <style>
+    .helper {
+  display: block;
+  float:right;
+  background-color: #DEDEDE;
+  }
+</style>
 
 <script type="text/javascript" language="javascript">
   <!--
@@ -16,13 +22,13 @@
 
   <%= touch_select_tag "Patient currently smokes", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
     {:id => "smoker", :tt_requireNextClick => false,
-    :helptext => "Does patient smoke?",
-    :tt_onLoad => "__$('nextButton').style.display='none'; showCategory('Social History');" } %>
+    :helptext => "Does patient smoke?  <span class='helper'>Task: Social History</span>",
+    :tt_onLoad => "__$('nextButton').style.display='none';" } %>
   <%= touch_select_tag "Patient currently consumes alcohol", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
     {:id => "alcohol",
     :tt_requireNextClick => false,
-    :tt_onLoad => "__$('nextButton').style.display='none'; showCategory('Social History');",
-    :helptext => "Does patient take alcohol?" } %>
+    :tt_onLoad => "__$('nextButton').style.display='none';",
+    :helptext => "Does patient take alcohol?  <span class='helper'>Task: Social History</span>" } %>
   <%#= touch_select_tag "Nutrition status", @patient, options_for_select([["", ""], ["Good", "Good"], ["Malnourished", "Malnourished"], ["Obese", "Obese"]]),
   {:id => "nutrition",
   :helptext => "Nutrition status" } %>
@@ -33,14 +39,14 @@
       ["Widowed", "Widowed"], ["Other", "Other"]]),
     {:id => "civil_status",
     :tt_requireNextClick => false,
-    :tt_onLoad => "__$('nextButton').style.display='none'; showCategory('Social History');",
-    :helptext => "Marital status" } %>
+    :tt_onLoad => "__$('nextButton').style.display='none';",
+    :helptext => "Marital status  <span class='helper'>Task: Social History</span>" } %>
 
   <%= touch_text_field_tag "Other civil status comment", @patient, nil,
     {
     :id => "other_civil_status",
-    :helpText => "Specify other marital status",
-    :tt_onLoad => "__$('nextButton').style.display='none'; showCategory('Social History');",
+    :helpText => "Specify other marital status  <span class='helper'>Task: Social History</span>",
+    :tt_onLoad => "__$('nextButton').style.display='none';",
     :condition => "__$('civil_status').value == 'Other'"
   } %>
 
@@ -58,15 +64,15 @@
 
   <%= touch_select_tag "Religion", @patient, options_for_select(@religions),
     {:id => "religion",
-    :tt_onLoad => "__$('nextButton').style.display='block'; showCategory('Social History');",
+    :tt_onLoad => "__$('nextButton').style.display='block';",
     :tt_pageStyleClass => "Keyboard",
-    :helptext => "Religion" } %>
+    :helptext => "Religion  <span class='helper'>Task: Social History</span>" } %>
 
   <%= touch_text_field_tag "Religion", @patient, nil,
     {
     :id => "other",
-    :helpText => "Specify other religion",
-    :tt_onLoad => "__$('nextButton').style.display='block'; showCategory('Social History');",
+    :helpText => "Specify other religion  <span class='helper'>Task: Social History</span>",
+    :tt_onLoad => "__$('nextButton').style.display='block';",
     :tt_BeforeUnLoad => "(__$('religion').value = __$('other').value); __$('religion').value = ''",
     :condition => "__$('religion').value == 'Other'"
   } %>

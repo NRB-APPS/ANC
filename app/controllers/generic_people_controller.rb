@@ -348,16 +348,26 @@ class GenericPeopleController < ApplicationController
   
   # List traditional authority containing the string given in params[:value]
   def traditional_authority
-    district_id = District.find_by_name("#{params[:filter_value]}").id
+    district_id = District.find_by_name("#{params[:filter_value]}").id rescue nil
     traditional_authority_conditions = ["name LIKE (?) AND district_id = ?", "%#{params[:search_string]}%", district_id]
 
-    traditional_authorities = TraditionalAuthority.find(:all,:conditions => traditional_authority_conditions, :order => 'name')
+    traditional_authorities = TraditionalAuthority.find(:all,:conditions => traditional_authority_conditions, :order => 'name') rescue []
     traditional_authorities = traditional_authorities.map do |t_a|
       "<li value='#{t_a.name}'>#{t_a.name}</li>"
     end
     render :text => traditional_authorities.join('') + "<li value='Other'>Other</li>" and return
   end
 
+  def traditional_authority_for
+    district_id = District.find_by_name("#{params[:filter_value]}").id
+    traditional_authority_conditions = ["name LIKE (?) AND district_id = ?", "%#{params[:search_string]}%", district_id]
+
+    traditional_authorities = TraditionalAuthority.find(:all,:conditions => traditional_authority_conditions, :order => 'name')
+    traditional_authorities = traditional_authorities.map do |t_a|
+      t_a.name
+    end
+    render :text => (traditional_authorities + ["Other"]).join('|') and return
+  end
   # Regions containing the string given in params[:value]
   def region_of_origin
     region_conditions = ["name LIKE (?)", "%#{params[:value]}%"]
@@ -393,6 +403,17 @@ class GenericPeopleController < ApplicationController
     render :text => districts.join('') + "<li value='Other'>Other</li>" and return
   end
 
+  def districts_for
+    region_id = Region.find_by_name("#{params[:filter_value]}").id
+    region_conditions = ["name LIKE (?) AND region_id = ? ", "%#{params[:search_string]}%", region_id]
+
+    districts = District.find(:all,:conditions => region_conditions, :order => 'name')
+    districts = districts.map do |d|
+      d.name
+    end
+    render :text => (districts + ["Other"]).join('|')  and return
+  end
+
   def tb_initialization_district
     districts = District.find(:all, :order => 'name')
     districts = districts.map do |d|
@@ -403,10 +424,10 @@ class GenericPeopleController < ApplicationController
 
   # Villages containing the string given in params[:value]
   def village
-    traditional_authority_id = TraditionalAuthority.find_by_name("#{params[:filter_value]}").id
+    traditional_authority_id = TraditionalAuthority.find_by_name("#{params[:filter_value]}").id rescue nil
     village_conditions = ["name LIKE (?) AND traditional_authority_id = ?", "%#{params[:search_string]}%", traditional_authority_id]
 
-    villages = Village.find(:all,:conditions => village_conditions, :order => 'name')
+    villages = Village.find(:all,:conditions => village_conditions, :order => 'name') rescue []
     villages = villages.map do |v|
       "<li value='#{v.name}'>#{v.name}</li>"
     end
@@ -415,9 +436,14 @@ class GenericPeopleController < ApplicationController
   
   # Landmark containing the string given in params[:value]
   def landmark
-    landmarks = PersonAddress.find(:all, :select => "DISTINCT address1" , :conditions => ["city_village = (?) AND address1 LIKE (?)", "#{params[:filter_value]}", "#{params[:search_string]}%"])
+    #landmarks = PersonAddress.find(:all, :select => "DISTINCT address1" , :conditions => ["city_village = (?) AND address1 LIKE (?)", "#{params[:filter_value]}", "#{params[:search_string]}%"])
+    # landmarks = landmarks.map do |v|
+    #  "<li value='#{v.addresss1}'>#{v.addresss1}</li>"
+    #end
+
+    landmarks = ["", "Market", "School", "Police", "Church", "Borehole", "Graveyard"]
     landmarks = landmarks.map do |v|
-      "<li value='#{v.address1}'>#{v.address1}</li>"
+      "<li value='#{v}'>#{v}</li>"
     end
     render :text => landmarks.join('') + "<li value='Other'>Other</li>" and return
   end
@@ -549,7 +575,7 @@ class GenericPeopleController < ApplicationController
   def occupations
     values = ['','Driver','Housewife','Messenger','Business','Farmer','Salesperson','Teacher',
       'Student','Security guard','Domestic worker', 'Police','Office worker',
-     'Mechanic','Prisoner','Craftsman','Healthcare Worker','Soldier'].sort.concat(["Other"])
+      'Mechanic','Prisoner','Craftsman','Healthcare Worker','Soldier'].sort.concat(["Other"])
     values.concat(["Unknown"]) if !session[:datetime].blank?
     values
   end

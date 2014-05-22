@@ -70,6 +70,22 @@
           &nbsp;<%= (!@fistula.nil? ? (@fistula == "NO" ? "NO" : "YES") : "") %>&nbsp;
         </td>
       </tr>
+         <tr>
+        <td style="padding-left: 30px;">
+          Blood transfusion
+        </td>
+        <td style="border: 1px solid #000;"
+            align="left" <%= (@blood_transfusion != "NO" ? "class='selected'" : "") %>>
+          &nbsp;<%= (!@blood_transfusion.nil? ? (@blood_transfusion == "NO" ? "NO" : "YES") : "") %>&nbsp;
+        </td>
+        <td style="padding-left: 30px;">
+          STI
+        </td>
+        <td style="border: 1px solid #000;"
+            align="left" <%= (@sti != "NO" ? "class='selected'" : "") %>>
+          &nbsp;<%= (!@sti.nil? ? (@sti == "NO" ? "NO" : "YES") : "") %>&nbsp;
+        </td>
+      </tr>
       <tr>
         <td style="padding-left: 30px;">
           Leg/Spine deformation

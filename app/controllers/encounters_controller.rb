@@ -2,9 +2,9 @@ class EncountersController < ApplicationController
   before_filter :find_patient, :except => [:void, :probe_lmp]
 
   def create
+   
     @patient = Patient.find(params[:encounter][:patient_id])
-    # raise params.to_yaml    
-    
+    #raise params[:observations].to_yaml
     if params[:void_encounter_id]
       @encounter = Encounter.find(params[:void_encounter_id])
       @encounter.void
@@ -21,6 +21,11 @@ class EncountersController < ApplicationController
     # Observation handling
     (params[:observations] || []).each do |observation|
 
+      next if observation[:concept_name].blank?
+
+      if encounter.type.name == 'OBSTETRIC HISTORY' && observation[:concept_name] == "PARITY" && params[:parity].present?
+        observation[:value_numeric] = params[:parity]
+      end
       # Check to see if any values are part of this observation
       # This keeps us from saving empty observations
       values = ['coded_or_text', 'coded_or_text_multiple', 'group_id', 'boolean', 'coded', 'drug', 'datetime', 'numeric', 'modifier', 'text'].map{|value_name|
@@ -49,7 +54,23 @@ class EncountersController < ApplicationController
         Observation.create(observation)        
       end
     end
+    if params[:encounter][:encounter_type_name] == 'VITALS'
+      params[:concept].each{|concept|
 
+        concept = concept.split(':')
+       
+        if ! concept[0][1].blank?
+              obs = Observation.new(
+              :concept_name => concept[0][0],
+              :person_id => @patient.person.person_id,
+              :encounter_id => encounter.id,
+              :value_text => concept[0][1],
+              :obs_datetime => encounter.encounter_datetime)
+
+              obs.save
+        end
+      }
+    end
     # Program handling
     date_enrolled = params[:programs][0]['date_enrolled'].to_time rescue nil
     date_enrolled = session[:datetime] || Time.now() if date_enrolled.blank?
@@ -139,6 +160,27 @@ class EncountersController < ApplicationController
     @weeks = @anc_patient.fundus(session_date.to_date).to_i rescue 0
        
     @pregnancystart = session_date.to_date - (@weeks rescue 0).week
+    @last_vitals = Encounter.find_by_sql("
+                    SELECT * FROM encounter e
+                    INNER JOIN encounter_type et ON et.encounter_type_id = e.encounter_type
+                    WHERE et.name = 'VITALS'
+                    AND e.voided = 0
+                    AND e.patient_id = #{params[:patient_id]}
+                    AND e.encounter_datetime < '#{d.strftime('%Y-%m-%d 23:59:59')}'
+                    ORDER BY e.encounter_datetime DESC LIMIT 1").first.encounter_id rescue []
+    unless @last_vitals.blank?
+      @first = "false"
+      Observation.find(:all, :conditions => ["encounter_id = ?", @last_vitals]).each {|obs|
+        @vital = {} if @vital.blank?
+        current = obs.to_s
+        @vital["bmi"] = current.split(':')[1] if current.match(/Body/i)
+        @vital["weight"] = current.split(':')[1] if current.match(/Weight/i)
+        @vital["height"] = current.split(':')[1] if current.match(/Height/i)
+        @vital["date"] = obs.obs_datetime if @vital["date"].blank?
+      }
+    else
+      @first = "true"
+    end
     
     @preg_encounters = @patient.encounters.find(:all, :conditions => ["voided = 0 AND encounter_datetime >= ? AND encounter_datetime <= ?",
         @current_range[0]["START"], @current_range[0]["END"]]) rescue []
@@ -316,6 +358,16 @@ class EncountersController < ApplicationController
     @procedure_done.delete_if{|procedure| !procedure.match(/#{params[:search_string]}/i)}
     
     render :text => "<li>" + @procedure_done.join("</li><li>") + "</li>"
+  end
+
+  def yes_no_options    
+   
+    render :text => (["Yes", "No"]).join('|')  and return
+  end
+
+  def hemorrhage_options
+
+    render :text => (["No", "APH", "PPH"]).join('|')  and return
   end
   
 end
