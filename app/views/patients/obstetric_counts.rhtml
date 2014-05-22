@@ -205,7 +205,7 @@
         }
       }
 
-      __$("2_2").style.display = "none";
+      __$("2_2").style.display = "none";     
       __$("1_2").style.borderBottom = "1px solid";
       __$("2_1").style.borderRight = "1px solid";
      
@@ -257,14 +257,17 @@
           if (this.getAttribute("target") == 'pre_eclampsia' && this.innerHTML.match(/Yes/i)){
           
             __$("2_2").style.display = "table-cell";
+            __$("2_2").style.opacity = 1
             __$("1_2").style.borderBottom = "hidden";
             __$("2_1").style.borderRight = "hidden";
           } else if (this.getAttribute("target") == 'pre_eclampsia' && this.innerHTML.match(/No/i)){
             
             __$("eclampsia").value = ""
-            __$("2_2").style.display = "none";
+          
             __$("1_2").style.borderBottom = "1px solid";
             __$("2_1").style.borderRight = "1px solid";
+          
+            hideMsg("2_2");           
           }
                 
           updateTouchscreenInput(this);
@@ -292,6 +295,34 @@
         }, 350);
     
     }
+  }
+
+  function fade(div, opacity){
+   
+    __$(div).style.opacity = opacity;
+    if (opacity >= 0){
+      opacity = opacity - 0.01;
+      setTimeout(function(){fade(div, opacity)}, 5)
+    }
+    else{
+      __$(div).style.display = "none";
+    }
+  }
+
+  function fadeOut(div, opacity){
+
+    __$(div).style.opacity = opacity;
+    if (opacity <= 1){
+      opacity = opacity + 0.01;
+      setTimeout(function(){fade(div, opacity)}, 5)
+    }
+  }
+  function hideMsg(div){
+    setTimeout(function(){fade(div, 1);}, 10);
+  }
+
+  function showMsg(div){
+    setTimeout(function(){fadeOut(div, 0);}, 10);
   }
 
     </script>
