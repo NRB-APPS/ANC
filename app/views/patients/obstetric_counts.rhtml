@@ -204,6 +204,10 @@
           
         }
       }
+
+      __$("2_2").style.display = "none";
+      __$("1_2").style.borderBottom = "1px solid";
+      __$("2_1").style.borderRight = "1px solid";
      
     }
   }
@@ -248,7 +252,20 @@
         li.innerHTML = data[i];
         li.onmousedown = function(){
 
-          __$(this.getAttribute("target")).value = this.getAttribute("value");         
+          __$(this.getAttribute("target")).value = this.getAttribute("value");
+
+          if (this.getAttribute("target") == 'pre_eclampsia' && this.innerHTML.match(/Yes/i)){
+          
+            __$("2_2").style.display = "table-cell";
+            __$("1_2").style.borderBottom = "hidden";
+            __$("2_1").style.borderRight = "hidden";
+          } else if (this.getAttribute("target") == 'pre_eclampsia' && this.innerHTML.match(/No/i)){
+                       
+            __$("2_2").style.display = "none";
+            __$("1_2").style.borderBottom = "1px solid";
+            __$("2_1").style.borderRight = "1px solid";
+          }
+                
           updateTouchscreenInput(this);
         }
 
@@ -267,6 +284,7 @@
       }
 
       __$(dom_id).appendChild(ul);
+
       if (n == "table")
         setTimeout(function(){
           __$('holder').style.display = n;
@@ -612,7 +630,7 @@
 
       <%= touch_select_tag "HEMORRHAGE", @patient, options_for_select([["", ""], ["No", "No"], ["APH", "APH"], ["PPH", "PPH"]]),
         {:id => "hemorrhage",
-        :helptext => "Ever Had Hemorrhage",
+        :helptext => "Ever Had Hemorrhage?",
         :tt_onLoad => "showCategory('Obstetric History'); parsedConceptName = 'HEMORRHAGE'",
         :tt_onUnLoad => "parsedConceptName = ''",
         :condition => "false"
@@ -620,14 +638,14 @@
 
       <%= touch_select_tag "PRE-ECLAMPSIA", @patient, options_for_select([["", ""], ["No", "No"], ["Yes", "Yes"]]),
         {:id => "pre_eclampsia",
-        :helptext => "Ever Had Pre-Eclampsia",
+        :helptext => "Ever Had Pre-Eclampsia?",
         :tt_onLoad => "showCategory('Obstetric History'); parsedConceptName = 'PRE-ECLAMPSIA'",
         :tt_onUnLoad => "parsedConceptName = ''",
         :condition => "false" } %>
 
       <%= touch_select_tag "ECLAMPSIA", @patient, options_for_select([["", ""], ["No", "No"], ["Yes", "Yes"]]),
         {:id => "eclampsia",
-        :helptext => "Ever Had Eclampsia",
+        :helptext => "Ever Had Eclampsia?",
         :tt_onLoad => "showCategory('Obstetric History'); parsedConceptName = 'ECLAMPSIA'",
         :tt_onUnLoad => "parsedConceptName = ''",
         :condition => "false" } %>

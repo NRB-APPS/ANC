@@ -663,6 +663,18 @@ class PatientsController < ApplicationController
       :conditions => ["concept_id = ?", ConceptName.find_by_name("Date Received").concept_id]
       ).value_datetime.to_date.strftime('%d-%b-%Y') rescue "Unknown" })"} rescue []
 
+    @blood_transfusion = Observation.find(:last, :conditions => ["person_id = ? AND encounter_id IN (?) AND concept_id = ?",
+        @patient.id, Encounter.find(:all, :conditions => ["patient_id = ?", @patient.id]).collect{|e| e.encounter_id},
+        ConceptName.find_by_name('BLOOD TRANSFUSION').concept_id]).answer_string.upcase.squish rescue nil
+
+    @blood_transfusion = Observation.find(:last, :conditions => ["person_id = ? AND encounter_id IN (?) AND concept_id = ?",
+        @patient.id, Encounter.find(:all, :conditions => ["patient_id = ?", @patient.id]).collect{|e| e.encounter_id},
+        ConceptName.find_by_name('BLOOD TRANSFUSION').concept_id]).answer_string.upcase.squish rescue nil
+
+     @sti = Observation.find(:last, :conditions => ["person_id = ? AND encounter_id IN (?) AND concept_id = ?",
+        @patient.id, Encounter.find(:all, :conditions => ["patient_id = ?", @patient.id]).collect{|e| e.encounter_id},
+        ConceptName.find_by_name('Sexually transmitted infection').concept_id]).answer_string.upcase.squish rescue nil
+
     @age = @anc_patient.age rescue 0
 
     render :layout => false

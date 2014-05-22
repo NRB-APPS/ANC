@@ -21,6 +21,8 @@ class EncountersController < ApplicationController
     # Observation handling
     (params[:observations] || []).each do |observation|
 
+      next if observation[:concept_name].blank?
+
       if encounter.type.name == 'OBSTETRIC HISTORY' && observation[:concept_name] == "PARITY" && params[:parity].present?
         observation[:value_numeric] = params[:parity]
       end
