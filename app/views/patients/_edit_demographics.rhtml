@@ -293,7 +293,7 @@
       :field_type => 'number',
       :absoluteMin => "1890",
       :min => "1940",
-      :absoluteMax => (session[:datetime].to_date || Date.today),
+      :absoluteMax => (session[:datetime].to_date rescue Date.today),
       :tt_pageStyleClass => "Numeric NumbersOnly",
       :tt_onLoad => 'seen(tstCurrentPage);' }  %>
 
