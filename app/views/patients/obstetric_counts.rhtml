@@ -173,9 +173,9 @@
           heada.style.height = "40px";
           heada.innerHTML = helpText;
           heada.style.marginTop = "5px";
-          heada.style.background = "lightgreen";
+          heada.style.background = "lightgray";
           heada.style.borderRadius = "3px";
-          heada.style.border = "1px solid";
+          heada.style.border = "2px gray solid";
           heada.style.fontSize = "28px";
           heada.style.marginLeft = "5px";
           heada.style.marginRight = "5px";
@@ -260,7 +260,8 @@
             __$("1_2").style.borderBottom = "hidden";
             __$("2_1").style.borderRight = "hidden";
           } else if (this.getAttribute("target") == 'pre_eclampsia' && this.innerHTML.match(/No/i)){
-                       
+            
+            __$("eclampsia").value = ""
             __$("2_2").style.display = "none";
             __$("1_2").style.borderBottom = "1px solid";
             __$("2_1").style.borderRight = "1px solid";
