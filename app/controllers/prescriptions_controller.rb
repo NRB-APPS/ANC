@@ -608,5 +608,9 @@ class PrescriptionsController < ApplicationController
 		end
 
 	end
-    
+
+	def psb_challenge
+		@drugs = Drug.find(:all, :order=>"name ASC")
+	end
+
 end
