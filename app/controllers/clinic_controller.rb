@@ -19,6 +19,7 @@ class ClinicController < GenericClinicController
   def reports
     @reports = [#['/reports/select/','Booking Cohort Report'],
       ['/reports/report_limits', 'Monthly Report'] ,
+      ['/prescriptions/psb_challenge', 'Prescribe'] ,
       ['/reports/select?type=anc_cohort', 'Booking Cohort Report']]
 
     # render :template => 'clinic/reports', :layout => 'clinic'

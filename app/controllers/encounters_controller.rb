@@ -4,7 +4,7 @@ class EncountersController < ApplicationController
   def create
    
     @patient = Patient.find(params[:encounter][:patient_id])
-        #raise params[:observations].to_yaml
+    #raise params[:observations].to_yaml
     if params[:void_encounter_id]
       @encounter = Encounter.find(params[:void_encounter_id])
       @encounter.void
@@ -20,6 +20,8 @@ class EncountersController < ApplicationController
 
     # Observation handling
     (params[:observations] || []).each do |observation|
+
+      next if observation[:concept_name].blank?
 
       if encounter.type.name == 'OBSTETRIC HISTORY' && observation[:concept_name] == "PARITY" && params[:parity].present?
         observation[:value_numeric] = params[:parity]
@@ -356,6 +358,16 @@ class EncountersController < ApplicationController
     @procedure_done.delete_if{|procedure| !procedure.match(/#{params[:search_string]}/i)}
     
     render :text => "<li>" + @procedure_done.join("</li><li>") + "</li>"
+  end
+
+  def yes_no_options    
+   
+    render :text => (["Yes", "No"]).join('|')  and return
+  end
+
+  def hemorrhage_options
+
+    render :text => (["No", "APH", "PPH"]).join('|')  and return
   end
   
 end

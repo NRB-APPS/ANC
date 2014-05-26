@@ -608,5 +608,20 @@ class PrescriptionsController < ApplicationController
 		end
 
 	end
-    
+
+	def psb_challenge
+		@drugs = Drug.find(:all, :order=>"name ASC")
+	end
+	
+	def ajax_psb_challenge
+		search_string = params[:s]
+		drugs = Drug.find(:all,:order=>"name ASC", :conditions => ["name LIKE (?)","#{search_string}%"])
+		search_results = ""
+		drugs.each do |d|
+			dosage = d.dose_strength.to_s + " " + d.units.to_s
+			search_results += "#{d.name}@!#{dosage};"
+		end
+		render :text => search_results
+	end
+
 end

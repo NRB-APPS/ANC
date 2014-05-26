@@ -663,6 +663,18 @@ class PatientsController < ApplicationController
       :conditions => ["concept_id = ?", ConceptName.find_by_name("Date Received").concept_id]
       ).value_datetime.to_date.strftime('%d-%b-%Y') rescue "Unknown" })"} rescue []
 
+    @blood_transfusion = Observation.find(:last, :conditions => ["person_id = ? AND encounter_id IN (?) AND concept_id = ?",
+        @patient.id, Encounter.find(:all, :conditions => ["patient_id = ?", @patient.id]).collect{|e| e.encounter_id},
+        ConceptName.find_by_name('BLOOD TRANSFUSION').concept_id]).answer_string.upcase.squish rescue nil
+
+    @blood_transfusion = Observation.find(:last, :conditions => ["person_id = ? AND encounter_id IN (?) AND concept_id = ?",
+        @patient.id, Encounter.find(:all, :conditions => ["patient_id = ?", @patient.id]).collect{|e| e.encounter_id},
+        ConceptName.find_by_name('BLOOD TRANSFUSION').concept_id]).answer_string.upcase.squish rescue nil
+
+     @sti = Observation.find(:last, :conditions => ["person_id = ? AND encounter_id IN (?) AND concept_id = ?",
+        @patient.id, Encounter.find(:all, :conditions => ["patient_id = ?", @patient.id]).collect{|e| e.encounter_id},
+        ConceptName.find_by_name('Sexually transmitted infection').concept_id]).answer_string.upcase.squish rescue nil
+
     @age = @anc_patient.age rescue 0
 
     render :layout => false
@@ -865,11 +877,48 @@ class PatientsController < ApplicationController
   end
 
   def obstetric_history
-    
+
+    if ((@patient.encounters.find_by_encounter_type(EncounterType.find_by_name("Obstetric History")).blank?) rescue true)
+
+      @obs_present = false
+    else
+      
+      @obs_present = true
+    end
+
+    @current_user_activities = current_user.activities.collect{|u| u.downcase}
   end
 
   def obstetric_counts
-    
+ 
+    if params[:with_visit_type] && params[:encounter]
+
+      #create visit encounter
+      encounter = Encounter.new(params[:encounter])
+      encounter.encounter_datetime = session[:datetime] unless session[:datetime].blank?
+      encounter.save
+
+      #create visit observation
+      visit_ob = params[:observations].collect{|o| o if o[:concept_name].match(/Type of visit/i)}.first rescue {}
+     
+      if visit_ob
+
+        Observation.create(
+          :encounter_id => encounter.id,
+          :value_numeric => visit_ob[:value_numeric],
+          :obs_datetime => (session[:datetime].to_date rescue Date.today),
+          :concept_id => ConceptName.find_by_name(visit_ob[:concept_name]).concept_id,
+          :location_id => encounter.location_id,
+          :person_id => visit_ob[:patient_id]
+        )
+      end
+
+      if ((params[:observations].length == 1) rescue false)
+       
+        redirect_to next_task(@patient)
+      end
+    end
+   
     @calc_parity = eval(params[:data])['values'].values.inject{|sum,x| sum + x } rescue nil
    
     @gravida = params[:observations].collect{|obs|  obs[:value_numeric] if obs[:concept_name].match(/gravida/i)}.compact[0]   rescue 1

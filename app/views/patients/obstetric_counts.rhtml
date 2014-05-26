@@ -119,8 +119,227 @@
         
   }
 
- 
+  function loadSplitSelections(arr){
+    //array format [url, input_id, helpText]
+    var arr = [["/encounters/yes_no_options", "ever_had_symphysiotomy"],
+      ["/encounters/hemorrhage_options", "hemorrhage"],
+      ["/encounters/yes_no_options", "pre_eclampsia"],
+      ["/encounters/yes_no_options", "eclampsia"]
+    ];
+
+    var count = arr.length;
+    var n = Math.floor(Math.sqrt(count));
+    var v_count = Math.ceil(count/n);
+    var h_count = Math.ceil(count/n);
+    var e_count = count % n;
+    
+    __$("keyboard").style.display = "none";
+    __$("touchscreenInput" + tstCurrentPage).style.display = "none";
+    __$("inputFrame" + tstCurrentPage).style.height = "72vh";
+    __$("inputFrame" + tstCurrentPage).style.marginTop = "5vh";
+    //__$("inputFrame" + tstCurrentPage).style.background = "lightblue";
+   
+    if (count > 0){
+      
+      var n = 0;
+      var holder = document.createElement("div");
+      holder.id = 'holder';
+      holder.style.height = "72vh";
+      holder.style.width = "100%";
+      holder.style.display = "none";
+      holder.setAttribute("class", "options");
+      holder.style.borderRadius = "5px";
+      holder.style.background = "white";
+      __$("inputFrame" + tstCurrentPage).appendChild(holder);
+      
+      for (var r = 1; r <= v_count; r ++){
+
+        var row = document.createElement("div");
+        row.id = r;
+        row.style.display = "table-row";
+        row.setAttribute("class", "row");
+        holder.appendChild(row);
+
+        for(var c = 1; c <= h_count; c ++){
+
+          var cell = document.createElement("div");
+          cell.id = r + "_" + c;
+          cell.style.display = "table-cell";
+          cell.setAttribute("class", "cell");
+          cell.style.background = "white";
+
+          var helpText = __$(arr[n][1]).getAttribute("helpText");
+          var heada = document.createElement("div");
+          heada.style.height = "40px";
+          heada.innerHTML = helpText;
+          heada.style.marginTop = "5px";
+          heada.style.background = "lightgray";
+          heada.style.borderRadius = "3px";
+          heada.style.border = "2px gray solid";
+          heada.style.fontSize = "28px";
+          heada.style.marginLeft = "5px";
+          heada.style.marginRight = "5px";
+          cell.appendChild(heada);
+
+          if(c != 1){
+            cell.style.borderLeft = "1px solid";
+          }
+
+          if(r != 1){
+            cell.style.borderTop = "1px solid";
+          }
+       
+          cell.style.height = ((72/v_count) - 2) + "vh";
+          cell.style.width = ((100/h_count)) + "%";
+          row.appendChild(cell);          
+
+          n ++;
+          if (n != arr.length - 1){
+           
+            ajaxCustomRequest(arr[n - 1][0], arr[n - 1][1], "", (r + "_" + c));
+          }else{
+           
+            ajaxCustomRequest(arr[n - 1][0], arr[n - 1][1], "table", (r + "_" + c));
+          }
+          
+        }
+      }
+
+      __$("2_2").style.display = "none";     
+      __$("1_2").style.borderBottom = "1px solid";
+      __$("2_1").style.borderRight = "1px solid";
+     
+    }
+  }
+
+  function ajaxCustomRequest(aUrl, id, n, dom_id) {
+
+    var httpRequest = new XMLHttpRequest();
+    httpRequest.onreadystatechange = function() {
+      handleCustomResult(httpRequest, id, n, dom_id);
+    };
+    try {
+      httpRequest.open('GET', aUrl, true);
+      httpRequest.send(null);
+    } catch(e){
+    }
+  }
+
+  function handleCustomResult(aXMLHttpRequest, id, n, dom_id) {
+    
+    if (!aXMLHttpRequest) return;
+
+    if (aXMLHttpRequest.readyState == 4 && (aXMLHttpRequest.status == 200 ||
+      aXMLHttpRequest.status == 304)) {
+
+      var result = aXMLHttpRequest.responseText;
+      
+      //__$(dom_id).innerHTML = "";
+
+      var data = result.split("|");
+
+      var ul = document.createElement("ul");
+      ul.style.paddingLeft = "5px";
+      ul.style.paddingRight = "5px";
+           
+      for(var i = 0; i < data.length; i ++){
+
+        var li = document.createElement("li")
+        li.setAttribute("class", "cell-data");
+        li.setAttribute("target", id);
+        li.value = data[i];
+        li.setAttribute("value", data[i]);
+        li.innerHTML = data[i];
+        li.onmousedown = function(){
+
+          __$(this.getAttribute("target")).value = this.getAttribute("value");
+
+          if (this.getAttribute("target") == 'pre_eclampsia' && this.innerHTML.match(/Yes/i)){
+          
+            __$("2_2").style.display = "table-cell";
+            __$("2_2").style.opacity = 1
+            __$("1_2").style.borderBottom = "hidden";
+            __$("2_1").style.borderRight = "hidden";
+          } else if (this.getAttribute("target") == 'pre_eclampsia' && this.innerHTML.match(/No/i)){
+            
+            __$("eclampsia").value = ""
+          
+            __$("1_2").style.borderBottom = "1px solid";
+            __$("2_1").style.borderRight = "1px solid";
+          
+            hideMsg("2_2");           
+          }
+                
+          updateTouchscreenInput(this);
+        }
+
+        if(i % 2 == 0){
+       
+          li.className = "even";
+          li.setAttribute("group", "even");
+          
+        } else {
+          
+          li.className = "odd";
+          li.setAttribute("group", "odd");
+        }
+
+        ul.appendChild(li);
+      }
+
+      __$(dom_id).appendChild(ul);
+
+      if (n == "table")
+        setTimeout(function(){
+          __$('holder').style.display = n;
+        }, 350);
+    
+    }
+  }
+
+  function fade(div, opacity){
+   
+    __$(div).style.opacity = opacity;
+    if (opacity >= 0){
+      opacity = opacity - 0.01;
+      setTimeout(function(){fade(div, opacity)}, 5)
+    }
+    else{
+      __$(div).style.display = "none";
+    }
+  }
+
+  function fadeOut(div, opacity){
+
+    __$(div).style.opacity = opacity;
+    if (opacity <= 1){
+      opacity = opacity + 0.01;
+      setTimeout(function(){fade(div, opacity)}, 5)
+    }
+  }
+  function hideMsg(div){
+    setTimeout(function(){fade(div, 1);}, 10);
+  }
+
+  function showMsg(div){
+    setTimeout(function(){fadeOut(div, 0);}, 10);
+  }
+
     </script>
+
+    <style>
+
+      li.highlighted {
+        background-color: lightblue;
+      }
+      li {
+
+        cursor: pointer;
+        font-size: 1.5em;
+        margin: 2px;
+        -moz-user-select: none;
+      }
+    </style>
   </head>
   <body>
     <% form_tag :controller => "encounters", :action => "create" do |f| %>
@@ -438,30 +657,38 @@
         :helptext => "Ever Had Symphysiotomy?",
         :tt_onLoad => "showCategory('Obstetric History'); parsedConceptName = 'SYMPHYSIOTOMY'",
         :tt_onUnLoad => "parsedConceptName = ''",
-        :condition => "deliveries > 0"
+        :condition => "false"
       } %>
 
       <%= touch_select_tag "HEMORRHAGE", @patient, options_for_select([["", ""], ["No", "No"], ["APH", "APH"], ["PPH", "PPH"]]),
         {:id => "hemorrhage",
-        :helptext => "Ever Had Hemorrhage",
+        :helptext => "Ever Had Hemorrhage?",
         :tt_onLoad => "showCategory('Obstetric History'); parsedConceptName = 'HEMORRHAGE'",
         :tt_onUnLoad => "parsedConceptName = ''",
-        :condition => "__$('enter_gravida').value > 1"
+        :condition => "false"
       } %>
 
       <%= touch_select_tag "PRE-ECLAMPSIA", @patient, options_for_select([["", ""], ["No", "No"], ["Yes", "Yes"]]),
         {:id => "pre_eclampsia",
-        :helptext => "Ever Had Pre-Eclampsia",
+        :helptext => "Ever Had Pre-Eclampsia?",
         :tt_onLoad => "showCategory('Obstetric History'); parsedConceptName = 'PRE-ECLAMPSIA'",
         :tt_onUnLoad => "parsedConceptName = ''",
-        :condition => "__$('enter_gravida').value > 1" } %>
+        :condition => "false" } %>
 
       <%= touch_select_tag "ECLAMPSIA", @patient, options_for_select([["", ""], ["No", "No"], ["Yes", "Yes"]]),
         {:id => "eclampsia",
-        :helptext => "Ever Had Eclampsia",
+        :helptext => "Ever Had Eclampsia?",
         :tt_onLoad => "showCategory('Obstetric History'); parsedConceptName = 'ECLAMPSIA'",
         :tt_onUnLoad => "parsedConceptName = ''",
-        :condition => "__$('enter_gravida').value > 1 && __$('pre_eclampsia').value == 'Yes'" } %>
+        :condition => "false" } %>
+
+      <%= touch_text_field_tag "", @patient, nil,
+        {:id => "complications",
+        :helptext => "Previous complications",
+        :tt_onLoad => "loadSplitSelections();",
+        :optional => "true",
+        :condition => "__$('enter_gravida').value > 1"
+      } %>
 
       <%= submit_tag 'Finish' %>
     <% end %>
