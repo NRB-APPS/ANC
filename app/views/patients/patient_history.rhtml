@@ -54,7 +54,7 @@
         <div style="display: table-cell">
           <% if current_user.activities.include?("Surgical History") %>
             <button class="blue"
-                    onclick="<%= "window.location = '/patients/surgical_history/?patient_id=#{@patient.id}'" %>">
+                    onclick="<%= "window.location = '/patients/surgical_history/?patient_id=#{@patient.id}&update=true'" %>">
               <span><%= (@encounters.include?("SURGICAL HISTORY") ? "Update Surgical History" : "Surgical History") %></span>
             </button>
           <% end %>
@@ -64,7 +64,7 @@
         <div style="display: table-cell">
           <% if current_user.activities.include?("Medical History") %>
             <button class="blue"
-                    onclick="<%= "window.location = '/patients/medical_history/?patient_id=#{@patient.id}'" %>">
+                    onclick="<%= "window.location = '/patients/medical_history/?patient_id=#{@patient.id}&update=true'" %>">
               <span><%= (@encounters.include?("MEDICAL HISTORY") ? "Update Medical History" : "Medical History") %></span>
             </button>
           <% end %>
@@ -72,7 +72,7 @@
         <div style="display: table-cell">
           <% if current_user.activities.include?("Social History") %>
             <button  class="blue"
-                     onclick="<%= "window.location = '/patients/social_history/?patient_id=#{@patient.id}'" %>">
+                     onclick="<%= "window.location = '/patients/social_history/?patient_id=#{@patient.id}&update=true'" %>">
               <span><%= (@encounters.include?("SOCIAL HISTORY") ? "Update Social History" : "Social History") %></span>
             </button>
           <% end %>
@@ -82,7 +82,7 @@
         <div style="display: table-cell">
         </div>
         <div style="display: table-cell">  
-          <button class="blue" onclick="window.location = '/patients/pregnancy_history/?patient_id=<%= @patient.id %>'">
+          <button class="blue" onclick="window.location = '/patients/pregnancy_history/?patient_id=<%= @patient.id %>&update=true'">
             <span>Pregnancy History</span>
           </button>
         </div>

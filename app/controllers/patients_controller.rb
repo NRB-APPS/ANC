@@ -4,7 +4,9 @@ class PatientsController < ApplicationController
   def show
    
     next_destination = next_task(@patient) rescue nil
-
+    session[:update] = false
+    session[:home_url] = ""
+   
     if (next_destination.match("check_abortion") rescue false)
       redirect_to next_destination and return
     end
@@ -1007,6 +1009,9 @@ class PatientsController < ApplicationController
     @names = @preg_encounters.collect{|e|
       e.name.upcase
     }.uniq
+
+    session[:home_url] = "/patients/current_visit/?patient_id=#{@patient.patient_id}"
+    session[:update] = true;
     
   end
 
@@ -1047,6 +1052,8 @@ class PatientsController < ApplicationController
 
   def patient_history
     @encounters = @patient.encounters.collect{|e| e.name}
+    session[:home_url] = "/patients/patient_history/?patient_id=#{@patient.patient_id}"
+    session[:update] = true;
   end
 
   def tab_detailed_obstetric_history
