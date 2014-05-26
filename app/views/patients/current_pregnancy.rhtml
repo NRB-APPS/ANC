@@ -1,5 +1,31 @@
-# medical_history.rhtml
+<style>
+  .helper {
+    display: block;
+    float:right;
+    background-color: #DEDEDE;
+  }
+  .header{
+    -moz-user-select: none;
+    font-size: 2em;
+    padding-left: 25px;
+    padding-top: 5px;
+  }
+  
+  ul
+  {
+  list-style-type: none;
+  }
+  li {
+    -webkit-transition: background-color 0.3s linear;
+    -moz-transition: background-color 0.3s linear;
+    -ms-transition: background-color 0.3s linear;
+    -o-transition: background-color 0.3s linear;
+    transition: background-color 0.3s linear;
+}
 
+
+</style>
+  <script type="text/css" charset="utf8" src="/stylesheets/keyboard.css"></script>
 <script type="text/javascript" language="javascript">
   <!--
   tt_cancel_show = "/patients/show/<%= @patient.id %>";
@@ -8,8 +34,12 @@
 <%else%>
     tt_cancel_destination = "/patients/show/<%= @patient.id %>";
 <%end%>
-  
+   var keyboard;
+      var search;
   var timedEvent;
+  var bed_options = ["","Given Today",
+      "Given during previous ANC visit for current pregnancy",
+      "Not given today or during current pregnancy"]
 
   var d = new Date("<%= (session[:datetime] ? session[:datetime].to_date.strftime("%Y-%m-%d") : 
     Date.today.strftime("%Y-%m-%d")) %>");
@@ -169,7 +199,282 @@
       }
     }
   }
+  function generateController(){
+    html = "<table width='98%'><tr class='header'><td width='50%' >Bed Net</td><td width='50%'>Previous TTV Doses before this pregnancy</td></tr>";
+    html += "<tr valign='top'><td width='50%'>";
+    html += "<table><tr class='header'><td width='50%'>"
+    html += "<ul width='100%'>";
+    for (i = 0; i < bed_options.length; i++){
+      html += '<li id="' + i + '" onClick="updateElement(' + i + ')" width="100%" value="' + bed_options[i] + '">' + bed_options[i] + '</li>';
+    }
+    html += "</ul></td></tr></table></td>";
+    html += "<td><table><tr class='header' valign='top'><td>"
+     
+    html += "<input width='75%' type'text' id='previous_ttv' name='previous_ttv' class='header' onClick='showKeyboards(this)'/>";
+    html += "</td></tr></table></td></tr>";
+    html += "</table>";
+    document.getElementById('inputFrame'+tstCurrentPage).innerHTML = html
+    updateElement(0)
+  }
+
+  function updateElement(index){
+       var x = 'even'
+     for (i = 0; i < bed_options.length; i++){
+    	if (x == 'even'){
+    		document.getElementById(i).style.backgroundColor = '#eee'
+    		x = 'old'
+    	} else{
+    	 	document.getElementById(i).style.backgroundColor = '#ddd'
+    	 	x = 'even'
+    	}
+          
+    }
+       document.getElementById(index).style.backgroundColor = "lightblue"
+     document.getElementById('bed_net').value = bed_options[index]
+     //alert(document.getElementById('bed_net').value)
+  }
   
+  function showKeyboards(ctrl){
+    target = ctrl;
+    
+    var pos = checkCtrl(ctrl);
+                    
+    if(typeof(disabled) == 'undefined') disabled = {};
+
+    var div = document.createElement('div');
+    div.id = 'keyboard';
+    div.style.position = 'absolute';
+    div.style.border = '1px solid #5ca6c4';
+    div.style.borderRadius = '10px';
+    div.style.left = pos[3] + 'px';
+    div.style.top = (pos[2] + pos[1] + 2 - __$('bed_net_ttv').scrollTop) + 'px';
+    div.style.zIndex = '1000';
+    div.style.backgroundColor = 'rgba(255,255,255,0.8)';
+
+    __$('bed_net_ttv').appendChild(div);
+
+    var keys = [[1,2,3],[4,5,6],[7,8,9],['.',0,'Bksp']];
+
+    var table = document.createElement('div');
+    table.style.display = 'table';
+    table.style.margin = 'auto';
+
+    div.appendChild(table);
+
+    for(var i = 0; i < keys.length; i++){
+      var row = document.createElement('div');
+      row.style.display = 'table-row';
+
+      table.appendChild(row);
+
+      for(var j = 0; j < keys[i].length; j++){
+        var cell = document.createElement('div');
+        cell.style.display = 'table-cell';
+
+        row.appendChild(cell);
+
+        var button = document.createElement('button');
+        button.setAttribute('class', (disabled[keys[i][j]] ? 'button_disabled' : 'button_refresh'));
+        button.style.width = '90px';
+        button.style.height = '80px';
+        button.style.minWidth = '40px';
+        button.style.minHeight = '40px';
+        button.style.margin = '2px';
+
+        button.id = keys[i][j];
+
+        if(target && keys[i][j] == '.'){
+          if(target.value.trim().match(/\./) || target.value.trim().length == 0){
+            button.setAttribute('class', 'button_disabled');
+          } else {
+            button.setAttribute('class', 'button_refresh');
+          }
+        }
+
+        button.innerHTML = keys[i][j];
+
+        if(disabled[keys[i][j]]){
+          button.setAttribute('class', 'button_disabled');
+        } else {
+          button.setAttribute('class', 'button_refresh');
+
+          button.onmousedown = function(){
+            if(this.innerHTML.trim() == 'Bksp'){
+              if(target){
+                target.value = target.value.trim().substring(0,(target.value.trim().length - 1));
+              }
+            } else if(this.innerHTML.trim() == '.'){
+              if(!target.value.trim().match(/\./)){
+                target.value += this.innerHTML.trim();
+              }
+            } else {
+              target.value += this.innerHTML.trim();
+            }
+
+            if(target.value.trim().match(/\./)){
+              if(__$('.')){
+                __$('.').setAttribute('class', 'button_disabled');
+              }
+            } else {
+              __$('.').setAttribute('class', 'button_refresh');
+            }
+
+          }
+        }
+
+        cell.appendChild(button);
+      }
+    }
+
+
+  }
+
+  function checkCtrl(obj){
+    var o = obj;
+    var t = o.offsetTop;
+    var l = o.offsetLeft + 1;
+    var w = o.offsetWidth;
+    var h = o.offsetHeight;
+
+    while((o ? (o.offsetParent != document.body) : false)){
+      o = o.offsetParent;
+      t += (o ? o.offsetTop : 0);
+      l += (o ? o.offsetLeft : 0);
+    }
+    return [w, h, t, l];
+  }
+ function getCharButtonSetIDs(character,id){
+    return '<button onMouseDown="pressed(\''+character+'\');" class="keyboardButton" id="'+id+'">' +"<span style='width:32px'>"+character+"</span>"+ "</button>";
+  }
+  function getButtonStrings(id,string){
+    return "<button \
+                              onMouseDown='pressed(this.id);' \
+                              class='keyboardButton' \
+                              id='"+id+"'>"+
+      string +
+      "</button>";
+  }
+
+  function getButtons1(chars){
+    var buttonLine = "";
+    for(var i=0; i<chars.length; i++){
+      character = chars.substring(i,i+1)
+      buttonLine += getCharButtonSetIDs(character,character)
+    }
+    return buttonLine;
+  }
+
+ function showNumericKeypad(){
+    //document.getElementById("keypad").style.height = "145";
+    keyboard.innerHTML = getButtons1("123")
+    keyboard.innerHTML+= getButtons1("456")
+    keyboard.innerHTML+= getButtons1("7890")
+    // keyboard.innerHTML+= getButtonStrings('/','<span>/</span>')
+    // keyboard.innerHTML+= getButtonStrings(':','<span>:</span>')
+    //keyboard.innerHTML+= getButtonStrings('-','<span>-</span>')
+    // keyboard.innerHTML+= getButtonString('space','<span>Space</span>')
+    keyboard.innerHTML+= getButtonStrings('clear','<span>Clear</span>')
+    keyboard.innerHTML+= getButtonStrings('backspace','<span>Bksp</span>')
+    keyboard.innerHTML+= getButtonStrings('enter','<span>Enter</span>')
+
+    // keyboard.innerHTML+= getButtonStrings('dash','<span>-</span>')
+    // keyboard.innerHTML+= getButtonString('slash','<span>/</span>')
+  }
+
+  function pressed(pressedChar){
+      new_value = search.value + pressedChar
+    if (search.name.match(/expire_amount/i)){
+    var names = "obs[" + search.name.split(']')[0].split('[')[1] + "][amount]"
+    document.getElementsByName(names)[0]
+      //if (document.getElementsByName(names)[0].value == ""){
+      //  return
+      //}
+     // else
+       // if (parseInt(new_value) > parseInt(document.getElementsByName(names)[0].value)){
+       // return
+      //}
+    }
+    if (search.name.match(/date/i)){
+
+      if (search.value.length == 5 && pressedChar != 'enter' &&   pressedChar != 'splash' && pressedChar != 'backspace' && pressedChar != 'space' && pressedChar != 'clear'){
+        var names = "obs[" + search.name.split(']')[0].split('[')[1] + "][expire_amount]"
+        document.getElementsByName(names)[0].next().focus()
+        return
+      }
+      //new_value = search.value + pressedChar
+      if (search.value.length == 1){   
+        //alert(new_value)
+        if (new_value <= 12 && pressedChar != 'enter' &&  pressedChar != 'splash' && pressedChar != 'backspace' && pressedChar != 'space' && pressedChar != 'clear') {
+          search.value+= pressedChar
+          search.value += "/"
+          return
+        }
+        else if (new_value <= 12 && pressedChar != 'enter' &&  pressedChar == 'splash' && pressedChar != 'backspace' && pressedChar != 'space' && pressedChar != 'clear'){
+          search.value+= pressedChar
+          return
+        }
+        else if (pressedChar != 'enter' && pressedChar != 'splash' && pressedChar != 'backspace' && pressedChar != 'space' && pressedChar != 'clear'){
+          // search.value = search.value.substring(0,search.value.length-1);
+          return
+        }
+
+      }
+      if  (search.value.length == 4 && pressedChar != 'enter' &&  pressedChar != 'splash' && pressedChar != 'backspace' && pressedChar != 'space' && pressedChar != 'clear'){
+        current_date = new Date()
+        current_month = current_date.getMonth() + 1
+        
+        if ( parseInt(new_value.split('/')[1]) < parseInt(current_date.getFullYear().toString().substr(-2))){
+          showMessage("Year lower than current year!")
+          return
+        }
+        else if (parseInt(new_value.split('/')[1]) == parseInt(current_date.getFullYear().toString().substr(-2))){
+          if (parseInt(new_value.split('/')[0]) < parseInt(current_month)){
+            showMessage("Month lower than current month for drugs expiring this year")
+            return
+          }
+        }
+      }
+    }
+    switch (pressedChar) {
+      case 'backspace':
+        search.value = search.value.substring(0,search.value.length-1);
+        //search_box.fnFilter(search.value)
+        return;
+      case 'Space':
+        search.value+= " "
+        //search_box.fnFilter(search.value)
+        return
+      case 'clear':
+        search.value = ""
+        //search_box.fnFilter(search.value)
+        return
+      case 'num':
+        showNumericKeypad();
+        return
+      case 'slash':
+        if (search.name.match(/date/i)){
+          return
+        }
+        search.value+= "/"
+        //search_box.fnFilter(search.value)
+        return
+      case 'dash':
+        search.value+= "-"
+        //search_box.fnFilter(search.value)
+        return
+      case 'abc':
+        showAlphaKeypad();
+        return
+      case 'enter':
+        keyboard.style.display = "none";
+        return
+    }
+
+
+    search.value+= pressedChar
+    //search_box.fnFilter(search.value)
+  }
+
   //-->
 </script>
 
@@ -190,6 +495,9 @@
   <%= hidden_field_tag "encounter[patient_id]", @patient.id %>
   <%= hidden_field_tag "encounter[encounter_datetime]", session_date %>
   <%= hidden_field_tag "encounter[provider_id]", current_user.user_id %>
+  <%= touch_hidden_tag "BED NET", @patient, nil, {:id => "bed_net"}%>
+  <%= touch_hidden_tag "tt status", @patient, nil, {:id => "tt_status_value"}%>
+
 
   <% if !@patient.patient_programs.current.local.map(&:program).map(&:name).include?('ANC PROGRAM') %>
     <%= hidden_field_tag("programs[][patient_program_id]", nil) %>
@@ -205,8 +513,8 @@
 
   <%= touch_date_tag "LAST MENSTRUAL PERIOD", @patient, nil,
     {:id => "lmp",
-    :helptext => "Last Menstrual Period",
-    :tt_onLoad => "timedEvent = setTimeout('calculateEDOD()', 100); showCategory('Current Pregnancy'); initializeDate()",
+    :helptext => "Last Menstrual Period  <span class='helper'>Task: Current Pregnancy</span>",
+    :tt_onLoad => "timedEvent = setTimeout('calculateEDOD()', 100); initializeDate()",
     :tt_onUnLoad => 'clearTimeout(timedEvent);
     // if (__$("touchscreenInput" + tstCurrentPage).value == "Unknown" ) __$("lmp").value = tstEstimatedLMPDate;',
     :tt_pageStyleClass => "exclude",
@@ -218,10 +526,9 @@
   <%= text_field_tag "Estimate LMP", nil,
     {:id => "estimate_lmp",
     :condition => "__$('lmp').value == 'Unknown'",
-    :helpText => "Gestation (months)",
+    :helpText => "Gestation (months)  <span class='helper'>Task: Current Pregnancy</span>",
     :field_type => "number",
     :tt_pageStyleClass => "NumbersOnly",
-    :tt_onLoad => "showCategory('Current Pregnancy');",
     :tt_onUnload => "setDate(__$('touchscreenInput' + tstCurrentPage).value);",
     :max => 6,
     :absoluteMax => 10
@@ -234,8 +541,7 @@
       ["Quadruplet", "Quadruplet"],
       ["Unknown", "Unknown"]]),
     {:id => "multiple_gestation",
-    :tt_onLoad => "showCategory('Current Pregnancy');",
-    :helptext => "Is This a Multiple Pregnancy?" } %>
+    :helptext => "Is This a Multiple Pregnancy?  <span class='helper'>Task: Current Pregnancy</span>" } %>
 
   <%#= touch_select_tag "Week of First Visit", @patient,
   options_for_select(["", "0-12", "13-24", "25-28", "28+"]),
@@ -245,19 +551,26 @@
 
   <%= touch_text_field_tag "Planned delivery place", @patient, nil,
     {:id => "planned_delivery_place",
-    :helptext => "Planned delivery place",
+    :helptext => "Planned delivery place  <span class='helper'>Task: Current Pregnancy</span>",
     :ajaxURL => "/encounters/static_locations?search_string=",
-    :tt_onLoad => "addHereButton(); showCategory('Current Pregnancy');",
+    :tt_onLoad => "addHereButton();",
     :tt_onUnLoad => "removeHereButton()" } %>
 
-  <%= touch_select_tag "Bed Net", @patient, options_for_select([["", ""],
+  <%= text_field_tag :bed_net_ttv, nil,
+    {
+    :id => 'bed_net_ttv',
+    :tt_onLoad => " __$('keyboard').style.display = 'none';generateController();",
+    :optional => "false",
+    :tt_pageStyleClass => "NoControls NoKeyboard"
+  } %>
+
+  <%#= touch_select_tag "Bed Net", @patient, options_for_select([["", ""],
       ["Given Today", "Given Today"],
       ["Given during previous ANC visit for current pregnancy", "Given during previous ANC visit for current pregnancy"],
       ["Not given today or during current pregnancy", "Not given today or during current pregnancy"]
     ]),
     {:id => "bed_net",
-    :tt_onLoad => "showCategory('Current Pregnancy');",
-    :helptext => "Bed Net" } %>
+    :helptext => "Bed Net  <span class='helper'>Task: Current Pregnancy</span>" } %>
 
   <%#= touch_date_tag "Date received", @patient, nil,
   {:id => "bed_date",
@@ -267,19 +580,18 @@
 
   <% options = {
     :id => "tt_status_value",
-    :helptext => "Previous TTV Doses before this pregnancy",
+    :helptext => "Previous TTV Doses before this pregnancy  <span class='helper'>Task: Current Pregnancy</span>",
     :field_type => "number",
     :absoluteMin => "0",
-    :tt_onLoad => "showCategory('Current Pregnancy');",
     :max => "5",
     # :flag => '{"condition":"^1$|^0$","message":"TT is inadequate"}',
     :tt_pageStyleClass => "NumbersOnly"
   } %>
 
-  <%= hidden_field_tag("observations[][concept_name]",  "TT STATUS", {:id => 'tt_status_concept_name'}) %>
-  <%= text_field_tag("observations[][value_numeric]",   nil, options) %>
-  <%= hidden_field_tag("observations[][patient_id]",    @patient.id) %>
-  <%= hidden_field_tag("observations[][obs_datetime]",  session_date) %>
+  <%#= hidden_field_tag("observations[][concept_name]",  "TT STATUS", {:id => 'tt_status_concept_name'}) %>
+  <%#= text_field_tag("observations[][value_numeric]",   nil, options) %>
+  <%#= hidden_field_tag("observations[][patient_id]",    @patient.id) %>
+  <%#= hidden_field_tag("observations[][obs_datetime]",  session_date) %>
 
   <%= hidden_field_tag("observations[][concept_name]",  "Week of First Visit") %>
   <%= hidden_field_tag("observations[][value_numeric]",   nil, {

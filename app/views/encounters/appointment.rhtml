@@ -9,6 +9,12 @@
     /*top:80px;*/
   }
 
+   .helper {
+  display: block;
+  float:right;
+  background-color: #DEDEDE;
+  }
+
   #information {
     display: none;
     border: 1px #000 solid;
@@ -38,6 +44,15 @@
   }
   #Unknown {
     display: none;
+  }
+
+  .cTable {
+    height: 78%;
+    width: 97%;
+  }
+
+  .cRow {
+    line-height: 30px;
   }
 </style>
 
@@ -325,13 +340,13 @@ clinic_holidays = clinic_holidays.split(',').map{|day|day.to_date}.join(',')
 
 	<% if actual.size != 1 %>
 		<%= select_tag("time_until_next_visit", options_for_select(actual),
-		{:helpText => 'Gestation Weeks at Next Visit',
-		:tt_onLoad => "transformMessages(); showCategory('Next Appointment'); calculateGivenRange('#{params[:start_date]}','#{params[:end_date]}')",
+		{:helpText => "Gestation Weeks at Next Visit <span class='helper'>Task: Appointment</span>",
+		:tt_onLoad => "transformMessages(); calculateGivenRange('#{params[:start_date]}','#{params[:end_date]}')",
 		:tt_onUnLoad => "setAppointmentDate();"}) %>
 
 	<% else %>
 		<%= select_tag("time_until_next_visit", options_for_select(actual),
-		{:helpText => 'Gestation Weeks at Next Visit',
+		{:helpText => "Gestation Weeks at Next Visit <span class='helper'>Task: Appointment</span>",
 		:tt_onLoad => "transformMessages(); showCategory('Next Appointment'); calculateGivenRange('#{params[:start_date]}','#{params[:end_date]}');goNextPageIfSingleOption()",
 		:tt_onUnLoad => "setAppointmentDate();"}) %>
 
@@ -351,7 +366,7 @@ clinic_holidays = clinic_holidays.split(',').map{|day|day.to_date}.join(',')
       :id => 'next_appointment_date',
       :startweekdate => "#{@pregnancystart.strftime("%Y-%m-%d")}",
       :endweekdate => "#{(@pregnancystart + 9.month).strftime("%Y-%m-%d")}",
-      :tt_onLoad => "showCategory('Next Appointment'); __$('category').style.opacity = 0.75; setGestationWeekLabel();",
+      :tt_onLoad => "__$('category').style.opacity = 0.75; setGestationWeekLabel();",
       :minDate => "#{ ((session[:datetime] ? session[:datetime].to_date : Date.today) + 6.month).strftime("%Y-%m-%d") }",
       :ajaxCalendarUrl => "/patients/number_of_booked_patients?date=",
       :tt_onUnLoad => "hideInfo();"}) %>

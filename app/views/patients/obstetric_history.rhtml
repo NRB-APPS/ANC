@@ -430,7 +430,7 @@ session_date = session[:datetime]? session[:datetime] : Date.today
         <%= touch_numeric_tag "Type of visit", @patient, nil,
           {
           :id => "visit",
-          :helptext => "ANC visit number",
+          :helptext => "ANC visit number <span class='helper'>Task: Obstetric History</span>",
           :tt_onLoad => "document.forms[0].reset(); disablePastVisits(); transformMessages();",
           :tt_pageStyleClass => "NumbersOnly",
           :max => 7,
@@ -444,7 +444,7 @@ session_date = session[:datetime]? session[:datetime] : Date.today
 
         <%= touch_numeric_tag "GRAVIDA", @patient, nil,
           {:id => "enter_gravida",
-          :helptext => "Gravida",
+          :helptext => "Gravida <span class='helper'>Task: Obstetric History</span>",
           :absoluteMin => 0,
           :max => 20,
           :min => 1,
@@ -457,7 +457,7 @@ session_date = session[:datetime]? session[:datetime] : Date.today
 
         <%= touch_numeric_tag "PARITY", @patient, nil,
           {:id => "enter_number_of_deliveries",
-          :helptext => "Enter Number Of Delivered Pregnancies",
+          :helptext => "Enter Number Of Delivered Pregnancies <span class='helper'>Task: Obstetric History</span>",
           :tt_pageStyleClass => "NumbersWithUnknown",
           :condition => "__$('enter_gravida').value > 1",
           :tt_onLoad => " __$('touchscreenInput' + " +
@@ -475,7 +475,7 @@ session_date = session[:datetime]? session[:datetime] : Date.today
 
         <%= touch_numeric_tag "NUMBER OF ABORTIONS", @patient, nil,
           {:id => "enter_number_of_abortions",
-          :helptext => "Enter Number Of Abortions",
+          :helptext => "Enter Number Of Abortions <span class='helper'>Task: Obstetric History</span>",
           :tt_pageStyleClass => "NumbersWithUnknown",
           :condition => "__$('enter_gravida').value > 1",
           :tt_onLoad => "updateDeliveries();  __$('touchscreenInput' + tstCurrentPage).value = parseInt(__$('enter_gravida').value) - parseInt(__$('enter_number_of_deliveries').value) -1",
@@ -487,7 +487,7 @@ session_date = session[:datetime]? session[:datetime] : Date.today
 
         <%= touch_text_field_tag "known pregnancies", @patient, nil,
           {:id => "known_pregnancies",
-          :helptext => "Select pregnancies with available information",
+          :helptext => "Select pregnancies with available information <span class='helper'>Task: Obstetric History</span>",
           :tt_onLoad => "loadSelections();",
           :optional => "true",
           :condition => "__$('enter_gravida').value > 1"

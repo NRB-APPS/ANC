@@ -292,22 +292,21 @@
 	}
 	
 	#keyboard {
-		height: 4cm;
-		left: 50%;
+		border-radius: 12px;
+		height: 5cm;
+		left: 41%;
 		position: absolute;
 		top: 0;
-		width: 40%;
-		width: 50%;
+		width: 60%;
 		z-index: 5000;
-		border-radius: 12px;
 	}
 	
 	#smallkeyboard {
 		height: 2cm;
-		left: 24%;
+		left: 52%;
 		position: absolute;
 		top: 139%;
-		width: 5cm;
+		width: 7cm;
 		z-index: 5000;
 	}
 	
@@ -337,12 +336,31 @@
 		margin-bottom:10px;
 	}
 	
+	#freqkeyboard {
+		border-radius: 12px;
+		height: 2cm;
+		left: 2%;
+		position: absolute;
+		top: 106%;
+		width: 18cm;
+		z-index: 5000;
+	}
+	
+	#tblKeyboard {
+		border-radius: 12px;
+	}
+	
+	#divMenu {
+		border-radius: 12px;
+	}
+	
 </style>
 
 <script>
 
 	var displayKeyBoard = false;
 	var smallDisplayKeyBoard = false;
+	var freqDisplayKeyBoard = false;
 	
 	function loadHighlight(tag_s) {
 		var e = document.querySelectorAll(tag_s)
@@ -366,19 +384,9 @@
 	}
 	
 	function searchDrug(sStr) {
-		var r;
-		
 		sStr =sStr.trim().toUpperCase();
-		var e = document.querySelectorAll("#druglist>li");
-		for(var i=e.length; i--;) {
-			e[i].style.display = "block";
-		}
-
-		for(var i=e.length; i--;) {
-			r = e[i].children[0].innerHTML.toUpperCase().contains(sStr);
-			if (!r) {
-				e[i].style.display = "none";
-			}
+		if (/\S/.test(sStr)) {
+			findDrug(sStr);
 		}
 	}
 	
@@ -387,6 +395,9 @@
 		//Hide small key board
 		document.getElementById("smallkeyboard").style.display = "none";
 		smallDisplayKeyBoard=true;
+		
+		document.getElementById("freqkeyboard").style.display = "none";
+		freqDisplayKeyBoard=true;
 			
 		if(displayKeyBoard) {
 			document.getElementById("keyboard").style.display = "block";
@@ -409,7 +420,7 @@
 		div.style.margin = "5px";
 
 		var row1 = ["Q","W","E","R","T","Y","U","I","O","P"];
-		var row2 = ["", "A","S","D","F","G","H","J","K","L"];
+		var row2 = ["clear", "A","S","D","F","G","H","J","K","L"];
 		var row3 = ["del", "Z","X","C","V","B","N","M","stat<br />dose"];
 		var row5 = ["1","2","3","4","5","6","7","8","9","0"];
 
@@ -491,12 +502,21 @@
 		        td2.className = "btn";
 		    }
 
-		    td2.onclick = function(){
-		        if(!this.innerHTML.match(/^$/)){
-		            $(global_control).value += this.innerHTML.toProperCase();
-		            $(global_control).value = $(global_control).value.toProperCase();
+		    if(row2[i] == "clear"){
+
+		        td2.onclick = function(){
+		            $(global_control).value = "";
 		            searchDrug(document.getElementById(global_control).value);
-		        }
+		     	}
+		     }else {
+				td2.onclick = function(){
+				    if(!this.innerHTML.match(/^$/)){
+				        $(global_control).value += this.innerHTML.toProperCase();
+				        $(global_control).value = $(global_control).value.toProperCase();
+				        searchDrug(document.getElementById(global_control).value);
+				    }
+				}
+		    
 		    }
 
 		    tr2.appendChild(td2);
@@ -729,16 +749,149 @@
 
 	}
 	
+	function showFreqFixedKeyboard(ctrl, global_control){
+		
+		var full_keyboard = "full";
+		
+		var div = document.createElement("div");
+		div.id = "divMenu";
+		div.style.backgroundColor = "#EEEEEE";
+		div.style.top = "0px";
+		div.style.left = "0px";
+		div.style.margin = "5px";
+		
+		var tbl = document.createElement("table");
+		tbl.bgColor = "#fff";
+		tbl.cellSpacing = 2;
+		tbl.cellPadding = 10;
+		tbl.id = "tblKeyboard";
+		tbl.width = "100%";
+
+		var f = [[ "Once a day(OD)", "Twice a day(BD)"],
+		["Three a day(TDS)", "Four times a day(QID)"],
+		["Five times a day(5X/D)", "Six times a day(Q4hrs)"],
+		["Once a week(QWK)", ""],
+		["5X/D", "Every other day(QOD)"],
+		["Once a day at night(QHS)", "Once a day at noon(Qnoon)"],
+		["In the morning(QAM)", ""],
+		["QOD", "In the evening(QPM)"]];
+
+		var f = [["Once a day(OD)", "Twice a day(BD)"],
+		["Three a day(TDS)","Four times a day(QID)"],
+		["Five times a day(5X/D)","Six times a day(Q4hrs)"],
+		["Once a week(QWK)","Every other day(QOD)"],
+		["Once a day at night(QHS)", "Once a day at noon(Qnoon)"],
+		["In the morning(QAM)","In the evening(QPM)"]];
+
+		for(var r=0; r<f.length; r++ ) {
+			var tr = document.createElement("tr");
+			row = [f[r][0],f[r][1]];
+			for(var i = 0; i < row.length; i++){
+				var td = document.createElement("td");
+				td.innerHTML = row[i];
+				td.align = "center";
+				td.vAlign = "middle";
+				td.style.cursor = "pointer";
+				td.style.fontSize = "1.5em";
+				td.bgColor = "#EEEEEE"
+				td.width = "30px";
+				td.className = "btn";
+
+				td.onclick = function(){
+					
+					if(!this.innerHTML.match(/^$/)){
+					    global_control.value = this.innerHTML;
+					    
+						document.getElementById("freqkeyboard").style.display = "none";
+						freqDisplayKeyBoard=true;
+
+					    //global_control.value = global_control.value.toProperCase();						
+					    //searchDrug(global_control.value);
+					}
+				}
+
+				tr.appendChild(td);
+			}
+
+			if(full_keyboard){
+				tbl.appendChild(tr);
+			}
+		}
+
+
+		var row3 = ["del"];
+		var tr3 = document.createElement("tr");
+
+		for(var i = 0; i < row3.length; i++){
+		    var td3 = document.createElement("td");
+		    td3.innerHTML = row3[i];
+		    td3.align = "center";
+		    td3.vAlign = "middle";
+		    td3.style.cursor = "pointer";
+		    td3.style.fontSize = "1.5em";
+		    td3.bgColor = "#EEEEEE"
+		    td3.width = "30px";
+
+		    if(!row3[i].trim().match(/^$/)){
+		        td3.className = "btn";
+		    }
+
+		    if(row3[i] == "del"){
+		        td3.colSpan = 2;
+
+		        td3.onclick = function(){
+		            global_control.value = "";
+		            //searchDrug(global_control.value);
+		        }
+		        
+		    } else if(row3[i].trim() == "stat<br />dose"){
+		        td3.style.fontSize = "0.9em";
+		        td3.style.padding = "0px";
+		        td3.style.fontWeight = "bold";
+		        
+		        td3.onclick = function(){
+		            if ($("optionOD"))
+		                $("optionOD").click();
+		            if ($("group1_1-10"))
+		                $("group1_1-10").click();
+		            if ($("group2_1"))
+		                $("group2_1").click();
+		        }
+		    } else {
+
+		        td3.onclick = function(){
+		            if(!this.innerHTML.match(/^$/)){
+		                global_control.value += this.innerHTML.toProperCase();
+		               	global_control.value = global_control.value.toProperCase();
+		                //searchDrug(global_control.value);
+		            }
+		        }
+
+		    }
+
+		    tr3.appendChild(td3);
+		}
+
+		tbl.appendChild(tr3);
+
+		div.appendChild(tbl);
+		ctrl.appendChild(div);
+
+	}
+
+	
 	function showSmallKeyBoard(obj) {
 	
 		smallKeyBoardObj = document.getElementById("smallkeyboard");
 		smallKeyBoardObj.innerHTML="";
 		showSmallFixedKeyboard(smallKeyBoardObj, obj);
 		
-		//Hide search field keyboard
+		//Hide keyboards
 		
 		document.getElementById("keyboard").style.display = "none";
+		document.getElementById("freqkeyboard").style.display = "none";
 		displayKeyBoard=true;
+		freqDisplayKeyBoard=false;
 		
 		var objTmp = document.getElementById("tmpV");
 		
@@ -753,13 +906,46 @@
 		}
 		
 		if(smallDisplayKeyBoard) {
-			document.getElementById("smallkeyboard").style.display = "block";
 			smallDisplayKeyBoard=false;
 		} else {
-			document.getElementById("smallkeyboard").style.display = "none";
 			smallDisplayKeyBoard=true;
 		}
+		document.getElementById("smallkeyboard").style.display = "block";
 	}
+	
+	function showFreqKeyBoard(obj) {
+	
+		freqKeyBoardObj = document.getElementById("freqkeyboard");
+		freqKeyBoardObj.innerHTML="";
+		showFreqFixedKeyboard(freqKeyBoardObj, obj);
+		
+		//Hide Other keyboards
+		
+		document.getElementById("keyboard").style.display = "none";
+		document.getElementById("smallkeyboard").style.display = "none";
+		displayKeyBoard=true;
+		smallDisplayKeyBoard=true;
+		
+		var objTmp = document.getElementById("freqV");
+		
+		if(document.getElementById("freqV")==null) {
+			obj.parentNode.style.backgroundColor = "#3399CC";
+			obj.id="freqV";
+		}else {
+			objTmp.parentNode.style.backgroundColor = obj.parentNode.parentNode.style.backgroundColor
+			obj.parentNode.style.backgroundColor = "#3399CC";
+			objTmp.id="";
+			obj.id="freqV";
+		}
+		
+		if(freqDisplayKeyBoard) {
+			freqDisplayKeyBoard=false;
+		} else {
+			freqDisplayKeyBoard=true;
+		}
+		document.getElementById("freqkeyboard").style.display = "block";
+	}
+	
 	
 	function selectd(obj) {
 		var ch = obj.parentNode.parentNode.children;
@@ -767,20 +953,23 @@
 		var drug = ch[0].innerHTML;
 		var dosage = ch[1].innerHTML;
 		var variable = false;
-		var morning = ch[3].children[0].children[0].value;
-		var afternoon = ch[3].children[1].children[0].value;
-		var evening = ch[3].children[2].children[0].value;
-		var night = ch[3].children[3].children[0].value;
+		var frequency = ch[3].children[0].value;
 		var duration = ch[4].children[0].value;
-				
-		tmp = "<li> <div class='sdlist sdli'>" + drug + ": " + dosage + ": morning(" + morning +
-			"), afternoon(" + afternoon + "), evening(" + evening + "), night(" + night +
+
+		tmp = "<li> <div class='sdlist sdli'>" + drug + ": frequency(" + frequency +
 			"), duration(" + duration + 'days)</div><div class="sdlist cb"><div class="clbtn" onclick="deleteMe(this)"></div></div>' + " </li>";
 
-		
 		document.getElementById('dul').innerHTML =  document.getElementById('dul').innerHTML + tmp; 
 		loadHighlight('#dul>li');
 		document.getElementById('srchin').value="";
+		
+		document.getElementById("keyboard").style.display = "none";
+		document.getElementById("smallkeyboard").style.display = "none";
+		document.getElementById("freqkeyboard").style.display = "none";
+		displayKeyBoard=true;
+		smallDisplayKeyBoard=true;
+		freqDisplayKeyBoard=true;
+		
 	}
 	
 	function deleteMe(me) {
@@ -792,6 +981,51 @@
 		var elmnt = document.getElementById(id);
 		elmnt.innerHTML = "";
 	}
+	
+	//AJAX
+	
+	function findDrug(srchV){
+		$('druglist').innerHTML = "";
+		var search_path = "/prescriptions/ajax_psb_challenge";
+		ajaxDFRequest(search_path + "?s=" + srchV);
+	}
+
+	function ajaxDFRequest(aUrl) {
+		var httpRequest = new XMLHttpRequest();
+		httpRequest.onreadystatechange = function() {
+		    handleDFResult(httpRequest);
+		};
+		try {
+		    httpRequest.open('GET', aUrl, true);
+		    httpRequest.send(null);
+		} catch(e){
+		}
+	}
+	
+	function handleDFResult(aXMLHttpRequest) {
+		if (!aXMLHttpRequest) return;
+
+		if (aXMLHttpRequest.readyState == 4) {
+		    var dosesFreqs = aXMLHttpRequest.responseText.split(";");
+		    var drugDose;
+		    for(var i=0; i<dosesFreqs.length-1; i++) {
+		    	drugDose = dosesFreqs[i].split("@!");
+		    	$('druglist').innerHTML = $('druglist').innerHTML + 
+				'<li>' +
+					'<div class="dlist bdiv" >' + drugDose[0] + '</div>' +
+					'<div class="dlist cdiv" >' + drugDose[1] + '</div>' +
+					'<div class="dlist ddiv" > <input type="checkbox" />  </div>' +
+					'<div class="dlist ediv" >' +
+						'<input onmousedown="showFreqKeyBoard(this)" class="din" type="text">' +
+					'</div>' +
+					'<div class="dlist fdiv" >  <input onmousedown="showSmallKeyBoard(this)" class="din" type="text"> days</div>' +
+					'<div class="dlist gdiv" >  <input class="btn"  onclick="selectd(this)" value="Select" type="button" /> </div>' +
+				'</li>'
+		    }
+		}
+		loadHighlight('li');
+	}
+
 
 </script>
 
@@ -828,10 +1062,6 @@
 
 	<div id="e" class="z">
 		<div id="freq"> Frequency </div>
-		<div class="sfreq"> Morning </div>
-		<div class="sfreq"> Afternoon </div>
-		<div class="sfreq"> Evening </div>
-		<div class="sfreq" style="border-style:none;"> Night </div>
 	</div>
 
 	<div id="f" class="z" >
@@ -849,10 +1079,7 @@
 			<div class="dlist cdiv" > <%= d.dose_strength.to_s + " " + d.units.to_s %> </div>
 			<div class="dlist ddiv" > <input type="checkbox" />  </div>
 			<div class="dlist ediv" >
-				<div class="fdx" ><input onmousedown="showSmallKeyBoard(this)" class="din" type="text" ></div>
-				<div class="fdx" ><input onmousedown="showSmallKeyBoard(this)" class="din" type="text" ></div>
-				<div class="fdx" ><input onmousedown="showSmallKeyBoard(this)" class="din" type="text" ></div>
-				<div class="fdx" ><input onmousedown="showSmallKeyBoard(this)" class="din" type="text" ></div>
+				<input onmousedown="showFreqKeyBoard(this)" class="din" type="text">
 			</div>
 			<div class="dlist fdiv" >  <input onmousedown="showSmallKeyBoard(this)" class="din" type="text"> days</div>
 			<div class="dlist gdiv" >  <input class="btn"  onclick="selectd(this)" value="Select" type="button" /> </div>
@@ -862,11 +1089,11 @@
 
 <script>
 	loadHighlight('li');
-	
-        //var ta = '<table id="tblKeyboard" bgcolor="#fff" cellpadding="10" cellspacing="2" width="100%"><tr><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">1</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">2</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">3</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">4</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">5</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">6</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">7</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">8</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">9</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">0</td></tr><tr><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">Q</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">W</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">E</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">R</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">T</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">Y</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">U</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">I</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">O</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">P</td></tr><tr><td style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px"></td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">A</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">S</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">D</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">F</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">G</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">H</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">J</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">K</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">L</td></tr><tr><td colspan="2" class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">del</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">Z</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">X</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">C</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">V</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">B</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">N</td><td class="btn" style="cursor: pointer; font-size: 1.5em;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">M</td><td class="btn" style="cursor: pointer; font-size: 0.9em; padding: 0px; font-weight: bold;" align="center" bgcolor="#EEEEEE" valign="middle" width="30px">stat<br>dose</td></tr></table>';
-		var keyboard = "<div id='keyboard' ></div>";
-		var smallKeyBoard =   "<div id='smallkeyboard' ></div>";
-		
-		document.getElementById("scont").innerHTML = document.getElementById("scont").innerHTML + keyboard + smallKeyBoard;
-		showFixedKeyboard(document.getElementById("keyboard"), "srchin");
+
+	var keyboard = "<div id='keyboard' ></div>";
+	var smallKeyBoard =   "<div id='smallkeyboard' ></div>";
+	var freqkeyboard = "<div id='freqkeyboard'> </div>";
+
+	document.getElementById("scont").innerHTML = document.getElementById("scont").innerHTML + keyboard + smallKeyBoard + freqkeyboard;
+	showFixedKeyboard(document.getElementById("keyboard"), "srchin");
 </script>
