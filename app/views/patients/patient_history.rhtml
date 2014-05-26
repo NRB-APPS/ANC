@@ -46,7 +46,7 @@
         <div style="display: table-cell">
           <% if current_user.activities.include?("Obstetric History") %>
             <button class="blue"
-                    onclick="<%= "window.location = '/patients/obstetric_history/?patient_id=#{@patient.id}'" %>" >
+                    onclick="<%= "window.location = '/patients/obstetric_history/?patient_id=#{@patient.id}&update=true'" %>" >
               <span><%= (@encounters.include?("OBSTETRIC HISTORY") ? "Update Obstetric History" : "Obstetric History") %></span>
             </button>
           <% end %>

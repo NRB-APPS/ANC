@@ -671,7 +671,7 @@ class PatientsController < ApplicationController
         @patient.id, Encounter.find(:all, :conditions => ["patient_id = ?", @patient.id]).collect{|e| e.encounter_id},
         ConceptName.find_by_name('BLOOD TRANSFUSION').concept_id]).answer_string.upcase.squish rescue nil
 
-     @sti = Observation.find(:last, :conditions => ["person_id = ? AND encounter_id IN (?) AND concept_id = ?",
+    @sti = Observation.find(:last, :conditions => ["person_id = ? AND encounter_id IN (?) AND concept_id = ?",
         @patient.id, Encounter.find(:all, :conditions => ["patient_id = ?", @patient.id]).collect{|e| e.encounter_id},
         ConceptName.find_by_name('Sexually transmitted infection').concept_id]).answer_string.upcase.squish rescue nil
 
@@ -878,7 +878,7 @@ class PatientsController < ApplicationController
 
   def obstetric_history
 
-    if ((@patient.encounters.find_by_encounter_type(EncounterType.find_by_name("Obstetric History")).blank?) rescue true)
+    if ((@patient.encounters.find_by_encounter_type(EncounterType.find_by_name("Obstetric History")).blank?) rescue true) || (params[:update] && params[:update].to_s == "true")
 
       @obs_present = false
     else
