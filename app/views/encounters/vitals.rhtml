@@ -326,14 +326,19 @@
     value = $("touchscreenInput" + tstCurrentPage).value
     if (value.length > 0){
       $("status").style.display = "inline"
-      $("status").innerHTML = "Measured Weight = " + value + " Kg"
+      if (value == "Unknown"){
+        $("status").innerHTML = "Measured Weight = " + value
+      }else{
+        $("status").innerHTML = "Measured Weight = " + value + " Kg"
+      }
+      
     }
     else{
        $("status").style.display = "none"
     }
-    if  (value.indexOf(".") > 1){
+    if  ((value.indexOf(".") > 1) || (value == "Unknown")){
        $("nextButton").style.display = "inline"
-        if (value.split('.')[1].length == 1){
+        if ((value.split('.')[1].length == 1) || (value == "Unknown")){
        return
      }
     }
