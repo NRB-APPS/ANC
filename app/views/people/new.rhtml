@@ -359,8 +359,9 @@
 
     }else if (field == "day"){
 
+      var months = ["", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", "Unknown"];
       div.style.textAlign = "center";
-      div.innerHTML = "<i>Year   =  " + __$("person_birth_year").value + "; Month = " + __$("person_birth_month").value + "</i>"
+      div.innerHTML = "<i>Year   =  " + __$("person_birth_year").value + "; Month = " + months[__$("person_birth_month").value] + "</i>";
       __$("inputFrame" + tstCurrentPage).appendChild(div);
     }
   }

@@ -225,22 +225,24 @@
     __$("inputFrame" + tstCurrentPage).appendChild(view2);
   }
 
+
   function showSummary(field){
     var div = document.createElement("div");
     div.id = "status";
     div.className = "statusLabel";
 
     if(field == "year"){
-      
+
       div.style.marginTop = "-4%";
       div.style.textAlign = "center";
       div.innerHTML = "<i>Year   =   1999</i>"
       __$("inputFrame" + tstCurrentPage).appendChild(div);
-      
+
     }else if (field == "day"){
 
+      var months = ["", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", "Unknown"];
       div.style.textAlign = "center";
-      div.innerHTML = "<i>Year   =  " + __$("person_birth_year").value + "; Month = " + __$("person_birth_month").value + "</i>"
+      div.innerHTML = "<i>Year   =  " + __$("person_birth_year").value + "; Month = " + months[__$("person_birth_month").value] + "</i>";
       __$("inputFrame" + tstCurrentPage).appendChild(div);
     }
   }
