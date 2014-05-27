@@ -379,7 +379,7 @@
     :tt_onLoad => "addHereButton();",
     :tt_onUnLoad => "removeHereButton()" } %>
 
-  <%= text_field_tag :bed_net_ttv, nil,
+  <%#= text_field_tag :bed_net_ttv, nil,
     {
     :id => 'bed_net_ttv',
     :tt_onLoad => "generateController();",
@@ -388,7 +388,7 @@
     :tt_pageStyleClass => "NumbersOnly"
   } %>
 
-  <%#= touch_select_tag "Bed Net", @patient, options_for_select([["", ""],
+  <%= touch_select_tag "Bed Net", @patient, options_for_select([["", ""],
       ["Given Today", "Given Today"],
       ["Given during previous ANC visit for current pregnancy", "Given during previous ANC visit for current pregnancy"],
       ["Not given today or during current pregnancy", "Not given today or during current pregnancy"]
@@ -396,7 +396,7 @@
     {:id => "bed_net",
     :helptext => "Bed Net  <span class='helper'>Task: Current Pregnancy</span>" } %>
 
-  <%#= touch_date_tag "Date received", @patient, nil,
+  <%= touch_date_tag "Date received", @patient, nil,
   {:id => "bed_date",
   :helptext => "Date Bet Net Given",
   :condition => "__$('bed_net').value == 'Yes'"
@@ -409,8 +409,7 @@
     :absoluteMin => "0",
     :max => "5",
     # :flag => '{"condition":"^1$|^0$","message":"TT is inadequate"}',
-    :tt_pageStyleClass => "NumbersOnly",
-    :condition => false
+    :tt_pageStyleClass => "NumbersOnly"
   } %>
 
   <%= hidden_field_tag("observations[][concept_name]",  "TT STATUS", {:id => 'tt_status_concept_name'}) %>
