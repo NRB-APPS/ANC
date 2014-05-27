@@ -4,7 +4,9 @@ class PatientsController < ApplicationController
   def show
    
     next_destination = next_task(@patient) rescue nil
-
+    session[:update] = false
+    session[:home_url] = ""
+   
     if (next_destination.match("check_abortion") rescue false)
       redirect_to next_destination and return
     end
@@ -671,7 +673,7 @@ class PatientsController < ApplicationController
         @patient.id, Encounter.find(:all, :conditions => ["patient_id = ?", @patient.id]).collect{|e| e.encounter_id},
         ConceptName.find_by_name('BLOOD TRANSFUSION').concept_id]).answer_string.upcase.squish rescue nil
 
-     @sti = Observation.find(:last, :conditions => ["person_id = ? AND encounter_id IN (?) AND concept_id = ?",
+    @sti = Observation.find(:last, :conditions => ["person_id = ? AND encounter_id IN (?) AND concept_id = ?",
         @patient.id, Encounter.find(:all, :conditions => ["patient_id = ?", @patient.id]).collect{|e| e.encounter_id},
         ConceptName.find_by_name('Sexually transmitted infection').concept_id]).answer_string.upcase.squish rescue nil
 
@@ -878,7 +880,7 @@ class PatientsController < ApplicationController
 
   def obstetric_history
 
-    if ((@patient.encounters.find_by_encounter_type(EncounterType.find_by_name("Obstetric History")).blank?) rescue true)
+    if ((@patient.encounters.find_by_encounter_type(EncounterType.find_by_name("Obstetric History")).blank?) rescue true) || (params[:update] && params[:update].to_s == "true")
 
       @obs_present = false
     else
@@ -1007,6 +1009,9 @@ class PatientsController < ApplicationController
     @names = @preg_encounters.collect{|e|
       e.name.upcase
     }.uniq
+
+    session[:home_url] = "/patients/current_visit/?patient_id=#{@patient.patient_id}"
+    session[:update] = true;
     
   end
 
@@ -1047,6 +1052,8 @@ class PatientsController < ApplicationController
 
   def patient_history
     @encounters = @patient.encounters.collect{|e| e.name}
+    session[:home_url] = "/patients/patient_history/?patient_id=#{@patient.patient_id}"
+    session[:update] = true;
   end
 
   def tab_detailed_obstetric_history

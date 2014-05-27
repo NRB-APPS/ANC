@@ -302,7 +302,7 @@
     __$(div).style.opacity = opacity;
     if (opacity >= 0){
       opacity = opacity - 0.01;
-      setTimeout(function(){fade(div, opacity)}, 5)
+      setTimeout(function(){fade(div, opacity)}, 1)
     }
     else{
       __$(div).style.display = "none";
@@ -318,11 +318,11 @@
     }
   }
   function hideMsg(div){
-    setTimeout(function(){fade(div, 1);}, 10);
+    setTimeout(function(){fade(div, 1);}, 5);
   }
 
   function showMsg(div){
-    setTimeout(function(){fadeOut(div, 0);}, 10);
+    setTimeout(function(){fadeOut(div, 0);}, 1);
   }
 
     </script>

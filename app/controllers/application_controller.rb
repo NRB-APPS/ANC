@@ -26,6 +26,12 @@ class ApplicationController < GenericApplicationController
 
   def next_form(location , patient , session_date = Date.today)
     #for ANC Clinic
+   
+    if  (session[:update] && session[:update].to_s == "true" &&
+          session[:home_url].present?  && session[:home_url].length > 10)
+     
+      return session[:home_url]
+    end
     task = Task.first
     task = Task.new if task.blank?
 
