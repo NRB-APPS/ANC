@@ -1,11 +1,4 @@
 
-<style>
- .helper {
-  display: block;
-  float:right;
-  background-color: #DEDEDE;
-  }
-</style>
 <script type="text/javascript" language="javascript">
   <!--
   tt_cancel_show = "/patients/show/<%= @patient.id %>";
@@ -68,7 +61,7 @@
   <%= touch_select_tag "OUTCOME", @patient,
     options_for_select([["", ""], ["Sent Home", "Sent Home"], ["Admitted", "Admitted"], ["Referred", "Referred"]]),
     {:id => "outcome",
-    :helptext => "Outcome <span class='helper'>Task: Outcome</span>",
+    :helptext => "Outcome <span class='helper'> Outcome</span>",
     :tt_onLoad => "transformMessages();"
     # :condition => "__$('outcome_available').value.toUpperCase() == 'YES'"
   } %>
@@ -82,7 +75,7 @@
 
   <%= touch_select_tag "REFERRAL CLINIC IF REFERRED", @patient, nil,
     {:id => "referral",
-    :helptext => "Referral Facility <span class='helper'>Task: Outcome</span>",
+    :helptext => "Referral Facility <span class='helper'> Outcome</span>",
     :condition => "__$('outcome').value == 'Referred'",
     :ajaxURL => "/encounters/static_locations?search_string=" } %>
 
