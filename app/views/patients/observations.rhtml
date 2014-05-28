@@ -1,11 +1,5 @@
 # observations.rhtml
-<style>
-  .helper {
-  display: block;
-  float:right;
-  background-color: #DEDEDE;
-  }
-</style>
+
 <script type="text/javascript" language="javascript">
   <!--
   tt_cancel_show = "/patients/show/<%= @patient.id %>";
@@ -95,7 +89,7 @@
 
   <%= touch_numeric_tag "FUNDUS", @patient, nil,
     {:id => "enter_fundal_height",
-    :helptext => "Fundus (weeks) <span class='helper'>Task: ANC Examination</span>",
+    :helptext => "Fundus (weeks) <span class='helper'> ANC Examination</span>",
     :tt_pageStyleClass => "NumbersWithUnknown",
     :min => "#{(!@anc_patient.fundus_by_lmp(session_date).nil? ? (@anc_patient.fundus_by_lmp(session_date).to_i - 2) : 42)}",
     :max => "#{(!@anc_patient.fundus_by_lmp(session_date).nil? ? (@anc_patient.fundus_by_lmp(session_date).to_i + 2) : 42)}",
@@ -107,7 +101,7 @@
 
   <%= touch_select_tag "PRESENTATION", @patient, options_for_select(@presentation),
     {:id => "presentation",
-    :helptext => "Presentation <span class='helper'>Task: ANC Examination</span>",
+    :helptext => "Presentation <span class='helper'> ANC Examination</span>",
     :tt_onLoad => "",
     :tt_pageStyleClass => "NoKeyboard" }, session_date %>
 
@@ -115,7 +109,7 @@
 
   <%= touch_select_tag "Cephalic", @patient, options_for_select(@cephalic),
     {:id => "cephalic",
-    :helptext => "Cephalic Type <span class='helper'>Task: ANC Examination</span>",
+    :helptext => "Cephalic Type <span class='helper'> ANC Examination</span>",
     :tt_onLoad => "",
     :tt_pageStyleClass => "NoKeyboard",
     :condition => "__$('presentation').value == 'Cephalic'" }, session_date %>
@@ -124,7 +118,7 @@
 
   <%= touch_select_tag "Breech", @patient, options_for_select(@breech),
     {:id => "breech",
-    :helptext => "Breech Type <span class='helper'>Task: ANC Examination</span>",
+    :helptext => "Breech Type <span class='helper'> ANC Examination</span>",
     :tt_pageStyleClass => "NoKeyboard",
     :tt_onLoad => "",
     :condition => "__$('presentation').value == 'Breech'" }, session_date %>
@@ -133,7 +127,7 @@
 
   <%= touch_select_tag "POSITION", @patient, options_for_select(@position),
     {:id => "position",
-    :helptext => "Position <span class='helper'>Task: ANC Examination</span>",
+    :helptext => "Position <span class='helper'> ANC Examination</span>",
     :tt_pageStyleClass => "NoKeyboard",
     :tt_onLoad => "",
     :condition => "__$('presentation').value != 'Ball'"}, session_date %>
@@ -151,7 +145,7 @@
 
   <%= touch_select_tag "VERTEX", @patient, options_for_select(@vertex),
     {:id => "vertex",
-    :helptext => "Vertex Position Type <span class='helper'>Task: ANC Examination</span>",
+    :helptext => "Vertex Position Type <span class='helper'> ANC Examination</span>",
     :field_type => "text",
     :tt_onLoad => "",
     :condition => "$('position').value.trim().toUpperCase() == 'VERTEX';",
@@ -168,7 +162,7 @@
 
   <%= touch_select_tag "BREECH", @patient, options_for_select(@breech),
     {:id => "breech",
-    :helptext => "Breech Position Type <span class='helper'>Task: ANC Examination</span>",
+    :helptext => "Breech Position Type <span class='helper'> ANC Examination</span>",
     :field_type => "text",
     :tt_onLoad => "",
     :condition => "$('position').value.trim().toUpperCase() == 'BREECH';",
@@ -185,7 +179,7 @@
 
   <%= touch_select_tag "FACE", @patient, options_for_select(@face),
     {:id => "face",
-    :helptext => "Face Position Type <span class='helper'>Task: ANC Examination</span>",
+    :helptext => "Face Position Type <span class='helper'> ANC Examination</span>",
     :field_type => "text",
     :tt_onLoad => "",
     :condition => "$('position').value.trim().toUpperCase() == 'FACE';",
@@ -200,7 +194,7 @@
 
   <%= touch_select_tag "SHOULDER", @patient, options_for_select(@face),
     {:id => "shoulder",
-    :helptext => "Shoulder Position Type <span class='helper'>Task: ANC Examination</span>",
+    :helptext => "Shoulder Position Type <span class='helper'> ANC Examination</span>",
     :field_type => "text",
     :tt_onLoad => "",
     :condition => "$('position').value.trim().toUpperCase() == 'SHOULDER';",
@@ -212,13 +206,13 @@
     {:id => "enter_fetal_heart",
     :condition => "__$('presentation').value != 'Ball'",
     :tt_onLoad => "",
-    :helptext => "Fetal Heart Beat <span class='helper'>Task: ANC Examination</span>" }, session_date %>
+    :helptext => "Fetal Heart Beat <span class='helper'> ANC Examination</span>" }, session_date %>
 
   <%#--------------------------------------------------------%>
 
   <%# This options hash allows us to define our options in one place %>
   <% options = {
-    :helpText => "Signs/Symptoms <span class='helper'>Task: ANC Examination</span>",
+    :helpText => "Signs/Symptoms <span class='helper'> ANC Examination</span>",
     :allowFreeText => 'true',
     :ajaxURL => "/encounters/anc_diagnoses?search_string=",
     :textCase => "upper",
@@ -250,7 +244,7 @@
     <% options[:condition] = "check != 'none' && tstFormElements[#{counter + 3}].value != '' && tstFormElements[#{counter + 3}].value.toLowerCase().trim() != 'none'" if counter > 0 %>
     <% options[:optional] = 'true' if counter > 0 %>
     <% counter += 1 %>
-    <% options[:helpText] = (counter > 1 ? "#{counter}<sup>#{sup[counter]}</sup>  <span class='helper'>Task: ANC Examination</span>" : " <span class='helper'>Task: ANC Examination</span>") + "Danger Sign/Symptom" %>
+    <% options[:helpText] = (counter > 1 ? "#{counter}<sup>#{sup[counter]}</sup>  <span class='helper'> ANC Examination</span>" : " <span class='helper'> ANC Examination</span>") + "Danger Sign/Symptom" %>
     <% options[:position] = "#{counter + 1}" %>
     <% options[:id] = "sign#{counter}" %>
 

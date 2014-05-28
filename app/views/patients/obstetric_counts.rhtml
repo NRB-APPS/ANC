@@ -318,7 +318,8 @@
     }
   }
   function hideMsg(div){
-    setTimeout(function(){fade(div, 1);}, 5);
+   __$(div).style.display = "none"
+   // setTimeout(function(){fade(div, 1);}, 5);
   }
 
   function showMsg(div){
@@ -352,13 +353,13 @@
 
       <%= touch_numeric_tag "GRAVIDA", @patient, @gravida,
         {:id => "enter_gravida",
-        :helptext => "Gravida",
+        :helptext => "Gravida <span class='helper'>Obstetric History</span>",
         :absoluteMin => 0,
         :value => "#{@gravida}",
         :condition => false,
         :max => 20,
         :min => 1,
-        :tt_onLoad => "document.forms[0].reset(); showCategory('Obstetric History'); transformMessages(); gotoNextPage()",
+        :tt_onLoad => "document.forms[0].reset();transformMessages(); gotoNextPage()",
         :tt_onUnLoad => "if(__$('category')){__$('content').removeChild(__$('category'))}
     if(__$('enter_gravida').value == 1){
     __$('enter_number_of_deliveries').value = 0;
@@ -376,12 +377,12 @@
 
       <%= touch_numeric_tag "PARITY", @patient, nil,
         {:id => "enter_number_of_deliveries",
-        :helptext => "Enter Number Of Delivered Pregnancies",
+        :helptext => "Enter Number Of Delivered Pregnancies <span class='helper'>Obstetric History</span>",
         :tt_pageStyleClass => "NumbersWithUnknown",
         :value => "#{@parity}",
         :condition => false,
         :condition => "__$('enter_gravida').value > 1",
-        :tt_onLoad => "showCategory('Obstetric History'); __$('touchscreenInput' + " +
+        :tt_onLoad => " __$('touchscreenInput' + " +
           "tstCurrentPage).setAttribute('absoluteMax', (__$('enter_gravida').value - 1)); gotoNextPage()",
         :tt_onUnLoad => "if(__$('enter_number_of_deliveries').value == 0){
     __$('ever_had_still_births').value = 'No';
@@ -400,10 +401,10 @@
 
       <%= touch_numeric_tag "NUMBER OF ABORTIONS", @patient, nil,
         {:id => "enter_number_of_abortions",
-        :helptext => "Enter Number Of Abortions",
+        :helptext => "Enter Number Of Abortions <span class='helper'>Obstetric History</span>",
         :tt_pageStyleClass => "NumbersWithUnknown",
         :condition => "__$('enter_gravida').value > 1",
-        :tt_onLoad => "showCategory('Obstetric History'); updateDeliveries();  __$('touchscreenInput' + tstCurrentPage).value = parseInt(__$('enter_gravida').value) - parseInt(__$('enter_number_of_deliveries').value) -1; gotoNextPage()",
+        :tt_onLoad => " updateDeliveries();  __$('touchscreenInput' + tstCurrentPage).value = parseInt(__$('enter_gravida').value) - parseInt(__$('enter_number_of_deliveries').value) -1; gotoNextPage()",
         :value => "#{@abortions}",
         :validationRule => "[0-5]",
         :validationMessage => "Check your value"
@@ -429,7 +430,7 @@
 
         <%= touch_numeric_tag "NUMBER OF CHILDREN IN PREGNANCY", @patient, @pre_conditions["values"][e],
         {:id => "gestation_type#{e}",
-          :helptext => "#{e}#{indice} Pregnancy Number of Children",
+          :helptext => "#{e}#{indice} Pregnancy Number of Children <span class='helper'>Obstetric History</span>",
           :tt_pageStyleClass => "NumbersWithUnknown",
           :tt_BeforeUnload => "updateVariables(#{e});
       try{ if(max_delivered < __$('touchscreenInput' + tstCurrentPage).value){
@@ -437,7 +438,7 @@
       updateMultiplePregnancy();",
           :tt_onUnLoad => "updateParity(#{e});",
           :absoluteMin => 1,
-          :tt_onLoad => "showCategory('Obstetric History');",
+          :tt_onLoad => "",
           :min => 1,
           :max => 4,
           :absoluteMax => 10,
@@ -451,8 +452,8 @@
         {
           :id => "multiple_pregnancy",
           :field_type => "text",
-          :tt_onLoad => "showCategory('Obstetric History'); __$('touchscreenInput' + tstCurrentPage).value = __$('multiple_pregnancy').value; ",
-          :helptext => "Ever Had Multiple Delivery",
+          :tt_onLoad => " __$('touchscreenInput' + tstCurrentPage).value = __$('multiple_pregnancy').value; ",
+          :helptext => "Ever Had Multiple Delivery <span class='helper'>Obstetric History</span>",
           :condition => "false"} %>
 
         <% 1.upto(4).each{|d| %>
@@ -472,47 +473,47 @@
 
           <%= touch_numeric_tag "YEAR OF BIRTH", @patient, nil,
           {:id => "year_of_birth#{e}#{d}",
-            :helptext => "Year of Birth #{d}#{indic} Child (#{e}#{indice} Pregnancy)",
+            :helptext => "Year of Birth #{d}#{indic} Child (#{e}#{indice} Pregnancy) <span class='helper'>Obstetric History</span>",
             :tt_pageStyleClass => "NumbersWithUnknown",
             :absoluteMin => @min_birth_year,
             :min => @min_birth_year,
-            :tt_onLoad => "showCategory('Obstetric History'); validateInput(#{e}, #{d})",
+            :tt_onLoad => " validateInput(#{e}, #{d})",
             :max => @max_birth_year,
             :absoluteMax => @abs_max_birth_year,
             :condition => "__$('gestation_type#{e}').value >= #{d} && #{@pre_conditions["conditions"][e]}" } %>
 
           <%= touch_text_field_tag "Place of Birth", @patient, nil,
           {:id => "delivery#{e}#{d}",
-            :helptext => "Place of Birth #{d}#{indic} Child (#{e}#{indice} Pregnancy)",
+            :helptext => "Place of Birth #{d}#{indic} Child (#{e}#{indice} Pregnancy) <span class='helper'>Obstetric History</span>",
             :ajaxURL => "/encounters/static_locations?extras=1&search_string=",
             :condition => "__$('gestation_type#{e}').value >= #{d} && #{@pre_conditions["conditions"][e]}",
-            :tt_onLoad => "showCategory('Obstetric History'); addHereButton()",
+            :tt_onLoad => " addHereButton()",
             :tt_onUnLoad => "removeHereButton()"
           } %>
 
           <%= touch_text_field_tag "Gestation", @patient, nil,
           {:id => "gestation#{e}#{d}",
-            :helptext => "Gestation (Months) #{d}#{indic} Child (#{e}#{indice} Pregnancy)",
+            :helptext => "Gestation (Months) #{d}#{indic} Child (#{e}#{indice} Pregnancy) <span class='helper'>Obstetric History</span>",
             :condition => "__$('gestation_type#{e}').value >= #{d} && #{@pre_conditions["conditions"][e]}",
             :field_type => "number",
             :tt_pageStyleClass => "NumbersWithUnknown",
             :max => 9,
-            :tt_onLoad => "showCategory('Obstetric History');",
+            :tt_onLoad => "",
             :min => 6
           } %>
 
           <%= touch_text_field_tag "Labour Duration", @patient, nil,
           {:id => "labour_duration#{e}#{d}",
-            :helptext => "Estimated Labour Duration (Hours) #{d}#{indic} Child (#{e}#{indice} Pregnancy)",
+            :helptext => "Estimated Labour Duration (Hours) #{d}#{indic} Child (#{e}#{indice} Pregnancy) <span class='helper'>Obstetric History</span>",
             :condition => "__$('gestation_type#{e}').value >= #{d} && #{@pre_conditions["conditions"][e]}",
             :field_type => "number",
-            :tt_onLoad => "showCategory('Obstetric History');",
+            :tt_onLoad => "",
             :tt_pageStyleClass => "NumbersWithUnknown" } %>
 
           <%= touch_select_tag "Method of Delivery", @patient, options_for_select(@delivery_modes),
           {:id => "method_of_delivery#{e}#{d}",
-            :tt_onLoad => "showCategory('Obstetric History');",
-            :helptext => "Method of Delivery #{d}#{indic} Child (#{e}#{indice} Pregnancy)",
+            :tt_onLoad => "",
+            :helptext => "Method of Delivery #{d}#{indic} Child (#{e}#{indice} Pregnancy) <span class='helper'>Obstetric History</span>",
             :condition => "__$('gestation_type#{e}').value >= #{d} && #{@pre_conditions["conditions"][e]}",
             :tt_onUnLoad => "try{if(__$('method_of_delivery#{e}').value == 'Caesarean Section'){__$('ever_had_c_sections').value = 'Yes';} " +
               " else if(__$('method_of_delivery#{e}#{d}').value == 'Vacuum Extraction Delivery'){__$('ever_had_a_vacuum_extraction').value = 'Yes';}}catch(e){}" } %>
@@ -520,8 +521,8 @@
           <%= touch_select_tag "Condition at Birth", @patient,
           options_for_select([["", ""], ["Alive", "Alive"], ["Still Birth","Still Birth"]]),
           {:id => "condition_at_birth#{e}#{d}",
-            :tt_onLoad => "showCategory('Obstetric History');",
-            :helptext => "Condition at Birth #{d}#{indic} Child (#{e}#{indice} Pregnancy",
+            :tt_onLoad => "",
+            :helptext => "Condition at Birth #{d}#{indic} Child (#{e}#{indice} Pregnancy <span class='helper'>Obstetric History</span>",
             :condition => "__$('gestation_type#{e}').value >= #{d} && #{@pre_conditions["conditions"][e]}",
             :tt_onUnLoad => "try{if(__$('condition_at_birth#{e}#{d}').value == 'Still Birth'){__$('ever_had_still_births').value = 'Yes';}}catch(e){}"
           } %>
@@ -530,30 +531,30 @@
           options_for_select([["", ""], ["Big Baby (Above 4kg)", "Big Baby (Above 4kg)"],
               ["Average","Average"], ["Small Baby (Less than 2.5kg)", "Small Baby (Less than 2.5kg)"]]),
           {:id => "birth_weight#{e}#{d}",
-            :tt_onLoad => "showCategory('Obstetric History');",
-            :helptext => "Estimated Birth Weight #{d}#{indic} Child (#{e}#{indice} Pregnancy)",
+            :tt_onLoad => "",
+            :helptext => "Estimated Birth Weight #{d}#{indic} Child (#{e}#{indice} Pregnancy) <span class='helper'>Obstetric History</span>",
             :condition => "__$('gestation_type#{e}').value >= #{d} && __$('condition_at_birth#{e}#{d}').value != 'Still Birth' && #{@pre_conditions["conditions"][e]}" } %>
 
           <%= touch_select_tag "Alive", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No","No"]]),
           {:id => "alive#{e}#{d}",
-            :tt_onLoad => "showCategory('Obstetric History');",
-            :helptext => "#{d}#{indic} Child Alive Now (#{e}#{indice} Pregnancy)",
+            :tt_onLoad => "",
+            :helptext => "#{d}#{indic} Child Alive Now (#{e}#{indice} Pregnancy) <span class='helper'>Obstetric History</span>",
             :condition => "__$('gestation_type#{e}').value >= #{d} && __$('condition_at_birth#{e}#{d}').value != 'Still Birth' && #{@pre_conditions["conditions"][e]}" } %>
 
           <%= touch_select_tag "Units of age of child", @patient,
           options_for_select([["", ""], ["Years", "Years"], ["Months","Months"], ["Weeks", "Weeks"], ["Days", "Days"],
               ["Hours", "Hours"], ["Minutes", "Minutes"]]),
           {:id => "age_units#{e}#{d}",
-            :tt_onLoad => "showCategory('Obstetric History');",
-            :helptext => "#{d}#{indic} Child's Units of age at death (#{e}#{indice} Pregnancy)",
+            :tt_onLoad => "",
+            :helptext => "#{d}#{indic} Child's Units of age at death (#{e}#{indice} Pregnancy) <span class='helper'>Obstetric History</span>",
             :condition => "__$('gestation_type#{e}').value >= #{d} && __$('alive#{e}#{d}').value == 'No' && #{@pre_conditions["conditions"][e]}" } %>
 
           <%= touch_numeric_tag "Age at Death", @patient, nil,
           {:id => "age_at_death#{e}#{d}",
-            :helptext => "#{d}#{indic} Child's Age at Death (#{e}#{indice} Pregnancy)",
+            :helptext => "#{d}#{indic} Child's Age at Death (#{e}#{indice} Pregnancy) <span class='helper'>Obstetric History</span>",
             :tt_pageStyleClass => "NumbersOnly",
             :absoluteMin => 0,
-            :tt_onLoad => "showCategory('Obstetric History'); __$('helpText' + tstCurrentPage).innerHTML += '(' + __$('age_units#{e}#{d}').value + ')'",
+            :tt_onLoad => " __$('helpText' + tstCurrentPage).innerHTML += '(' + __$('age_units#{e}#{d}').value + ')'",
             :condition => "__$('gestation_type#{e}').value >= #{d} && __$('alive#{e}#{d}').value == 'No' && #{@pre_conditions["conditions"][e]}" } %>
 
         <% } %>
@@ -579,8 +580,8 @@
 
         <%= touch_numeric_tag "YEAR OF BIRTH", @patient, nil,
         {:id => "year_of_birth#{e}",
-          :tt_onLoad => "showCategory('Obstetric History'); if (parseInt(#{e}) > 1){try{__$('touchscreenInput' + tstCurrentPage).setAttribute('min', parseInt(__$('year_of_birth#{e - 1}').value))}catch(ex){}}",
-          :helptext => "Year of #{e}#{indice} Abortion",
+          :tt_onLoad => " if (parseInt(#{e}) > 1){try{__$('touchscreenInput' + tstCurrentPage).setAttribute('min', parseInt(__$('year_of_birth#{e - 1}').value))}catch(ex){}}",
+          :helptext => "Year of #{e}#{indice} Abortion <span class='helper'>Obstetric History</span>",
           :tt_pageStyleClass => "NumbersWithUnknown",
           :absoluteMin => (@birth_year + 10),
           :min =>   @min_birth_year,
@@ -590,38 +591,38 @@
 
         <%= touch_select_tag "Place of Birth", @patient, options_for_select(@place),
         {:id => "delivery#{e}",
-          :tt_onLoad => "showCategory('Obstetric History');",
-          :helptext => "Place of #{e}#{indice} Abortion",
+          :tt_onLoad => "",
+          :helptext => "Place of #{e}#{indice} Abortion <span class='helper'>Obstetric History</span>",
           :condition => "__$('enter_number_of_abortions').value >= #{e}" } %>
 
         <%= touch_select_tag "Type of Abortion", @patient, options_for_select(["", "Incomplete abortion", "Complete abortion"]),
         {:id => "type_of_abortion#{e}",
-          :tt_onLoad => "showCategory('Obstetric History');",
-          :helptext => "Type of #{e}#{indice} Abortion",
+          :tt_onLoad => "",
+          :helptext => "Type of #{e}#{indice} Abortion <span class='helper'>Obstetric History</span>",
           :condition => "__$('enter_number_of_abortions').value >= #{e}",
           :tt_onUnLoad => "__$('condition_at_birth_abortion#{e}').value = 'Abortion'"
         } %>
 
         <%= touch_select_tag "Procedure Done", @patient, options_for_select(@procedures),
         {:id => "method_of_delivery#{e}",
-          :tt_onLoad => "showCategory('Obstetric History');",
-          :helptext => "Procedure Done #{e}#{indice} Abortion",
+          :tt_onLoad => "",
+          :helptext => "Procedure Done #{e}#{indice} Abortion <span class='helper'>Obstetric History</span>",
           :condition => "__$('enter_number_of_abortions').value >= #{e} && __$('type_of_abortion#{e}').value == 'Incomplete abortion'"
         } %>
 
         <%= touch_text_field_tag "Gestation", @patient, nil,
         {:id => "gestation#{e}",
-          :helptext => "Gestation #{e}#{indice} Abortion (Months)",
+          :helptext => "Gestation #{e}#{indice} Abortion (Months) <span class='helper'>Obstetric History</span>",
           :condition => "__$('enter_number_of_abortions').value >= #{e}",
           :field_type => "number",
           :absoluteMax => "6",
-          :tt_onLoad => "showCategory('Obstetric History');",
+          :tt_onLoad => "",
           :tt_pageStyleClass => "NumbersOnly" } %>
 
         <%= touch_hidden_tag "Condition at Birth", @patient, nil,
         {:id => "condition_at_birth_abortion#{e}",
-          :tt_onLoad => "showCategory('Obstetric History');",
-          :helptext => "Condition at Birth #{e}#{indice} Abortion",
+          :tt_onLoad => "",
+          :helptext => "Condition at Birth #{e}#{indice} Abortion <span class='helper'>Obstetric History</span>",
           :condition => "__$('enter_number_of_abortions').value >= #{e}" } %>
 
       <% } %>
@@ -635,27 +636,27 @@
       <%= touch_hidden_tag "STILL BIRTH", @patient, "No",
         {:id => "ever_had_still_births",
         :helptext => "Ever Had Still Births?",
-        :tt_onLoad => "showCategory('Obstetric History'); parsedConceptName = 'STILL BIRTH'",
+        :tt_onLoad => " parsedConceptName = 'STILL BIRTH'",
         :tt_onUnLoad => "parsedConceptName = ''",
         :condition => "__$('enter_gravida').value > 0 && deliveries > 0 " +
           "&& (#{controls})"} %>
       <%= touch_hidden_tag "Caesarean section", @patient, "No",
         {:id => "ever_had_c_sections",
         :helptext => "Ever Had C-sections?",
-        :tt_onLoad => "showCategory('Obstetric History'); parsedConceptName = 'Caesarean section'",
+        :tt_onLoad => " parsedConceptName = 'Caesarean section'",
         :tt_onUnLoad => "parsedConceptName = ''",
         :condition => "__$('enter_gravida').value > 0" } %>
       <%= touch_hidden_tag "Vacuum extraction delivery", @patient, "No",
         {:id => "ever_had_a_vacuum_extraction",
         :helptext => "Ever Had A Vacuum Extraction",
-        :tt_onLoad => "showCategory('Obstetric History'); parsedConceptName = 'Vacuum extraction delivery'",
+        :tt_onLoad => " parsedConceptName = 'Vacuum extraction delivery'",
         :tt_onUnLoad => "parsedConceptName = ''",
         :condition => "__$('enter_gravida').value > 0" } %>
 
       <%= touch_select_tag "SYMPHYSIOTOMY", @patient, options_for_select([["", ""], ["No", "No"], ["Yes", "Yes"]]),
         {:id => "ever_had_symphysiotomy",
         :helptext => "Ever Had Symphysiotomy?",
-        :tt_onLoad => "showCategory('Obstetric History'); parsedConceptName = 'SYMPHYSIOTOMY'",
+        :tt_onLoad => " parsedConceptName = 'SYMPHYSIOTOMY'",
         :tt_onUnLoad => "parsedConceptName = ''",
         :condition => "false"
       } %>
@@ -663,7 +664,7 @@
       <%= touch_select_tag "HEMORRHAGE", @patient, options_for_select([["", ""], ["No", "No"], ["APH", "APH"], ["PPH", "PPH"]]),
         {:id => "hemorrhage",
         :helptext => "Ever Had Hemorrhage?",
-        :tt_onLoad => "showCategory('Obstetric History'); parsedConceptName = 'HEMORRHAGE'",
+        :tt_onLoad => " parsedConceptName = 'HEMORRHAGE'",
         :tt_onUnLoad => "parsedConceptName = ''",
         :condition => "false"
       } %>
@@ -671,20 +672,20 @@
       <%= touch_select_tag "PRE-ECLAMPSIA", @patient, options_for_select([["", ""], ["No", "No"], ["Yes", "Yes"]]),
         {:id => "pre_eclampsia",
         :helptext => "Ever Had Pre-Eclampsia?",
-        :tt_onLoad => "showCategory('Obstetric History'); parsedConceptName = 'PRE-ECLAMPSIA'",
+        :tt_onLoad => " parsedConceptName = 'PRE-ECLAMPSIA'",
         :tt_onUnLoad => "parsedConceptName = ''",
         :condition => "false" } %>
 
       <%= touch_select_tag "ECLAMPSIA", @patient, options_for_select([["", ""], ["No", "No"], ["Yes", "Yes"]]),
         {:id => "eclampsia",
         :helptext => "Ever Had Eclampsia?",
-        :tt_onLoad => "showCategory('Obstetric History'); parsedConceptName = 'ECLAMPSIA'",
+        :tt_onLoad => " parsedConceptName = 'ECLAMPSIA'",
         :tt_onUnLoad => "parsedConceptName = ''",
         :condition => "false" } %>
 
       <%= touch_text_field_tag "", @patient, nil,
         {:id => "complications",
-        :helptext => "Previous complications",
+        :helptext => "Previous complications <span class='helper'>Obstetric History</span>",
         :tt_onLoad => "loadSplitSelections();",
         :optional => "true",
         :condition => "__$('enter_gravida').value > 1"

@@ -1,11 +1,5 @@
 
 <style>
-  .helper {
-    display: block;
-    float:right;
-    background-color: #DEDEDE;
-  }
-
 </style>
 <script type="text/javascript" language="javascript">
   <!--
@@ -46,47 +40,47 @@
   <%= touch_select_tag "ASTHMA", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
     {:id => "ever_had_asthma?",
     :condition => "false",
-    :helptext => "Ever Had Asthma? <span class='helper'>Task: Medical History</span>" } %>
+    :helptext => "Ever Had Asthma? <span class='helper'> Medical History</span>" } %>
 
   <%= touch_select_tag "HYPERTENSION", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
     {:id => "ever_had_hypertension?",
     :condition => "false",
-    :helptext => "Ever Had Hypertension? <span class='helper'>Task: Medical History</span>" } %>
+    :helptext => "Ever Had Hypertension? <span class='helper'> Medical History</span>" } %>
 
   <%= touch_select_tag "DIABETES", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
     {:id => "ever_had_diabetes?",
     :condition => "false",
-    :helptext => "Ever Had Diabetes? <span class='helper'>Task: Medical History</span>" } %>
+    :helptext => "Ever Had Diabetes? <span class='helper'> Medical History</span>" } %>
 
   <%= touch_select_tag "EPILEPSY", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
     {:id => "ever_had_epilepsy?",
     :condition => "false",
-    :helptext => "Ever Had Epilepsy? <span class='helper'>Task: Medical History</span>" } %>
+    :helptext => "Ever Had Epilepsy? <span class='helper'> Medical History</span>" } %>
 
   <%= touch_select_tag "RENAL DISEASE", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
     {:id => "ever_had_renal_disease?",
     :condition => "false",
-    :helptext => "Ever Had Renal Disease? <span class='helper'>Task: Medical History</span>" } %>
+    :helptext => "Ever Had Renal Disease? <span class='helper'> Medical History</span>" } %>
 
   <%= touch_select_tag "FISTULA REPAIR", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
     {:id => "ever_had_a_fistula_repair?",
     :condition => "false",
-    :helptext => "Ever Had A Fistula Repair? <span class='helper'>Task: Medical History</span>" } %>
+    :helptext => "Ever Had A Fistula Repair? <span class='helper'> Medical History</span>" } %>
 
   <%= touch_select_tag "Spine or Leg Deform", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
     {:id => "do_you_have_a_spine_or_leg_deform?",
     :condition => "false",
-    :helptext => "Does Client have Leg or Spine Deformity? <span class='helper'>Task: Medical History</span>" } %>
+    :helptext => "Does Client have Leg or Spine Deformity? <span class='helper'> Medical History</span>" } %>
 
   <%= touch_select_tag "Blood transfusion", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
     {:id => "blood_transfusion",
     :condition => "false",
-    :helptext => "Ever had a blood transfusion? <span class='helper'>Task: Medical History</span>" } %>
+    :helptext => "Ever had a blood transfusion? <span class='helper'> Medical History</span>" } %>
 
   <%= touch_select_tag "Sexually transmitted infection", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
     {:id => "sti",
     :condition => "false",
-    :helptext => "Ever had a sexually transmitted infection? <span class='helper'>Task: Medical History</span>" } %>
+    :helptext => "Ever had a sexually transmitted infection? <span class='helper'> Medical History</span>" } %>
 
   <% @conditions = [
     ["", ""],
@@ -107,7 +101,7 @@
     :tt_pageStyleClass => "longSelectList",
     :multiple => "multiple",
     :tt_BeforeUnLoad => "checkFields()",
-    :helptext => "Select past medical complications? <span class='helper'>Task: Medical History</span>" } %>
+    :helptext => "Select past medical complications? <span class='helper'> Medical History</span>" } %>
 
   <%= submit_tag 'Finish' %>
 <% end %>

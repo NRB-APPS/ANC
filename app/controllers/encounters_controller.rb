@@ -168,9 +168,10 @@ class EncountersController < ApplicationController
                     AND e.patient_id = #{params[:patient_id]}
                     AND e.encounter_datetime < '#{d.strftime('%Y-%m-%d 23:59:59')}'
                     ORDER BY e.encounter_datetime DESC LIMIT 1").first.encounter_id rescue []
-    unless @last_vitals.blank?
-      @first = "false"
-      Observation.find(:all, :conditions => ["encounter_id = ?", @last_vitals]).each {|obs|
+    #raise @last_vitals.to_yaml
+    if ! @last_vitals.blank?
+      @first = "false"     
+      (Observation.find(:all, :conditions => ["encounter_id = ?", @last_vitals]) || []).each {|obs|
         @vital = {} if @vital.blank?
         current = obs.to_s
         @vital["bmi"] = current.split(':')[1] if current.match(/Body/i)
@@ -181,6 +182,7 @@ class EncountersController < ApplicationController
     else
       @first = "true"
     end
+    
     
     @preg_encounters = @patient.encounters.find(:all, :conditions => ["voided = 0 AND encounter_datetime >= ? AND encounter_datetime <= ?",
         @current_range[0]["START"], @current_range[0]["END"]]) rescue []
