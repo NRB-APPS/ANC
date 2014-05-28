@@ -202,6 +202,15 @@ form{
     overflow: hidden;
 }
 
+.helper {
+  display: block;
+  float:right;
+  background-color: #EEFFEE;
+  border: 1px solid #CCCCCC;
+  border-radius: 20px 20px 20px 20px;
+}
+  
+
 .helpTextClass {
     font-size: 2em;
     padding-top: 5px;
