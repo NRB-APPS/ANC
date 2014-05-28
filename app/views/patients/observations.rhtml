@@ -124,7 +124,11 @@
     }
         
     if (num == 1){
-	__$(__$('presentation').value.toLowerCase()).value = values_hash["district"];
+       if (__$('presentation').value.toLowerCase() == "ball"){
+         __$("position").value = values_hash["district"];
+       }else{
+         __$(__$('presentation').value.toLowerCase()).value = values_hash["district"];
+       }
         __$("presentation").value = values_hash["region"];
     }else if (num == 2){
 
@@ -200,7 +204,12 @@
       setTimeout("updateInputFields()", 100);
     }
   }
- 
+ function clearAll(){
+    __$('presentation').value = "";
+    __$('breech').value = "";
+    __$('cephalic').value = "";
+    __$('position').value = "";
+ }
  function ajaxifyInput(){
     value = tstInputTarget.value
     region_terminal = false;
@@ -278,7 +287,7 @@
   <%= touch_select_tag "PRESENTATION", @patient, options_for_select(@presentation),
     {:id => "presentation",
     :helptext => "Presentation <span class='helper'> ANC Examination</span>",
-    :tt_onLoad => "ajaxifyInput();",
+    :tt_onLoad => "ajaxifyInput();clearAll();",
     :tt_BeforeUnLoad => "verifyFields(1)",
     :tt_pageStyleClass => "NoKeyboard" }, session_date %>
 
