@@ -500,12 +500,14 @@ class PatientsController < ApplicationController
    
   def tab_visit_summary
       
-    @encounters = @patient.encounters.find(:all, 
-      :conditions => ["DATE(encounter_datetime) = ?", (session[:datetime] ? session[:datetime].to_date : Date.today)]) rescue []
+    @encounters = @patient.encounters.all(
+      :order => "encounter_datetime DESC",
+      :conditions => ["DATE(encounter_datetime) = ?",
+        (session[:datetime] ? session[:datetime].to_date : Date.today)]) rescue []
 
     @external_encounters = []
 
-    @external_encounters = Bart2Connection::PatientIdentifier.search_by_identifier(@anc_patient.national_id).patient.encounters rescue [] if @anc_patient.hiv_status.downcase == "positive" # .collect{|e| e.type.name}
+    @external_encounters = Bart2Connection::PatientIdentifier.search_by_identifier(@anc_patient.national_id).patient.encounters rescue [] if @anc_patient.hiv_status.downcase == "positive" 
 
     @encounters = @encounters + @external_encounters
 
@@ -547,7 +549,7 @@ class PatientsController < ApplicationController
 
     @encounter_names = active_names.uniq
 
-    @encounter_names = @encounter_names.reverse
+    @encounter_names = @encounter_names
 
     render :layout => false
   end

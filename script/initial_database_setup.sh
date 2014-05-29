@@ -6,7 +6,7 @@ usage(){
   echo "ENVIRONMENT should be: development|test|production"
   echo "Available SITES:"
   ls -1 db/data
-} 
+}
 
 ENV=$1
 SITE=$2
@@ -33,7 +33,6 @@ echo "CREATE DATABASE $DATABASE;" | mysql --host=$HOST --user=$USERNAME --passwo
 mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/openmrs_1_7_2_concept_server_full_db.sql
 mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/schema_bart2_additions.sql
 mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/defaults.sql
-# mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/user_schema_modifications.sql
 mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/malawi_regions.sql
 mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/mysql_functions.sql
 mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/drug_ingredient.sql
@@ -44,19 +43,13 @@ mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/data/${S
 mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/data/${SITE}/tasks.sql
 mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/data/${SITE}/anc_tasks.sql
 mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/moh_regimens_only.sql
-#mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/regimen_indexes.sql
 mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/retrospective_station_entries.sql
 mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/create_dde_server_connection.sql
-
-#mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/privilege.sql
-#mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/bart2_role_privileges.sql
+mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/drug_sets.sql
 mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/migrate/create_weight_height_for_ages.sql
 mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/migrate/insert_weight_for_ages.sql
 mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/migrate/global_property.sql
-
-#rake openmrs:bootstrap:load:defaults RAILS_ENV=$ENV
-#rake openmrs:bootstrap:load:site SITE=$SITE RAILS_ENV=production#
-
+mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/openmrs_metadata_1_7.sql
 echo "After completing database setup, you are advised to run the following:"
 echo "rake test"
 echo "rake cucumber"

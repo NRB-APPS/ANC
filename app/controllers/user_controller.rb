@@ -79,6 +79,6 @@ class UserController < GenericUserController
     @patient_id = params[:patient_id]
     
     # raise @activities.to_yaml
-  end
+  end  
   
 end
