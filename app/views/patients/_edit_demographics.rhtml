@@ -258,7 +258,7 @@
     <%= text_field_tag "person[names][given_name]", params[:given_name],
       {:id => 'given_name',
       :field_type => 'alpha',
-      :helpText => 'First name',
+      :helpText => "First name<span class='helper'> Outcome</span>",
       :ajaxURL => '/person_names/given_names?search_string=',
       :allowFreeText => true,
       :tt_onLoad => 'seen(tstCurrentPage);' } %>
@@ -267,7 +267,7 @@
     <%= text_field_tag "person[names][family_name]", params[:family_name],
       {:id => 'family_name',
       :field_type => 'alpha',
-      :helpText => 'Last name',
+      :helpText => "Last name<span class='helper'> Demographics (Edit)</span>",
       :ajaxURL => '/person_names/family_names?search_string=',
       :allowFreeText => true,
       :tt_onLoad => 'seen(tstCurrentPage);' } %>
@@ -276,7 +276,7 @@
     <%= text_field_tag "person[names][family_name2]", params[:family_name2],
       {:id => 'family_name2',
       :field_type => 'alpha',
-      :helpText => 'Maiden name',
+      :helpText => "Maiden name<span class='helper'> Demographics (Edit)</span>",
       :ajaxURL => '/person_names/family_names?search_string=',
       :allowFreeText => true,
       :condition => '$("family_name2").value == "" || skipped[tstCurrentPage] == 1',
@@ -286,12 +286,12 @@
     Gender: <%= select_tag "gender", options_for_select([["",""], ["Male", "M"], ["Female", "F"]], params[:gender]),
       {
       :id => 'gender',
-      :helpText => 'Gender',
+      :helpText => "Gender<span class='helper'> Demographics (Edit)</span>",
       :tt_onLoad => 'seen(tstCurrentPage);' } %>
 
   <%when 'birthdate'%>
     <%= text_field_tag "person[birth_year]", nil,
-      {:helpText => 'Year of Birth',
+      {:helpText => "Year of Birth<span class='helper'> Demographics (Edit)</span>",
       :field_type => 'number',
       :absoluteMin => "1890",
       :min => "1940",
@@ -300,13 +300,13 @@
       :tt_onLoad => 'seen(tstCurrentPage);' }  %>
 
     <%= select_tag "person[birth_month]", options_for_select(@month_names),
-      {:helpText => 'Month of Birth',
+      {:helpText => "Month of Birth<span class='helper'> Demographics (Edit)</span>",
       :tt_onLoad => "selectAll = false; createSingleSelectControl(''); showSummary('year')",
       :tt_pageStyleClass => "NoKeyboard",
       :condition => '$("person_birth_year").value.toLowerCase() != "unknown"'}%>
 
     <%= text_field_tag "person[age_estimate]", nil,
-      {:helpText => 'Age Estimate',
+      {:helpText => "Age Estimate<span class='helper'> Demographics (Edit)</span>",
       :absoluteMin => 1,
       :absoluteMax => age_limit,
       :field_type => 'number',
@@ -315,7 +315,7 @@
 
     <%= text_field_tag "person[birth_day]",  nil,
       :field_type => 'number',
-      :helpText => 'Birth Day', :absoluteMin => 1,
+      :helpText => "Birth Day<span class='helper'> Demographics (Edit)</span>", :absoluteMin => 1,
       :absoluteMax => 31,
       :condition => '($("person_birth_year").value != "Unknown") && ($("person_birth_month").value != "Unknown")',
       :tt_onLoad => "getDayOfMonthPicker($('person_birth_year').value,$('person_birth_month').value); showSummary('day')"%>
@@ -327,7 +327,7 @@
   <%when 'landmark'%>
     <%= select_tag "person[addresses][address1]",  params[:address1],
       {	:id => 'address1',
-      :helpText => 'Closest Landmark or Plot Number',
+      :helpText => "Closest Landmark or Plot Number<span class='helper'> Demographics (Edit)</span>",
       :allowFreeText => true,
       :ajaxURL => '/people/landmark?filter_value=',
       :tt_pageStyleClass => "NoKeyboard",
@@ -335,8 +335,8 @@
       #:tt_onLoad => "set_ajaxURL_for_suggestions('/people/landmark?filter_value=' ,document.getElementById('person_addresses_city_village').value);$('nextButton').style.display = 'block';"
     }%>  <%when 'current_district' %>
 
-    <p><label for="filter_region">Current Address</label></br>
-      <%= text_field "filter" , 'region', :xhelpText => 'Region',
+    <p><label for="filter_region">Current Address<span class='helper'> Demographics (Edit)</span></label></br>
+      <%= text_field "filter" , 'region', :xhelpText => "Region<span class='helper'> Demographics (Edit)</span>",
         :ajaxURL => '/people/region/Region?field=role&value=',
         :tt_pageStyleClass => "NoKeyboard",
         :tt_BeforeUnLoad => "verifyFields(2)",
@@ -347,16 +347,16 @@
       :condition => "false"
     } %>
 
-    <p><label for="filter_t_a">Traditional Authority (T/A) or area of residence</label></br>
+    <p><label for="filter_t_a">Traditional Authority (T/A) or area of residence<span class='helper'> Demographics (Edit)</span></label></br>
 
-      <%= text_field "filter" , 't_a', :condition => '$("state_province").value != "Other"', :helpText => 'Traditional Authority (T/A) or area of residence', :tt_requireNextClick => false, :ajaxURL => '', :tt_pageStyleClass => "azButton", :tt_onLoad => "set_ajaxURL_for_suggestions('/people/traditional_authority/TraditionalAuthority?filter_value=' ,document.getElementById('state_province').value);$('nextButton').style.display = 'none';" %></p>
+      <%= text_field "filter" , 't_a', :condition => '$("state_province").value != "Other"', :helpText => "Traditional Authority (T/A) or area of residence<span class='helper'> Demographics (Edit)</span>", :tt_requireNextClick => false, :ajaxURL => '', :tt_pageStyleClass => "azButton", :tt_onLoad => "set_ajaxURL_for_suggestions('/people/traditional_authority/TraditionalAuthority?filter_value=' ,document.getElementById('state_province').value);$('nextButton').style.display = 'none';" %></p>
 
-    <%= text_field "filter" , 't_a_a', :tt_onUnLoad => 'if ($("t_a_a")) {$("t_a").value = $("t_a_a").value}', :condition => '$("state_province").value == "Other"', :ajaxURL => '/person_addresses/traditional_authority?search_string=', :tt_pageStyleClass => "azButton", :allowFreeText => true,  :helpText => 'Specify Traditional Authority (T/A) or area of residence', :tt_onLoad => "$('nextButton').style.display = 'block';" %></p>
+    <%= text_field "filter" , 't_a_a', :tt_onUnLoad => 'if ($("t_a_a")) {$("t_a").value = $("t_a_a").value}', :condition => '$("state_province").value == "Other"', :ajaxURL => '/person_addresses/traditional_authority?search_string=', :tt_pageStyleClass => "azButton", :allowFreeText => true,  :helpText => "Specify Traditional Authority (T/A) or area of residence<span class='helper'> Demographics (Edit)</span>", :tt_onLoad => "$('nextButton').style.display = 'block';" %></p>
 
     <%= text_field_tag "person[addresses][city_village]", params[:city_village],
       {:condition => '$("filter_t_a").value != "Other"',
       :field_type => 'alpha',
-      :helpText => 'Location/Village',
+      :helpText => "Location/Village<span class='helper'> Demographics (Edit)</span>",
       :tt_requireNextClick => false,
       :tt_pageStyleClass => "azButton",
       :ajaxURL => '/people/village?search_string=',
@@ -367,23 +367,23 @@
       :condition => '$("filter_t_a").value == "Other"' ,
       :ajaxURL => '/person_addresses/village?search_string=',
       :allowFreeText => true, :field_type => 'alpha',
-      :helpText => 'Specify Location/Village',
+      :helpText => "Specify Location/Village<span class='helper'> Demographics (Edit)</span>",
       :tt_pageStyleClass => "azButton",
       :tt_requireNextClick => true, :tt_onLoad => "$('nextButton').style.display = 'block';"}%>
 
     <%= text_field_tag "person[addresses][address1]",  params[:address1],
       {	:id => 'address1',
-      :helpText => 'Closest Landmark or Plot Number<br />' +
+      :helpText => "Closest Landmark or Plot Number<br /><span class='helper'> Demographics (Edit)</span>" +
         '<div style="font-size:0.7em;font-style:italic; margin-left: 40px;">' +
-        '(Please do not include these words: Next to, close, in front of, behind)</div>',
+        "(Please do not include these words: Next to, close, in front of, behind)</div>",
       :allowFreeText => true, :ajaxURL => '',
-      :tt_pageStyleClass => "azButton",
+      :tt_pageStyleClass => "NoKeyboard",
       :tt_onLoad => "set_ajaxURL_for_suggestions('/people/landmark?filter_value=' ,document.getElementById('person_addresses_city_village').value);$('nextButton').style.display = 'block';" }%>
 
 
   <%when 'home_district'%>
 
-    <%= text_field "region" , 'region_name', :helpText => 'Home Address',
+    <%= text_field "region" , 'region_name', :helpText => "Home Address<span class='helper'> Demographics (Edit)</span>",
       :tt_pageStyleClass => "NoKeyboard",
       :ajaxURL => '/people/region/Region?field=role&value=',
       :tt_BeforeUnLoad => "verifyFields(1)",
@@ -398,7 +398,7 @@
 
     <%= text_field_tag "person[addresses][county_district]",  params[:address2],
       {:field_type => 'alpha',
-      :helpText => 'Home Traditional Authority (TA)',
+      :helpText => "Home Traditional Authority (TA)<span class='helper'> Demographics (Edit)</span>",
       :ajaxURL => '/search/ta?search_string=',
       :allowFreeText => false,
       :tt_requireNextClick => false,
@@ -408,7 +408,7 @@
     <%= text_field_tag "person[addresses][neighborhood_cell]", params[:city_village],
       {
       :field_type => 'alpha',
-      :helpText => "Home Village",
+      :helpText => "Home Village<span class='helper'> Demographics (Edit)</span>",
       :tt_requireNextClick => true,
       :tt_pageStyleClass => "azButton",
       :ajaxURL => '/people/village?search_string=',
@@ -417,27 +417,27 @@
 
 
   <%when 'primary_phone'%>
-    <%= text_field_tag "person[attributes][cell_phone_number]",  nil, :field_type => 'number', :helpText => 'Primary Phone Number', :allowFreeText => "true", :validationRule => "^0\\d{9}$|Unknown|Not Available", :validationMessage => "Not a valid phone number"%>
+    <%= text_field_tag "person[attributes][cell_phone_number]",  nil, :field_type => 'number', :helpText => "Primary Phone Number<span class='helper'> Demographics (Edit)</span>", :allowFreeText => "true", :validationRule => "^0\\d{9}$|Unknown|Not Available", :validationMessage => "Not a valid phone number"%>
 
   <%when 'secondary_phone'%>
-    <%= text_field_tag "person[attributes][home_phone_number]",  nil, :field_type => 'number', :helpText => 'Secondary Phone Number', :allowFreeText => "true", :validationRule => "^0\\d{7}$|Unknown|Not Available|^0\\d{9}$", :validationMessage => "Not a valid phone number"%>
+    <%= text_field_tag "person[attributes][home_phone_number]",  nil, :field_type => 'number', :helpText => "Secondary Phone Number<span class='helper'> Demographics (Edit)</span>", :allowFreeText => "true", :validationRule => "^0\\d{7}$|Unknown|Not Available|^0\\d{9}$", :validationMessage => "Not a valid phone number"%>
 
   <%when 'citizenship'%>
 
 
     <%= select_tag("person[attributes][citizenship]", options_for_select([" ", "Malawian", "Other"], params[:citizenship]),
-      :helpText =>"Nationality",
+      :helpText =>"Nationality<span class='helper'> Demographics (Edit)</span>",
       :field_type => 'text') %>
 
     <%= text_field_tag "person[attributes][race]", nil,
       {:id => "race",
-      :helptext => "Specify nationality",
+      :helptext => "Specify nationality<span class='helper'> Demographics (Edit)</span>",
       :allowFreeText => true,
       :ajaxURL => "/people/static_nationalities?&search_string=",
       :condition => '($("person_attributes_citizenship").value != "Malawian")' } %>
 
   <%when 'occupation'%>
-    <%= select_tag "person[attributes][occupation]", options_for_select([" ", "Housewife", "Farmer", "Police", "Soldier", "Business", "Teacher", "Student", "Healthcare Worker"].sort.concat(["Other"]), params[:occupation]), {:helpText => 'Occupation'}%>
+    <%= select_tag "person[attributes][occupation]", options_for_select([" ", "Housewife", "Farmer", "Police", "Soldier", "Business", "Teacher", "Student", "Healthcare Worker"].sort.concat(["Other"]), params[:occupation]), {:helpText => "Occupation<span class='helper'> Demographics (Edit)</span>"}%>
   <%end%>
 
   <!-- Make sure patient is created -->

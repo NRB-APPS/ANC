@@ -18,14 +18,10 @@
     text-decoration:underline;
     margin-right:10px;
   }
-  .helper {
-  display: block;
-  float:right;
-  background-color: #DEDEDE;
-  }
-  
-#dia {
+
+#dia, #sys {
     margin-left: 85px;
+    float: right;
 }
 
   .lowWeightForHeight{color:black;background:red;}
@@ -176,10 +172,14 @@
       displayText += "<span class='lowBMI'>" + currentBmi +
         "</span></td></tr><tr><td><span class='recommendation'>Comment : Eligible for therapeutic feeding</span></td></tr>";
     }
-    displayText += "</table></td><td><table width='50%'><tr><th>Last Vitals</th></td></tr>";
-    displayText += "<tr><td>Weight : <%= @vital["weight"] rescue "none" %> </td></tr>"
-    displayText += "<tr><td>Height : <%= @vital["height"] rescue "none" %> </td></tr>"
-    displayText += "<tr><td><span class='title'>BMI :</span> <%= @vital["bmi"] rescue "none" %> </td></tr>"
+    displayText += "</table></td><td><table width='50%'>";
+    if (first == "false"){
+	displayText += "<tr><th>Last Vitals</th></td></tr>";
+	displayText += "<tr><td>Weight : <%= @vital["weight"] %> Kg </td></tr>"
+	displayText += "<tr><td>Height : <%= @vital["height"] %> Cm </td></tr>"
+	displayText += "<tr><td><span class='title'>BMI :</span> <%= @vital["bmi"] rescue "none" %> </td></tr>"
+    }
+    
     displayText += "</table></td></tr></table></div>";
   }
 
@@ -209,8 +209,13 @@
         tstCurrentPage).value.trim() : "?");
 
       if(parseInt(__$("touchscreenInput" + tstCurrentPage).value) > 90 && alreadyNoted == false){
-        showMessage('Client is at risk of pre-eclampsia. Please refer her for Urine Protein test.',false,false);
+      
+        if ($("systolic_blood_pressure").value.trim().length > 0 && $("diastolic_blood_pressure").value.trim().length){
+        	showMessage('Client is at risk of pre-eclampsia. Please refer her for Urine Protein test.',false,false);
+        }
+        
         alreadyNoted = true;
+        
       } else if(parseInt(__$("touchscreenInput" + tstCurrentPage).value) <= 90){
         alreadyNoted = false;
       }
@@ -242,7 +247,11 @@
         tstCurrentPage).value.trim() : "?");
       
       if(parseInt(__$("touchscreenInput" + tstCurrentPage).value) > 90 && alreadyNoted == false){ 
-        showMessage('Client is at risk of pre-eclampsia. Please refer her for Urine Protein test.',false,false); 
+      
+       if ($("systolic_blood_pressure").value.trim().length > 0 && $("diastolic_blood_pressure").value.trim().length){
+        	showMessage('Client is at risk of pre-eclampsia. Please refer her for Urine Protein test.',false,false); 
+        }
+        
         alreadyNoted = true;
       } else if(parseInt(__$("touchscreenInput" + tstCurrentPage).value) <= 90){
         alreadyNoted = false;
@@ -338,7 +347,7 @@
     }
     if  ((value.indexOf(".") > 1) || (value == "Unknown")){
        $("nextButton").style.display = "inline"
-        if ((value.split('.')[1].length == 1) || (value == "Unknown")){
+        if (value.split('.')[1].length == 1){
        return
      }
     }
@@ -354,13 +363,15 @@
   }
   function addKeys(){
    keyboard = document.getElementById('keyboard')
-   keyboard.innerHTML+= getButtonString('sys','Sys')
-   keyboard.innerHTML+= getButtonString('dia','Dias')
+   keyboard.innerHTML+= getButtonString('dia','Diastolic')
+   keyboard.innerHTML+= getButtonString('sys','Systolic')
    dia  = document.getElementById('dia')
    sys  = document.getElementById('sys')
    
    dia.setAttribute('onmousedown', 'changeSelected("dia")')
+   dia.setAttribute('class', 'green')
    sys.setAttribute('onmousedown', 'changeSelected("sys")')
+   sys.setAttribute('class', 'green')
   } 
   
   function changeSelected(selected){
@@ -376,7 +387,11 @@
     }
   }
  
-  
+ function clearFields(){
+ 	__$('systolic_blood_pressure').value = "";
+ 	__$('diastolic_blood_pressure').value = "";
+ 	__$('bp').innerHTML = "";
+ }
 </script>
 
 <form action="/encounters/create/vitals">
@@ -459,7 +474,7 @@ end
         :validationRule => "([0-9]+(\\.[0-9]))|Unknown$",
         :validationMessage => "You must enter a valid decimal number",
         :tt_pageStyleClass => "NumbersWithUnknownAndDecimal",
-        :helpText => "Weight (Kg) <span class='helper'>Task: Vitals</span>"} %>
+        :helpText => "Weight (Kg) <span class='helper'> Vitals</span>"} %>
       <%= hidden_field_tag("observations[][concept_name]", "WEIGHT (KG)") %>
       <%= hidden_field_tag("observations[][patient_id]", @patient.id) %>
       <%= hidden_field_tag("observations[][obs_datetime]", session_date) %>
@@ -492,7 +507,7 @@ end
           :validationRule => "^([0-9]+)|Unknown$",
           :validationMessage => "You must enter numbers only (for example 157)",
           :tt_pageStyleClass => "Numeric NumbersWithUnknown",
-          :helpText => "Height (Cm) <span class='helper'>Task: Vitals</span>"} %>
+          :helpText => "Height (Cm) <span class='helper'> Vitals</span>"} %>
         <%= hidden_field_tag("observations[][concept_name]", "HEIGHT (CM)") %>
         <%= hidden_field_tag("observations[][patient_id]", @patient.id) %>
         <%= hidden_field_tag("observations[][obs_datetime]", session_date) %>
@@ -508,7 +523,7 @@ end
 
           <%#= text_field_tag :showBp, nil,
         {
-        :tt_onLoad => " __$('keyboard').style.display = 'none'",
+        :tt_onLoad => "clearFields();__$('keyboard').style.display = 'none'",
         :optional => "true",
         :tt_pageStyleClass => "NoControls NoKeyboard",
         :condition => "",
@@ -519,7 +534,7 @@ end
 
       <% options = default.merge({
           :id => "blood_pressure",
-          :helptext => "Blood Pressure <span class='helper'>Task: Vitals</span>",
+          :helptext => "Blood Pressure <span class='helper'> Vitals</span>",
           :field_type => "number",
           :tt_pageStyleClass => "NumbersWithUnknown",
           :tt_onLoad => "timedEvent1 = window.setInterval('bpAlerts(1)', 110); timedEvent = setTimeout('calculateBP(-1)', 100);addKeys();",
@@ -578,7 +593,7 @@ end
     :optional => "true",
     :tt_pageStyleClass => "NoControls NoKeyboard",
     :condition => "if(__$('weight')){__$('weight').value.toLowerCase() != 'unknown'}",
-    :helpText => "Summary <span class='helper'>Task: Vitals</span>"
+    :helpText => "Summary <span class='helper'> Vitals</span>"
   } %>
 
   <%= submit_tag "Finish" %>

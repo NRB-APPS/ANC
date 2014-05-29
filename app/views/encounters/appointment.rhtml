@@ -9,12 +9,6 @@
     /*top:80px;*/
   }
 
-   .helper {
-  display: block;
-  float:right;
-  background-color: #DEDEDE;
-  }
-
   #information {
     display: none;
     border: 1px #000 solid;
@@ -340,13 +334,13 @@ clinic_holidays = clinic_holidays.split(',').map{|day|day.to_date}.join(',')
 
 	<% if actual.size != 1 %>
 		<%= select_tag("time_until_next_visit", options_for_select(actual),
-		{:helpText => "Gestation Weeks at Next Visit <span class='helper'>Task: Appointment</span>",
+		{:helpText => "Gestation Weeks at Next Visit <span class='helper'> Appointment</span>",
 		:tt_onLoad => "transformMessages(); calculateGivenRange('#{params[:start_date]}','#{params[:end_date]}')",
 		:tt_onUnLoad => "setAppointmentDate();"}) %>
 
 	<% else %>
 		<%= select_tag("time_until_next_visit", options_for_select(actual),
-		{:helpText => "Gestation Weeks at Next Visit <span class='helper'>Task: Appointment</span>",
+		{:helpText => "Gestation Weeks at Next Visit <span class='helper'> Appointment</span>",
 		:tt_onLoad => "transformMessages(); showCategory('Next Appointment'); calculateGivenRange('#{params[:start_date]}','#{params[:end_date]}');goNextPageIfSingleOption()",
 		:tt_onUnLoad => "setAppointmentDate();"}) %>
 
