@@ -4,14 +4,31 @@ class GeneralSet < ActiveRecord::Base
 
   has_many :drug_sets, :foreign_key => :set_id, :conditions => {:voided => 0}
 
-  def activate
+  def activate(date)
 
-    self.update_attributes(:status => "active")
+    if self.status != "active"
+
+      self.update_attributes(:status => "active")
+      self.update_attributes(:date_updated => date) if !date.blank?
+    end
   end
 
-  def deactivate
+  def deactivate(date)
 
-    self.update_attributes(:status => "inactive")
+    if self.status != "inactive"
+      
+      self.update_attributes(:status => "inactive")
+      self.update_attributes(:date_updated => date) if !date.blank?
+    end
+  end
+
+  def block(date)
+
+    if self.status != "blocked"
+
+      self.update_attributes(:status => "blocked")
+      self.update_attributes(:date_updated => date) if !date.blank?
+    end
   end
 
 end

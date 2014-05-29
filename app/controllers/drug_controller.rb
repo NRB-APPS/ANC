@@ -192,13 +192,32 @@ class DrugController < ApplicationController
 
   def deactivate
 
+    d = (session[:datetime].to_date rescue Date.today)
+    t = Time.now
+    session_date = DateTime.new(d.year, d.month, d.day, t.hour, t.min, t.sec)
+    
     s = GeneralSet.find(params[:set_id])
-    s.deactivate if !s.blank?
+    s.deactivate(session_date) if !s.blank?
   end
 
   def activate
 
+    d = (session[:datetime].to_date rescue Date.today)
+    t = Time.now
+    session_date = DateTime.new(d.year, d.month, d.day, t.hour, t.min, t.sec)
+
     s = GeneralSet.find(params[:set_id])
-    s.activate if !s.blank?
+    s.activate(session_date) if !s.blank?
+  end
+
+  def block
+
+    d = (session[:datetime].to_date rescue Date.today)
+    t = Time.now
+    session_date = DateTime.new(d.year, d.month, d.day, t.hour, t.min, t.sec)
+
+    s = GeneralSet.find(params[:set_id])
+    s.block(session_date) if !s.blank?
+    render :text => 'ok'.to_json
   end
 end
