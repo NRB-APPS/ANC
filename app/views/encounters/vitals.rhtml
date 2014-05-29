@@ -19,8 +19,9 @@
     margin-right:10px;
   }
 
-#dia {
+#dia, #sys {
     margin-left: 85px;
+    float: right;
 }
 
   .lowWeightForHeight{color:black;background:red;}
@@ -174,8 +175,8 @@
     displayText += "</table></td><td><table width='50%'>";
     if (first == "false"){
 	displayText += "<tr><th>Last Vitals</th></td></tr>";
-	displayText += "<tr><td>Weight : <%= @vital["weight"] rescue "none" %> </td></tr>"
-	displayText += "<tr><td>Height : <%= @vital["height"] rescue "none" %> </td></tr>"
+	displayText += "<tr><td>Weight : <%= @vital["weight"] %> Kg </td></tr>"
+	displayText += "<tr><td>Height : <%= @vital["height"] %> Cm </td></tr>"
 	displayText += "<tr><td><span class='title'>BMI :</span> <%= @vital["bmi"] rescue "none" %> </td></tr>"
     }
     
@@ -208,8 +209,13 @@
         tstCurrentPage).value.trim() : "?");
 
       if(parseInt(__$("touchscreenInput" + tstCurrentPage).value) > 90 && alreadyNoted == false){
-        showMessage('Client is at risk of pre-eclampsia. Please refer her for Urine Protein test.',false,false);
+      
+        if ($("systolic_blood_pressure").value.trim().length > 0 && $("diastolic_blood_pressure").value.trim().length){
+        	showMessage('Client is at risk of pre-eclampsia. Please refer her for Urine Protein test.',false,false);
+        }
+        
         alreadyNoted = true;
+        
       } else if(parseInt(__$("touchscreenInput" + tstCurrentPage).value) <= 90){
         alreadyNoted = false;
       }
@@ -241,7 +247,11 @@
         tstCurrentPage).value.trim() : "?");
       
       if(parseInt(__$("touchscreenInput" + tstCurrentPage).value) > 90 && alreadyNoted == false){ 
-        showMessage('Client is at risk of pre-eclampsia. Please refer her for Urine Protein test.',false,false); 
+      
+       if ($("systolic_blood_pressure").value.trim().length > 0 && $("diastolic_blood_pressure").value.trim().length){
+        	showMessage('Client is at risk of pre-eclampsia. Please refer her for Urine Protein test.',false,false); 
+        }
+        
         alreadyNoted = true;
       } else if(parseInt(__$("touchscreenInput" + tstCurrentPage).value) <= 90){
         alreadyNoted = false;
@@ -353,13 +363,15 @@
   }
   function addKeys(){
    keyboard = document.getElementById('keyboard')
-   keyboard.innerHTML+= getButtonString('sys','Sys')
-   keyboard.innerHTML+= getButtonString('dia','Dias')
+   keyboard.innerHTML+= getButtonString('dia','Diastolic')
+   keyboard.innerHTML+= getButtonString('sys','Systolic')
    dia  = document.getElementById('dia')
    sys  = document.getElementById('sys')
    
    dia.setAttribute('onmousedown', 'changeSelected("dia")')
+   dia.setAttribute('class', 'green')
    sys.setAttribute('onmousedown', 'changeSelected("sys")')
+   sys.setAttribute('class', 'green')
   } 
   
   function changeSelected(selected){
@@ -375,7 +387,11 @@
     }
   }
  
-  
+ function clearFields(){
+ 	__$('systolic_blood_pressure').value = "";
+ 	__$('diastolic_blood_pressure').value = "";
+ 	__$('bp').innerHTML = "";
+ }
 </script>
 
 <form action="/encounters/create/vitals">
@@ -507,7 +523,7 @@ end
 
           <%#= text_field_tag :showBp, nil,
         {
-        :tt_onLoad => " __$('keyboard').style.display = 'none'",
+        :tt_onLoad => "clearFields();__$('keyboard').style.display = 'none'",
         :optional => "true",
         :tt_pageStyleClass => "NoControls NoKeyboard",
         :condition => "",
