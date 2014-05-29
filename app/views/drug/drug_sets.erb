@@ -1,0 +1,293 @@
+
+<head>
+  <title>Report</title>
+  <script type="text/javascript" language="javascript"
+  src="/touchscreentoolkit/lib/javascripts/touchScreenToolkit.js" defer  ></script>
+  <meta http-equiv='content-type' content='text/html;charset=UTF-8' />
+  <script type="text/javascript" language="javascript">
+    <!--
+    tstCurrentDate = "<%= Date.today %>";
+    tt_cancel_destination = '/clinic';
+    tt_cancel_show = '/clinic';
+
+    //-->
+    function removeDrugSet(set_id){
+
+      var url = "/drug/void_set?user_id=<%= current_user.user_id %>&drug_set_id=" + set_id
+
+      ajaxCustomRequest(url);
+
+      setTimeout((function (){
+        parent.window.location =  parent.window.location;
+      }), 130);
+    }
+
+    function addDrug(set_id){
+
+      var url = "/drug/add_drug_set?user_id=<%=  current_user.user_id %>&set_id=" + set_id;
+      parent.window.location = url;
+    }
+
+    function ajaxCustomRequest(aUrl) {
+      var httpRequest = new XMLHttpRequest();
+      httpRequest.onreadystatechange = function() {
+
+      };
+      try {
+        httpRequest.open('POST', aUrl, true);
+        httpRequest.send(null);
+      } catch(e){
+      }
+    }
+
+    function confirmDeletion(message, id) {
+      if (!tstMessageBar) {
+
+        var tstMessageBar = document.createElement("div");
+        tstMessageBar.id = "messageBar";
+        tstMessageBar.className = "messageBar";
+
+        tstMessageBar.innerHTML = message + "<br/>" +
+          "<button onmousedown=\"__$('content').removeChild(document.getElementById('messageBar')); " +
+          "removeDrugSet('" + id + "');\"><span>Yes</span></button><button onmousedown=\"__$('content')" +
+          ".removeChild(document.getElementById('messageBar'));\"><span>No</span></button>";
+
+        tstMessageBar.style.display = "block";
+        __$('content').appendChild(tstMessageBar);
+      }
+
+      return false;
+
+    }
+
+    function __$(id){
+      return document.getElementById(id);
+    }
+
+    function updateStatus(set_id){
+
+      if (__$("img" + set_id).src.match(/unticked/)){
+        __$("img" + set_id).src = __$("img" + set_id).src.replace("unticked", "ticked")
+        var url = "/drug/activate?user_id=<%= current_user.user_id %>&set_id=" + set_id;
+      }else{
+        __$("img" + set_id).src = __$("img" + set_id).src.replace("ticked", "unticked")
+        var url = "/drug/deactivate?user_id=<%= current_user.user_id %>&set_id=" + set_id
+      }
+
+      ajaxCustomRequest(url);
+    }
+  </script>
+
+  <style>
+    #main {
+      width: 99.7%;
+      height: 88.5%;
+      overflow: auto;
+    }
+
+    button{
+      margin: 5px;
+    }
+
+    .selected{
+      color: #f00;
+      font-weight: bold;
+    }
+
+    table {
+      font-size: 0.97em;
+    }
+
+    button {
+      min-height: 50px;
+      min-width: 50px;
+      margin: 0px;
+      margin-bottom: 5px;
+      font-size: 1.2em;
+      background-color: #6281a7;
+      color: #FFF;
+      font-weight: normal;
+      border: 5px outset #000;
+      padding: 10px;
+      cursor: pointer;
+      background:url(/touchscreentoolkit/lib/images/btn_blue.png) right repeat;
+      -moz-user-select:none;
+      -moz-user-focus:disabled;
+      float: right;
+    }
+
+    button:hover {
+      background:url(/touchscreentoolkit/lib/images/btn_blue_hover.png) right repeat;
+      -moz-user-select:none;
+      -moz-user-focus:disabled;
+    }
+
+    button:active {
+      background:url(/touchscreentoolkit/lib/images/btn_yellow.png) right repeat;
+      border: 3px inset #000;
+    }
+
+    #tbl1 td {
+      padding: 1px;
+      padding-top: 5.4px;
+      padding-bottom: 5px;
+    }
+
+    #tbl2{
+      width: 100%;
+      background: white;
+
+    }
+
+    #tbl2 th {
+      font-weight: bold;
+      font-size: 1em;
+      border: 0px;
+      padding: 2px;
+      max-height: 15px;
+      background-color: #ff;
+      color: white;
+    }
+
+    #tbl2 td {
+      border: 1px solid #ccc;
+      padding: 2px;
+      color: #1f3b5e;
+      font-style: normal;
+    }
+    .odd{
+      background-color: lightblue;
+    }
+
+    .messageBar {
+      left: 140px;
+      width: 450px;
+      position: absolute;
+      top: 1px;
+      font-size: 1.8em;
+      text-align: center;
+      background-color: tomato;
+      padding: 10px;
+      z-index: 999;
+      border: 5px outset tomato;
+      display: none;
+      border-radius: 15px;
+    }
+
+    .messageBar button {
+      font-size: 0.7em;
+      margin: 5px;
+    }
+  </style>
+</head>
+<body id="mateme">
+  <div id="container">
+    <div id="holder" style="height: 85vh; overflow: auto;">
+      <table id ="main" width="100%" border="0" style="height: 100%" cellpadding="0">
+
+        <% unless @drug_sets.blank? %>
+          <tr>
+            <th style="color: #6281a7; height: 10px; margin-top: 10px; margin-bottom: 4px; padding-left: 10px; font-size: 25px; float: left; font-weight: bold;">
+              Drug Sets
+            </th>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">
+              <table id="tbl2">
+
+                <tr style="background-color: #6281a7;">
+
+                  <th>
+                    Drug name
+                  </th>
+
+                  <th>
+                    Frequency
+                  </th>
+                  <th>
+                    Duration
+                  </th>
+                  <th>
+                    Creator
+                  </th>
+                  <th>
+                    &nbsp;
+                  </th>
+                </tr>
+
+                <%
+
+                @keys.each do |set_id|%>
+
+                  <tr >
+                    <td colspan="4" style="border: hidden;padding-left: 2%; margin-top: 20px; font-size: 19px; font-weight: bold;">
+                      <% image = @status[set_id].match("inactive") ? "unticked" : "ticked" %>
+                      <div style="padding-top: 15px;"> <img id ="img<%= set_id %>" onclick = "updateStatus('<%= set_id %>', '<%= @status[set_id] %>')" src="/images/<%= image%>.jpg" height="43"
+                                                            alt="select" /> &nbsp<%=  @set_name_ids_map[set_id] + "  (" + @set_desc_ids_map[set_id] + ")"%>
+                      </div>
+                    </td>
+                    <td onclick="addDrug('<%= set_id %>')" style="width: 8%; padding-left:2.5%; border: hidden;">
+                      <img src="/images/plus.png" height="33"
+                           alt="delete" /> &nbsp;
+                    </td>
+                  </tr>
+
+                  <%
+
+                  (@drug_sets[set_id] || []).each do |data| %>
+                    <tr class="<%= cycle('even', 'odd') %>">
+
+                      <td style="width: 30%; padding-left: 3%;">
+                        <%name = Drug.find(data.drug_inventory_id).name rescue '?'%>
+                        <%= name%> &nbsp;
+                      </td>
+
+                      <td style="width: 28%">
+                        <%= data.frequency %> &nbsp;
+                      </td>
+                      <td style="text-align: center;">
+                        <%= data.duration %>  days&nbsp;
+                      </td>
+                      <td style="width: 13%; text-align: center;">
+                        <%= (User.find(data.creator).name || 'admin') rescue data.creator %>
+                      </td>
+                      <% if data.creator.to_i == session[:user_id].to_i || current_user.admin? %>
+                        <td onclick="confirmDeletion('Are you sure you want to remove <%= name %> from set?', <%= data.drug_set_id %>)" style="width: 8%; padding-left:2.5%;">
+                          <img src="/touchscreentoolkit/lib/images/cancel_flat_small_red.png" height="30"
+                               alt="delete" /> &nbsp;
+                        </td>
+                      <%else%>
+                        <td>
+                          &nbsp;
+                        </td>
+                      <%end%>
+                    </tr>
+
+                  <% end
+                end
+              %>
+                </div>
+
+              </table>
+            </td>
+          </tr>
+        <% else %>
+          <tr><td style="padding-left: 20%; vertical-align: middle; font-size: 25px; color:#1f3b5e;">No drug sets found</td></tr>
+        <%end%>
+      </table>
+      <div class="footer" style="z-index:1;bottom:0px; height: 82px; width: 100%; left: 0px;
+           right: -66px; position: absolute; background-color: #333333; padding: 0px;">
+        <button onclick="window.location = '/clinic';" class="button navButton red"
+                id="cancelButton" style="position: absolute; z-index: 100; margin-top: 10px;"><span>Cancel</span>
+        </button>
+
+        <button onclick=" back();" class="button navButton green"
+                id="nextButton" style="margin-top: 10px; margin-right: 20px;" ><span>Finish</span>
+        </button>
+        <button onclick="window.location = '/drug/add_drug_set?user_id=<%= current_user.user_id%>'" class="button navButton blue"
+                id="nextButton" style="margin-top: 10px; margin-right: 20px;" ><span>Add new set</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</body>

@@ -21,12 +21,15 @@
 </head>
 <body>
   <center>
-    <h2 style="color: #6281a7;">Create/Edit User</h2>
+    <h2 style="color: #6281a7;">&nbsp;</h2>
     <button onclick="parent.window.location = '/user/new/<%= current_user.user_id %>';">
       Create User
     </button>    
     <button onclick="parent.window.location = '/user/select_user/<%= current_user.user_id %>';">
       Edit User
+    </button>
+     <button onclick="parent.window.location = '/drug/drug_sets/<%= current_user.user_id %>';">
+      Manage drug sets
     </button>
   </center>
 </body>

@@ -6,7 +6,7 @@ usage(){
   echo "ENVIRONMENT should be: development|test|production"
   echo "Available SITES:"
   ls -1 db/data
-} 
+}
 
 ENV=$1
 SITE=$2
@@ -49,7 +49,7 @@ mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/retrospe
 mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/create_dde_server_connection.sql
 
 #mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/privilege.sql
-#mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/bart2_role_privileges.sql
+#mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/drug_sets.sql
 mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/migrate/create_weight_height_for_ages.sql
 mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/migrate/insert_weight_for_ages.sql
 mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/migrate/global_property.sql

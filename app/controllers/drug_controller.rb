@@ -2,8 +2,8 @@ class DrugController < ApplicationController
   def management
     @activities = [["New stock","delivery"],["Edit stock","edit_stock"], ["Print Barcode","print_barcode"]]
     
-#TODO
-#need to redo the SQL query
+    #TODO
+    #need to redo the SQL query
     encounter_type = PharmacyEncounterType.find_by_name("Tins currently in stock").id
     new_deliveries = Pharmacy.active.find(:all,
       :conditions =>["pharmacy_encounter_type=?",encounter_type],
@@ -18,7 +18,7 @@ class DrugController < ApplicationController
     @stock = {}
     current_stock.each{|delivery_id , delivery|
       start_date = Pharmacy.active.find(:first,:conditions =>["drug_id =?",
-                   delivery.drug_id],:order => "encounter_date").encounter_date.to_date rescue nil
+          delivery.drug_id],:order => "encounter_date").encounter_date.to_date rescue nil
       next if start_date.blank?
 
       drug = Drug.find(delivery.drug_id)
@@ -76,8 +76,8 @@ class DrugController < ApplicationController
     @start_date = obs[0]['value_datetime'].to_date
     @end_date = obs[1]['value_datetime'].to_date
 
-#TODO
-#need to redo the SQL query
+    #TODO
+    #need to redo the SQL query
     encounter_type = PharmacyEncounterType.find_by_name("Tins currently in stock").id
     new_deliveries = Pharmacy.active.find(:all,
       :conditions =>["pharmacy_encounter_type=?",encounter_type],
@@ -91,7 +91,7 @@ class DrugController < ApplicationController
     @stock = {}
     current_stock.each{|delivery_id , delivery|
       first_date = Pharmacy.active.find(:first,:conditions =>["drug_id =?",
-                   delivery.drug_id],:order => "encounter_date").encounter_date.to_date rescue nil
+          delivery.drug_id],:order => "encounter_date").encounter_date.to_date rescue nil
       next if first_date.blank?
       next if first_date > @start_date
 
@@ -107,6 +107,98 @@ class DrugController < ApplicationController
   end
 
   def date_select
-#    render :text => "aaaaa" and return
+    #    render :text => "aaaaa" and return
+  end
+
+  def drug_sets
+
+    @sets = GeneralSet.all(:order => ["date_updated DESC"],
+      :conditions => ["status = 'active'"]) +
+      GeneralSet.all(:order => ["date_updated DESC"],
+      :conditions => ["status = 'inactive'"])
+    
+    #raise @sets.to_yaml
+    @set_name_ids_map = {}
+    @set_desc_ids_map = {}
+    @status = {}
+    @drug_sets = {}
+    @keys = []
+    
+    @sets.each{|set|
+
+      @set_name_ids_map[set.set_id] = set.name
+      @set_desc_ids_map[set.set_id] = set.description
+      @status[set.set_id] = set.status
+      @drug_sets[set.set_id] = set.drug_sets
+      @keys << set.set_id
+    }  
+   
+    #render :layout => "general"
+  end
+
+  def void_set
+
+    if params[:drug_set_id]
+      drug_set = DrugSet.find(params[:drug_set_id])
+      drug_set.void
+    end
+  
+  end
+
+  def add_drug_set
+
+    @drugs = [["", ""]] + Drug.all.collect{|drug| [drug.name, drug.id]}
+    @frequencies = ["", "Once a day (OD)", "Twice a day (BD)", "Three a day (TDS)",
+      "Four times a day (QID)", "Five times a day (5X/D)", "Six times a day (Q4HRS)",
+      "In the morning (QAM)", "Once a day at noon (QNOON)", "In the evening (QPM)",
+      "Once a day at night (QHS)", "Every other day (QOD)",
+      "Once a week (QWK)", "Once a month", "Twice a month"]
+  end
+
+  def create_drug_set
+
+    d = (session[:datetime].to_date rescue Date.today)
+    t = Time.now
+    session_date = DateTime.new(d.year, d.month, d.day, t.hour, t.min, t.sec)
+
+    set_id = params[:set_id]
+
+    if params[:name]
+      
+      set = GeneralSet.new(:name => params[:name],
+        :description => params[:description],
+        :status => "active",
+        :date_created => session_date,
+        :date_updated => session_date,
+        :creator => params[:user_id]
+      )
+      set.save!
+      set_id = set.set_id
+    end
+
+    drug_set = DrugSet.new(:drug_inventory_id => params[:drug].to_i,
+      :set_id => set_id.to_i,
+      :frequency => params[:frequency],
+      :duration => params[:duration].to_i,
+      :date_created => session_date,
+      :date_updated => session_date,
+      :creator => params[:user_id]
+    )
+    drug_set.save!
+    GeneralSet.find(set_id).update_attributes(:date_updated => session_date)
+
+    redirect_to "/drug/drug_sets/#{params[:user_id]}"
+  end
+
+  def deactivate
+
+    s = GeneralSet.find(params[:set_id])
+    s.deactivate if !s.blank?
+  end
+
+  def activate
+
+    s = GeneralSet.find(params[:set_id])
+    s.activate if !s.blank?
   end
 end

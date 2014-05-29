@@ -344,7 +344,9 @@ class PrescriptionsController < ApplicationController
   def give_drugs
     
     if CoreService.get_global_property_value("use.column.interface").to_s == "true"
-      redirect_to "/prescriptions/generic_advanced_prescription?patient_id=#{params[:patient_id]}" and return
+      redirect_to "/prescriptions/new_prescription?patient_id=#{params[:patient_id]}" and return
+    else
+    
     end
     
     @patient = Patient.find(params[:patient_id] || session[:patient_id]) rescue nil
@@ -494,8 +496,12 @@ class PrescriptionsController < ApplicationController
 	def create_advanced_prescription
     print_check = 0
 		@patient    = Patient.find(params[:encounter][:patient_id]  || session[:patient_id]) rescue nil
+    d = (session[:datetime].to_date rescue Date.today)
+    t = Time.now
+    session_date = DateTime.new(d.year, d.month, d.day, t.hour, t.min, t.sec)
+    
 		encounter  = MedicationService.current_treatment_encounter(@patient)
-    encounter.encounter_datetime = (session[:datetime]? session[:datetime] : Date.today).to_date
+    encounter.encounter_datetime = session_date
     encounter.save
     
     if !(params[:prescriptions].blank?)
@@ -510,7 +516,7 @@ class PrescriptionsController < ApplicationController
         end
         
 				prescription[:encounter_id]  = encounter.encounter_id
-				prescription[:obs_datetime]  = encounter.encounter_datetime || (session[:datetime] ||  Time.now())
+				prescription[:obs_datetime]  = session_date
 				prescription[:person_id]     = encounter.patient_id
 
 				formulation = (prescription[:dosage] || '').upcase
@@ -522,8 +528,7 @@ class PrescriptionsController < ApplicationController
 					return
 				end
 
-				start_date = session[:datetime].to_date rescue nil
-        start_date = Time.now() if start_date.blank?
+				start_date = session_date
         prn = "no"
 				auto_expire_date = start_date + prescription[:duration].to_i.days
 
@@ -625,9 +630,11 @@ class PrescriptionsController < ApplicationController
 	end
 
   def new_prescription
+
+    @patient = Patient.find(params[:patient_id])
     @partial_name = 'drug_set'
     @partial_name = params[:screen] unless params[:screen].blank?
-    @drugs = Drug.find(:all,:limit => 100)
+    @drugs = Drug.find(:all,:limit => 1000)
     @drug_sets = {}
     drug_names = ['Quinine (600mg)','Azithromycin (250mg tablet)','Albendazole (400mg tablet)','Fefol (450 mg)','Doxycycline (200mg tablet)']
     drug_set_attr = [
@@ -650,10 +657,42 @@ class PrescriptionsController < ApplicationController
   def search_for_drugs
     drugs = {}
     Drug.find(:all, :conditions => ["name LIKE (?)",
-      "#{params[:search_str]}%"],:order => 'name',:limit => 20).map do |drug|
+        "#{params[:search_str]}%"],:order => 'name',:limit => 20).map do |drug|
       drugs[drug.id] = { :name => drug.name,:dose_strength =>drug.dose_strength || 1, :unit => drug.units }
     end
     render :text => drugs.to_json
+  end
+
+  def prescribe
+  
+    @patient    = Patient.find(params["patient_id"]) rescue nil
+    
+    d = (session[:datetime].to_date rescue Date.today)
+    t = Time.now
+    session_date = DateTime.new(d.year, d.month, d.day, t.hour, t.min, t.sec)
+
+		encounter  = MedicationService.current_treatment_encounter(@patient)
+    encounter.encounter_datetime = session_date
+    encounter.save
+
+    params[:drug_formulations] = (params[:drug_formulations] || []).collect{|df| eval(df) } || {}
+
+    params[:drug_formulations].each do |prescription|
+
+      prescription[:prn] = 0 if prescription[:prn].blank?
+      auto_expire_date = session_date.to_date + (prescription[:duration].sub(/days/i, "").strip).to_i.days
+      drug = Drug.find(prescription[:drug_id])
+      
+      DrugOrder.write_order(encounter, @patient, nil, drug, session_date, auto_expire_date, drug.dose_strength,
+        prescription[:frequency], prescription[:prn].to_i)
+    end
+
+    if (@patient)
+			redirect_to next_task(@patient) and return
+		else
+			redirect_to "/patients/treatment_dashboard/#{params[:patient_id]}" and return
+		end
+    
   end
 
 end
