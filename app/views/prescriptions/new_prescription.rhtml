@@ -25,6 +25,10 @@
     drug_ids.push("<%=drug.id%>");
 <%end%>
 
+  var drug_sets = <%= @drug_sets.to_json%>
+  var set_names = <%= @set_names.to_json%>
+  var set_descriptions = <%= @set_descriptions.to_json%>
+
 <%@drug_sets.each do |drug_name, attr|%>
     drug_set_name_display.push("<%=attr[:display_name] %>");
     drug_set_name.push("<%=drug_name%>");
@@ -180,19 +184,6 @@
       submitForm.appendChild(newElement);
     }
    
-    for( var selected_set in selectedSets) {
-
-      var drug_id = selected_set.match(/\d+/)[0];
-      var frequency = __$("row_frequency_" + selected_set).innerHTML;
-      var duration = __$("row_duration_" + selected_set).innerHTML;
-
-      var newElement = document.createElement("input");
-      newElement.setAttribute("name",'drug_[]');
-      newElement.setAttribute("type","hidden");
-      newElement.value = "{:drug_id => " + drug_id +", :frequency => '" + frequency + "', :duration => '" + duration + "' }";
-      submitForm.appendChild(newElement);
-    }
-
     var newElement = document.createElement("input");
     newElement.setAttribute("name",'patient_id');
     newElement.setAttribute("type","hidden");

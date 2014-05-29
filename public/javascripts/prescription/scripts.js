@@ -370,7 +370,7 @@ function showNumber(id, global_control, showDefault){
       </div>
     </div>
   </div>
-*/
+ */
 function loadAllDrugs(){
   
     clearTimeout(clicksChecker);
@@ -588,27 +588,31 @@ function loadFrequenciesAndDuration(id){
 }
 
 function setDuration() {
-    var duration = document.getElementById("duration").value;
-    var keyBoardButtons = document.getElementsByClassName("keyboard_button");
-    for(var i = 0; i < keyBoardButtons.length; i++){
-        if(keyBoardButtons[i].innerHTML.match(/Px drug/i)){
-            if (duration.length > 0) {
-                keyBoardButtons[i].disabled = false;
-            }else{
-                keyBoardButtons[i].disabled = true;
+    
+    var duration = null
+    if (__$("duration")){
+        duration = __$("duration").value;
+        var keyBoardButtons = document.getElementsByClassName("keyboard_button");
+        for(var i = 0; i < keyBoardButtons.length; i++){
+            if(keyBoardButtons[i].innerHTML.match(/Px drug/i)){
+                if (duration.length > 0) {
+                    keyBoardButtons[i].disabled = false;
+                }else{
+                    keyBoardButtons[i].disabled = true;
+                }
             }
         }
-    }
 
-    var cell3s = document.getElementsByClassName("durations");
+        var cell3s = document.getElementsByClassName("durations");
 
-    for(var i = (cell3s.length - 1); i >= 0; i--){
-        if(cell3s[i].innerHTML.length < 1 && duration != ''){
-            cell3s[i].innerHTML = (duration != null ? (duration > 1 ? duration + " days" : duration + " day") : duration);
-            break;
-        }else if(cell3s[i].innerHTML.length > 1 && duration != ''){
-            cell3s[i].innerHTML = (duration != null ? (duration > 1 ? duration + " days" : duration + " day") : duration);
-            break;
+        for(var i = (cell3s.length - 1); i >= 0; i--){
+            if(cell3s[i].innerHTML.length < 1 && duration != ''){
+                cell3s[i].innerHTML = (duration != null ? (duration > 1 ? duration + " days" : duration + " day") : duration);
+                break;
+            }else if(cell3s[i].innerHTML.length > 1 && duration != ''){
+                cell3s[i].innerHTML = (duration != null ? (duration > 1 ? duration + " days" : duration + " day") : duration);
+                break;
+            }
         }
     }
 }
@@ -735,50 +739,94 @@ function listDrugsSets(){
         __$("selections").appendChild(ul);
        
         var formulations = [];
-    
-        for(var i = 0; i < drug_set_name.length; i++){
-            formulations.push({
-                display: drug_set_name_display[i] ,
-                drug: drug_set_name[i] ,
-                dose: drug_set_dose[i],
-                unit: drug_set_unit[i],
-                frequency: drug_set_frequency[i],
-                duration: drug_set_duration[i]
-            });
-        }
-    
-        for(var l = 0; l < formulations.length; l++){
+
+        var l = 0;
+        for(set_id in drug_sets) {
+            
             var li = document.createElement("li");
             li.id = "sets_" + l;
-            li.innerHTML = formulations[l].display;
+            li.innerHTML = set_names[set_id] + " (" + set_descriptions[set_id] + ")";
             li.style.backgroundColor = (l % 2 == 0 ? "#f8f7ec" : "#fff");
-            li.setAttribute("dose", formulations[l].dose);
-            li.setAttribute("unit", formulations[l].unit);
-            li.setAttribute("drug", formulations[l].drug);
-            li.setAttribute("frequency", formulations[l].frequency);
-            li.setAttribute("duration", formulations[l].duration);
-      
+            li.setAttribute("name", set_names[set_id]);
+            li.setAttribute("description", set_descriptions[set_id]);
+            li.setAttribute("set_id", set_id);
+            
             if(selectedSets[li.id]){
                 li.className = "selected";
             }
-      
+
             li.onclick = function(){
                 if(this.getAttribute("class") != null && this.getAttribute("class").match(/selected/)){
-                    removeDrug(this.id);
+
+                    var set_drugs = Object.keys(drug_sets[this.getAttribute("set_id")]);
+
+                    for (var i = 0; i < set_drugs.length; i ++){
+
+                        removeDrug(("all_" + set_drugs[i]));
+                    }
+
+                    this.className -= "selected";
+
+                    if(selectedSets[this.id])
+                        delete selectedSets[this.id];
+                    
                 } else {
-                    addDrug(this.id);
-          
+
+                    var set_drugs = Object.keys(drug_sets[this.getAttribute("set_id")]);
+                   
+                    for (var i = 0; i < set_drugs.length; i ++){
+
+                        var data = drug_sets[this.getAttribute("set_id")][set_drugs[i]];
+                        
+                        var div = document.createElement("input");
+
+                        // check for already prescribed drugs of same kind if time allow
+                        div.id = "all_" + set_drugs[i];
+                        div.style.display = "none"
+                        div.style.backgroundColor = (l % 2 == 0 ? "#f8f7ec" : "#fff");
+                        div.setAttribute("drug", data["drug_name"]);
+                        div.setAttribute("frequency", data["frequency"]);
+                        div.setAttribute("duration", data["duration"]);
+                        div.setAttribute("units", data["units"]);
+                        this.appendChild(div);
+                        addDrug(div.id);
+                        div.className = "selected";
+                        selectedDrugs[div.id] = true;
+                           
+                    }                    
+                 
                     selectedSets[this.id] = true;
-          
+
                     this.className = "selected";
                 }
             }
-      
+
             ul.appendChild(li);
+
+            l ++;
         }
     }
 }
 
+function confirmAction(message) {
+    if (!tstMessageBar) {
+
+        var tstMessageBar = document.createElement("div");
+        tstMessageBar.id = "messageBar";
+        tstMessageBar.className = "messageBar";
+
+        tstMessageBar.innerHTML = message + "<br/>" +
+        "<button onmousedown=\"__$('container')" +
+        ".removeChild(document.getElementById('messageBar'));\"><span>Ok</span></button>";
+
+        tstMessageBar.style.display = "block";
+        __$('container').appendChild(tstMessageBar);
+    }
+
+    return false;
+
+}
+    
 function switchViews(current){
     if(current.trim().toLowerCase() == "drug sets"){
         __$("btnswitch").innerHTML = "All Drugs";
@@ -859,10 +907,7 @@ function addDrug(id){
 function removeDrug(id){
     if(__$("row_" + id)){
         __$("drugs").removeChild(__$("row_" + id));
-    }
-  
-    if(selectedSets[id])
-        delete selectedSets[id];
+    }  
         
     if(selectedDrugs[id])
         delete selectedDrugs[id];
@@ -916,6 +961,7 @@ function searchDrug(){
 }
 
 function clearAll() {
+    
     for(selected_drug in selectedDrugs) {
         removeDrug(selected_drug);
     }

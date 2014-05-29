@@ -147,7 +147,11 @@ class DrugController < ApplicationController
 
   def add_drug_set
 
-    @drugs = [["", ""]] + Drug.all.collect{|drug| [drug.name, drug.id]}
+    already_selected = DrugSet.find_all_by_set_id(params[:set_id]).collect{|d| d.drug_inventory_id} rescue []
+    already_selected = [-1] if already_selected.blank?
+    @drugs = [["", ""]] + Drug.all(:conditions => ["drug_id NOT IN (?)",
+        already_selected]).collect{|drug| [drug.name, drug.id]}
+   
     @frequencies = ["", "Once a day (OD)", "Twice a day (BD)", "Three a day (TDS)",
       "Four times a day (QID)", "Five times a day (5X/D)", "Six times a day (Q4HRS)",
       "In the morning (QAM)", "Once a day at noon (QNOON)", "In the evening (QPM)",
