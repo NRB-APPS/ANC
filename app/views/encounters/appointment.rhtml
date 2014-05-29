@@ -330,6 +330,12 @@ clinic_holidays = clinic_holidays.split(',').map{|day|day.to_date}.join(',')
   periods = {22 => "20-24 weeks", 30 => "28-32 weeks", 36 => "36 weeks", 0 => "Other"}
 
   actual = periods.collect{|p, v| [v, p] if p > trimester || p == 0}
+  count = []
+  actual.each{|p, v| 
+        if ! p.blank?
+  		count << p if p.upcase != "OTHER" 
+  	end
+  	}
 %>
 
 	<% if actual.size != 1 %>
@@ -339,7 +345,7 @@ clinic_holidays = clinic_holidays.split(',').map{|day|day.to_date}.join(',')
 		:tt_onUnLoad => "setAppointmentDate();"}) %>
 
 	<% else %>
-		<%= select_tag("time_until_next_visit", options_for_select(actual),
+		<%#= select_tag("time_until_next_visit", options_for_select(actual),
 		{:helpText => "Gestation Weeks at Next Visit <span class='helper'> Appointment</span>",
 		:tt_onLoad => "transformMessages(); showCategory('Next Appointment'); calculateGivenRange('#{params[:start_date]}','#{params[:end_date]}');goNextPageIfSingleOption()",
 		:tt_onUnLoad => "setAppointmentDate();"}) %>

@@ -58,13 +58,7 @@ session_date = session[:datetime]? session[:datetime] : Date.today
   setTimeout("disablePastVisits()", 200);
   //-->
 </script>
-<style>
-    .helper {
-  display: block;
-  float:right;
-  background-color: #DEDEDE;
-  }
-</style>
+
 <% form_tag :controller => "encounters", :action => "create" do %>
 
  <%  session_date = session[:datetime] || Time.now() %>
@@ -84,7 +78,7 @@ session_date = session[:datetime]? session[:datetime] : Date.today
   <%= touch_numeric_tag "Type of visit", @patient, nil,
     {
     :id => "visit",
-    :helptext => "ANC visit number <span class='helper'>Task: Clinic Visit</span>",
+    :helptext => "ANC visit number <span class='helper'> Clinic Visit</span>",
     :field_type => 'number',
     :tt_onLoad => "transformMessages();",
     :tt_pageStyleClass => "NumbersOnly",
