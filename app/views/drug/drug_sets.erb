@@ -230,7 +230,7 @@
         </CAPTION>
 
         <tr style="background-color: #6281a7; font-size: 18.5px;">
-          <th id="th" style=" height: 50px; width: 30%;">
+          <th id="th" style=" height: 35px; width: 30%;">
             Drug name
           </th>
           <th id="th2" style="width: 28%">
@@ -322,7 +322,7 @@
               id="cancelButton" style="position: absolute; z-index: 100; margin-top: 10px;"><span>Cancel</span>
       </button>
 
-      <button onclick=" back();" class="button navButton green"
+      <button onclick="window.location = '/clinic';" class="button navButton green"
               id="nextButton" style="margin-top: 10px; margin-right: 20px;" ><span>Finish</span>
       </button>
       <button onclick="window.location = '/drug/add_drug_set?user_id=<%= current_user.user_id%>'" class="button navButton blue"

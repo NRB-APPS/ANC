@@ -49,6 +49,7 @@ mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/drug_set
 mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/migrate/create_weight_height_for_ages.sql
 mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/migrate/insert_weight_for_ages.sql
 mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/migrate/global_property.sql
+mysql --host=$HOST --user=$USERNAME --password=$PASSWORD $DATABASE < db/openmrs_metadata_1_7.sql
 echo "After completing database setup, you are advised to run the following:"
 echo "rake test"
 echo "rake cucumber"
