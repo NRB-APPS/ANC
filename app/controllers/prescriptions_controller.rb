@@ -634,7 +634,7 @@ class PrescriptionsController < ApplicationController
     @patient = Patient.find(params[:patient_id])
     @partial_name = 'drug_set'
     @partial_name = params[:screen] unless params[:screen].blank?
-    @drugs = Drug.find(:all,:limit => 1000)
+    @drugs = Drug.find(:all,:limit => 20)
     @drug_sets = {}
     @set_names = {}
     @set_descriptions = {}
@@ -663,7 +663,7 @@ class PrescriptionsController < ApplicationController
   def search_for_drugs
     drugs = {}
     Drug.find(:all, :conditions => ["name LIKE (?)",
-        "#{params[:search_str]}%"],:order => 'name',:limit => 100).map do |drug|
+        "#{params[:search_str]}%"],:order => 'name',:limit => 20).map do |drug|
       drugs[drug.id] = { :name => drug.name,:dose_strength =>drug.dose_strength || 1, :unit => drug.units }
     end
     render :text => drugs.to_json

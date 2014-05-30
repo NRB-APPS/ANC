@@ -137,8 +137,8 @@
     
     __$("keyboard").style.display = "none";
     __$("touchscreenInput" + tstCurrentPage).style.display = "none";
-    __$("inputFrame" + tstCurrentPage).style.height = "72vh";
-    __$("inputFrame" + tstCurrentPage).style.marginTop = "5vh";
+    __$("inputFrame" + tstCurrentPage).style.height = (0.72 * screen.height) + "px";
+    __$("inputFrame" + tstCurrentPage).style.marginTop = (0.05 * screen.height) + "px";
     //__$("inputFrame" + tstCurrentPage).style.background = "lightblue";
    
     if (count > 0){
