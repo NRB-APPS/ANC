@@ -911,6 +911,9 @@ function removeDrug(id){
         
     if(selectedDrugs[id])
         delete selectedDrugs[id];
+    
+    if(selectedSets[id])
+        delete selectedSets[id];
           
     if(__$(id)){
         
@@ -970,12 +973,12 @@ function clearAll() {
         removeDrug(selected_set);
     }
     document.getElementById('search').value = '';
-    switchViews('All drugs');
+    switchViews('Drug Sets');
 }
 
-loadAllDrugs();
-/*loadDrugSets();
-__$("btnswitch").innerHTML = "All Drugs";
+//loadAllDrugs();
+loadDrugSets();
+/*__$("btnswitch").innerHTML = "All Drugs";
 */
 resize();
 

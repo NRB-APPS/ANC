@@ -8,6 +8,8 @@ class ApplicationController < GenericApplicationController
     #
     #1. should have checked abortion status atleast a month ago
     session_date = (session[:datetime].to_date rescue Date.today)
+   
+    @anc_patient = ANCService::ANC.new(patient) if @anc_patient.blank?
     @current_range = @anc_patient.active_range(session_date)
   
     if request.referrer.match(/people\/search\?|\/clinic/i)
