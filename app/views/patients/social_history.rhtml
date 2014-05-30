@@ -3,6 +3,177 @@
   <!--
   tt_cancel_show = "/patients/show/<%= @patient.id %>";
   tt_cancel_destination = "/patients/show/<%= @patient.id %>";
+  
+  
+  
+  function loadSplitSelections(arr){
+     //alert("here")
+    //array format [url, input_id, helpText]
+    var options = ["Yes", "No"].join('|')
+    var marital_status = ["","Single","Married","Engaged","Separated","Divorced","Widowed","Other"].join('|')
+    var religion = ["","Presbyterian (C.C.A.P.)", "Muslim", "Roman Catholic", "Seventh Day Adventist","Baptist","Other"].join('|')
+    var arr = [[options, "smoker"],
+      [options, "alcohol"],
+      [marital_status, "civil_status"],
+       [religion, "religion"]     
+    ];
+
+    var count = arr.length;
+    var n = Math.floor(Math.sqrt(count));
+    var v_count = Math.ceil(count/n);
+    var h_count = Math.ceil(count/n);
+    var e_count = count % n;
+    
+    __$("keyboard").style.display = "none";
+    __$("touchscreenInput" + tstCurrentPage).style.display = "none";
+    __$("inputFrame" + tstCurrentPage).style.height = "72vh";
+    __$("inputFrame" + tstCurrentPage).style.marginTop = "5vh";
+    //__$("inputFrame" + tstCurrentPage).style.background = "lightblue";
+   
+    if (count > 0){
+      
+      var n = 0;
+      var holder = document.createElement("div");
+      holder.id = 'holder';
+      holder.style.height = "72vh";
+      holder.style.width = "100%";
+      holder.style.display = "none";
+      holder.setAttribute("class", "options");
+      holder.style.borderRadius = "5px";
+      holder.style.background = "white";
+      __$("inputFrame" + tstCurrentPage).appendChild(holder);
+      
+      for (var r = 1; r <= v_count; r ++){
+
+        var row = document.createElement("div");
+        row.id = r;
+        row.style.display = "table-row";
+        row.setAttribute("class", "row");
+        holder.appendChild(row);
+
+        for(var c = 1; c <= h_count; c ++){
+
+          var cell = document.createElement("div");
+          cell.id = r + "_" + c;
+          cell.style.display = "table-cell";
+          cell.setAttribute("class", "cell");
+          cell.style.background = "white";
+
+          var helpText = __$(arr[n][1]).getAttribute("helpText");
+          var heada = document.createElement("div");
+          heada.style.height = "40px";
+          heada.innerHTML = helpText;
+          heada.style.marginTop = "5px";
+          heada.style.background = "lightgray";
+          heada.style.borderRadius = "3px";
+          heada.style.border = "2px gray solid";
+          heada.style.fontSize = "28px";
+          heada.style.marginLeft = "5px";
+          heada.style.marginRight = "5px";
+          cell.appendChild(heada);
+
+          if(c != 1){
+            cell.style.borderLeft = "1px solid";
+          }
+
+          if(r != 1){
+            cell.style.borderTop = "1px solid";
+          }
+       
+          cell.style.height = ((72/v_count) - 2) + "vh";
+          cell.style.width = ((100/h_count)) + "%";
+          row.appendChild(cell);          
+
+          n ++;
+          if (n != arr.length - 1){
+           
+            handleResultData(arr[n - 1][0], arr[n - 1][1], "", (r + "_" + c));
+          }else{
+           
+            handleResultData(arr[n - 1][0], arr[n - 1][1], "table", (r + "_" + c));
+          }
+          
+        }
+      }
+
+      __$("2_2").style.display = "1px solid";     
+      __$("1_2").style.borderBottom = "1px solid";
+      __$("2_1").style.borderRight = "1px solid";
+     
+    }
+  }
+
+  function handleResultData(result, id, n, dom_id) {
+	
+      var data = result.split('|');
+
+      var ul = document.createElement("ul");
+      ul.style.paddingLeft = "5px";
+      ul.style.paddingRight = "5px";
+           
+      for(var i = 0; i < data.length; i ++){
+
+        var li = document.createElement("li")
+        li.setAttribute("class", "cell-data");
+        li.setAttribute("target", id);
+        li.value = data[i];
+        li.setAttribute("value", data[i]);
+        li.innerHTML = data[i];
+        li.onmousedown = function(){
+
+          __$(this.getAttribute("target")).value = this.getAttribute("value");  
+          updateTouchscreenInput(this);
+        }
+
+        if(i % 2 == 0){
+       
+          li.className = "even";
+          li.setAttribute("group", "even");
+          
+        } else {
+          
+          li.className = "odd";
+          li.setAttribute("group", "odd");
+        }
+
+        ul.appendChild(li);
+      }
+
+      __$(dom_id).appendChild(ul);
+
+      if (n == "table")
+        setTimeout(function(){
+          __$('holder').style.display = n;
+        }, 350);
+    
+  }
+
+
+  function showMsg(div){
+    setTimeout(function(){fadeOut(div, 0);}, 1);
+  }
+
+    </script>
+
+    <style>
+
+      li.highlighted {
+        background-color: lightblue;
+      }
+      li {
+
+        cursor: pointer;
+        font-size: 1.5em;
+        margin: 2px;
+        -moz-user-select: none;
+      }
+      
+      .inputFrameClass {
+       overflow: auto;
+       height: 82vh ! important;
+       }
+    </style>
+  
   //-->
 </script>
 
@@ -11,55 +182,34 @@
   <%= hidden_field_tag "encounter[patient_id]", @patient.id %>
   <%= hidden_field_tag "encounter[encounter_datetime]", DateTime.now() %>
   <%= hidden_field_tag "encounter[provider_id]", session[:user_id] %>
+  <%= touch_hidden_tag "Patient currently smokes", @patient, nil, {:id => "smoker", :helptext => "Does patient smoke?"}%>
+  <%= touch_hidden_tag "Religion", @patient, nil, {:id => "religion", :helptext => "Religion"}%>
+  <%= touch_hidden_tag "Patient currently consumes alcohol", @patient, nil, {:id => "alcohol", :helptext => "Does patient take alcohol?  "}%>
+  <%= touch_hidden_tag "Civil Status", @patient, nil, {:id => "civil_status", :helptext => "Marital status"}%>
   <%session_date = session[:datetime] || Time.now() %>
 
-  <%= touch_select_tag "Patient currently smokes", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
-    {:id => "smoker", :tt_requireNextClick => false,
-    :helptext => "Does patient smoke?  <span class='helper'> Social History</span>",
-    :tt_onLoad => "__$('nextButton').style.display='none';" } %>
-  <%= touch_select_tag "Patient currently consumes alcohol", @patient, options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
-    {:id => "alcohol",
-    :tt_requireNextClick => false,
-    :tt_onLoad => "__$('nextButton').style.display='none';",
-    :helptext => "Does patient take alcohol?  <span class='helper'> Social History</span>" } %>
+
+  <%= touch_text_field_tag "", @patient, nil,
+        {:id => "social_information",
+        :helptext => "Social Information <span class='helper'>Social History</span>",
+        :tt_onLoad => "loadSplitSelections();",
+        :optional => "true"
+      } %>
+ 
+  
   <%#= touch_select_tag "Nutrition status", @patient, options_for_select([["", ""], ["Good", "Good"], ["Malnourished", "Malnourished"], ["Obese", "Obese"]]),
   {:id => "nutrition",
   :helptext => "Nutrition status" } %>
 
-  <%= touch_select_tag "Civil status", @patient,
-    options_for_select([["", ""], ["Single", "Single"], ["Engaged", "Engaged"],
-      ["Married", "Married"], ["Separated", "Separated"], ["Divorced", "Divorced"],
-      ["Widowed", "Widowed"], ["Other", "Other"]]),
-    {:id => "civil_status",
-    :tt_requireNextClick => false,
-    :tt_onLoad => "__$('nextButton').style.display='none';",
-    :helptext => "Marital status  <span class='helper'> Social History</span>" } %>
+
 
   <%= touch_text_field_tag "Other civil status comment", @patient, nil,
     {
     :id => "other_civil_status",
-    :helpText => "Specify other marital status  <span class='helper'> Social History</span>",
+    :helpText => "Specify other marital status<span class='helper'> Social History</span>",
     :tt_onLoad => "__$('nextButton').style.display='none';",
     :condition => "__$('civil_status').value == 'Other'"
   } %>
-
-  <%#= touch_select_tag "Religion", @patient,
-  options_for_select([["", ""],
-  ["Jehovah's Witness", "Jehovahs Witness"],
-  ["Roman Catholic", "Roman Catholic"],
-  ["Presbyterian (C.C.A.P.)", "Presbyterian (C.C.A.P.)"],
-  ["Seventh Day Adventist", "Seventh Day Adventist"],
-  ["Baptist", "Baptist"],
-  ["Moslem", "Moslem"],
-  ["Other", "Other"]]),
-  {:id => "religion",
-  :helptext => "Religion" } %>
-
-  <%= touch_select_tag "Religion", @patient, options_for_select(@religions),
-    {:id => "religion",
-    :tt_onLoad => "__$('nextButton').style.display='block';",
-    :tt_pageStyleClass => "Keyboard",
-    :helptext => "Religion  <span class='helper'> Social History</span>" } %>
 
   <%= touch_text_field_tag "Religion", @patient, nil,
     {
