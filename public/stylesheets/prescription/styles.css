@@ -196,10 +196,12 @@ button:active{
 }
 
 .messageBar button {
-    font-size: 0.9em;
+    font-size: 1em;
+    font-style: bold;
+    color: white;
     margin: 5px;
-    min-width: 70px;
-    min-height: 50px;
+    min-width: 75px;
+    min-height: 54px;
     padding: 5px;
     background:url(/images/btn_blue.png) right repeat;
 }
