@@ -230,7 +230,7 @@
     {:id => "urine_protein_test_date",
     :helptext => "Urine Protein Test Date <span class='helper'> Lab Results</span>",
     :tt_onUnLoad => "parsedConceptName = '';",
-    :tt_onLoad => " parsedConceptName = 'Urine Protein Test Date';",
+    :tt_onLoad => " parsedConceptName = 'Urine Protein Test Date';initializeDate();",
     :condition => "#{ (params[:update] ? "getSelected().match(/Urine\sProtein/)" : "") }",
     :max => "#{session[:datetime].to_date rescue Date.today}"
   } %>
