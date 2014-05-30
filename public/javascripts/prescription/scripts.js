@@ -196,7 +196,7 @@ function showNumber(id, global_control, showDefault){
     var row1 = ["1","2","3"];
     var row2 = ["4","5","6"];
     var row3 = ["7","8","9"];
-    var row4 = ["C","0","Px drug"];
+    var row4 = ["C","0","Done"];
 
     var tbl = document.createElement("table");
     tbl.className = "keyBoardTable";
@@ -241,7 +241,7 @@ function showNumber(id, global_control, showDefault){
         td1.align = "center";
         td1.vAlign = "middle";
         td1.style.cursor = "pointer";
-        td1.bgColor = "#ffffff"
+        td1.bgColor = "#ffffff";
         td1.width = "30px";
 
         tr1.appendChild(td1);
@@ -339,9 +339,19 @@ function showNumber(id, global_control, showDefault){
         btn.onclick = function(){
             if(this.innerHTML.match(/<span>(.+)<\/span>/)[1] == "C"){
                 __$(global_control).value = __$(global_control).value.substring(0,__$(global_control).value.length - 1);
-            }else if(this.innerHTML.match(/Px drug/)){
-                document.getElementById('search').value = '';               
-                switchViews('All drugs');
+            }else if(this.innerHTML.match(/Done/)){
+
+                var cells = __$("cummulative").getElementsByClassName("cell");
+                              
+                if (cells.length >= 8 && cells.length % 4 == 0 && (cells[cells.length - 3].innerHTML == "")){
+                    confirmAction("Enter frequency for drug: " + cells[cells.length - 4].innerHTML)
+                }else if (cells.length >= 8 && cells.length % 4 == 0 && (cells[cells.length - 2].innerHTML == "")){
+                    confirmAction("Enter duration for drug: " + cells[cells.length - 4].innerHTML)
+                }else{
+                    document.getElementById('search').value = '';
+                    switchViews('All drugs');
+                }
+                
             }else if(!this.innerHTML.match(/^$/)){
                 __$(global_control).value += this.innerHTML.match(/<span>(.+)<\/span>/)[1];
             }
@@ -594,7 +604,7 @@ function setDuration() {
         duration = __$("duration").value;
         var keyBoardButtons = document.getElementsByClassName("keyboard_button");
         for(var i = 0; i < keyBoardButtons.length; i++){
-            if(keyBoardButtons[i].innerHTML.match(/Px drug/i)){
+            if(keyBoardButtons[i].innerHTML.match(/Done/i)){
                 if (duration.length > 0) {
                     keyBoardButtons[i].disabled = false;
                 }else{
@@ -817,7 +827,7 @@ function confirmAction(message) {
 
         tstMessageBar.innerHTML = message + "<br/>" +
         "<button onmousedown=\"__$('container')" +
-        ".removeChild(document.getElementById('messageBar'));\"><span>Ok</span></button>";
+        ".removeChild(document.getElementById('messageBar'));\"><span>OK</span></button>";
 
         tstMessageBar.style.display = "block";
         __$('container').appendChild(tstMessageBar);
@@ -973,12 +983,18 @@ function clearAll() {
         removeDrug(selected_set);
     }
     document.getElementById('search').value = '';
-    switchViews('Drug Sets');
+
+    if (Object.keys(drug_sets).length > 0){
+        switchViews('Drug Sets');
+    }else{
+        switchViews('All Drugs');
+    }
 }
 
-//loadAllDrugs();
-loadDrugSets();
-/*__$("btnswitch").innerHTML = "All Drugs";
-*/
+if (Object.keys(drug_sets).length > 0){
+    loadDrugSets();
+}else{
+    loadAllDrugs();
+}
 resize();
 

@@ -139,7 +139,7 @@
       font-size: 0.97em;
     }
 
-    
+
     #tbl1 td {
       padding: 1px;
       padding-top: 5.4px;
@@ -169,7 +169,7 @@
       font-style: normal;
     }
     .odd{
-      background-color: lightblue;
+      background-color: #CFE4CD;
     }
 
     .messageBar {
@@ -205,10 +205,10 @@
       margin: 0px;
       margin-top: 5px;
       font-size: 1.2em;
-      
+
       cursor: pointer;
 
-      
+
       float: right;
     }
 
@@ -248,23 +248,23 @@
         </tr>
         <tr>
           <td colspan ="5" >
-            <div  style="height: 70vh; overflow: auto;">
+            <div  style="height: 72vh; overflow: auto;">
               <table style="width: 100%">
                 <%
                 @keys.each do |set_id|%>
 
                   <tr >
-                    <td colspan="3" style="border: hidden;padding-left: 2%; margin-top: 10px; font-size: 19px; font-weight: bold;">
+                    <td colspan="3" style="border: hidden;padding-left: 2%; margin-top: 5%; font-size: 19px; font-weight: bold;">
                       <% image = @status[set_id].match("inactive") ? "unticked" : "ticked" %>
-                      <div style="padding-top: 15px;"> <img id ="img<%= set_id %>" onclick = "updateStatus('<%= set_id %>', '<%= @status[set_id] %>')" src="/images/<%= image%>.jpg" height="43"
-                                                            alt="select" /> &nbsp<%=  @set_name_ids_map[set_id] + "  (" + @set_desc_ids_map[set_id] + ")"%>
+                      <div style="margin-top: 12px;"><div  style="margin-bottom: -5vh"> <img id ="img<%= set_id %>" onclick = "updateStatus('<%= set_id %>', '<%= @status[set_id] %>')" src="/images/<%= image%>.jpg" height="43"
+                                                                                             alt="select" /> </div> <div style=" height: 5vh; padding-left: 5%; padding-top: 1vh;">&nbsp<%=  @set_name_ids_map[set_id] + "  (" + @set_desc_ids_map[set_id] + ")"%></div>
                       </div>
                     </td>
-                    <td colspan="2" style="width: 8%; padding-left:2.5%; border: hidden;  height: 5%;">
+                    <td colspan="2" style="width: 8%; padding-left:2.5%; border: hidden;  height: 5vh;">
 
-                      <button onclick="confirmBlocking('Are you sure you want to remove set <%=  @set_name_ids_map[set_id] %>?', <%= set_id %>)" style="font-size: 16px; width:82px; padding: 0px;  background:url(/images/btn_red.png) right repeat; opacity: 0.8;" class="action-button"
+                      <button onclick="confirmBlocking('Are you sure you want to remove set <%=  @set_name_ids_map[set_id] %>?', <%= set_id %>)" style="font-size: 16px; width:82px; padding: 0px;  background:url(/images/btn_red.png) right repeat;" class="action-button"
                               > Delete </button>
-                      <button onclick="addDrug('<%= set_id %>')"  style="font-size: 16px; width:82px; padding: 0px; margin-right: 8px;   opacity: 0.8; background:url(/images/btn_blue.png) right repeat;" class="action-button"
+                      <button onclick="addDrug('<%= set_id %>')"  style="font-size: 16px; width:82px; padding: 0px; margin-right: 8px; background:url(/images/btn_blue.png) right repeat;" class="action-button"
                               > Add drug </button>
 
                     </td>
@@ -330,4 +330,9 @@
       </button>
     </div>
   </div>
+
 </body>
+
+<script>
+
+</script>
