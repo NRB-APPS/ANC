@@ -490,7 +490,7 @@ session_date = session[:datetime]? session[:datetime] : Date.today
           :helptext => "Select pregnancies with available information <span class='helper'> Obstetric History</span>",
           :tt_onLoad => "loadSelections();",
           :optional => "true",
-          :condition => "__$('enter_gravida').value > 1"
+          :condition => "__$('enter_gravida').value > 1 && __$('enter_number_of_deliveries').value > 0"
         } %>
       <%end%>
       <%= submit_tag 'Finish' %>
