@@ -115,7 +115,9 @@
       }
     }
 
-    __$("year_of_birth" + preg + (baby_no - 1)).value = "";
+    if (__$("year_of_birth" + preg + (baby_no - 1))){
+      __$("year_of_birth" + preg + (baby_no - 1)).value = "";
+    }
         
   }
 
@@ -144,7 +146,7 @@
       var n = 0;
       var holder = document.createElement("div");
       holder.id = 'holder';
-      holder.style.height = "72vh";
+      holder.style.height =  (0.72 * screen.height) + "px";
       holder.style.width = "100%";
       holder.style.display = "none";
       holder.setAttribute("class", "options");
@@ -173,7 +175,7 @@
           heada.style.height = "40px";
           heada.innerHTML = helpText;
           heada.style.marginTop = "5px";
-          heada.style.background = "lightgray";
+          heada.style.background = "#CFE4CD";
           heada.style.borderRadius = "3px";
           heada.style.border = "2px gray solid";
           heada.style.fontSize = "28px";
@@ -189,7 +191,7 @@
             cell.style.borderTop = "1px solid";
           }
        
-          cell.style.height = ((72/v_count) - 2) + "vh";
+          cell.style.height = ((72/v_count) - 2) * 0.001 * screen.height + "px";
           cell.style.width = ((100/h_count)) + "%";
           row.appendChild(cell);          
 
@@ -318,8 +320,8 @@
     }
   }
   function hideMsg(div){
-   __$(div).style.display = "none"
-   // setTimeout(function(){fade(div, 1);}, 5);
+    __$(div).style.display = "none"
+    // setTimeout(function(){fade(div, 1);}, 5);
   }
 
   function showMsg(div){

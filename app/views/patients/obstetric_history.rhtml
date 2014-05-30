@@ -133,7 +133,7 @@ session_date = session[:datetime]? session[:datetime] : Date.today
     if (delivered_pregnancies > 0){
           
       var headerHolder = document.createElement("div");
-      headerHolder.style.height = "8vh";
+      headerHolder.style.height = "80px;";
       headerHolder.style.width = "100%";
       headerHolder.style.borderRadius = "10px";
                    
@@ -292,10 +292,10 @@ session_date = session[:datetime]? session[:datetime] : Date.today
   }
 
   function calculateAbortions(){
-       updateDeliveries();
-  	if ( __$('enter_gravida').value > 1 ){
-  	    __$('enter_number_of_abortions').value = parseInt(__$('enter_gravida').value) - parseInt(__$('enter_number_of_deliveries').value) -1	
-  	}
+    updateDeliveries();
+    if ( __$('enter_gravida').value > 1 ){
+      __$('enter_number_of_abortions').value = parseInt(__$('enter_gravida').value) - parseInt(__$('enter_number_of_deliveries').value) -1
+    }
   }
 
   //setTimeout("disablePastVisits()", 200);
@@ -314,9 +314,9 @@ session_date = session[:datetime]? session[:datetime] : Date.today
       }
 
       #container {
-        height: 63vh;
+        height: 450px;
         width: 100%;
-        margin-top: 1vh;
+        margin-top: 2px;
         overflow: auto;
         border-radius: 10px;
       }
@@ -326,7 +326,7 @@ session_date = session[:datetime]? session[:datetime] : Date.today
         width: 30%;
         font-style: bold;
         vertical-align: middle;
-        height: 8vh;
+        height: 80px;
         font-size: 25px;
         text-align: center;
         border-radius: 5px;
@@ -345,7 +345,7 @@ session_date = session[:datetime]? session[:datetime] : Date.today
         display: table-cell;
         width: 33%;
         margin: 5px;
-        height: 9vh;
+        height: 80px;
         padding-left: 10%;
         vertical-align: middle;
         font-size: 26px;
@@ -356,21 +356,17 @@ session_date = session[:datetime]? session[:datetime] : Date.today
       .plus, .plus:hover {
         background: url('/images/up_arrow.png');
         background-repeat:no-repeat;
-        height: 90%;
+        height: 60px;
         border-width: 0px;
         border-style: hidden;
-        outline: none;
-        -moz-outline : none;
       }
 
       .minus, .minus:hover {
         background: url('/images/down_arrow.png');
         background-repeat:no-repeat;
-        height: 90%;
+        height: 60px;
         border-style: hidden;
         border-width: 0px;
-        outline: none;
-        -moz-outline: none;
       }
 
       .label {
@@ -413,7 +409,7 @@ session_date = session[:datetime]? session[:datetime] : Date.today
         :id => 'data'
       }%>
 
-     <%  if params[:with_visit_type] && params[:with_visit_type].to_s == "true" %>
+      <%  if params[:with_visit_type] && params[:with_visit_type].to_s == "true" %>
         <%= hidden_field_tag "encounter[encounter_type_name]", "ANC VISIT TYPE" %>
         <%= hidden_field_tag "encounter[patient_id]", @patient.id %>
         <%= hidden_field_tag "encounter[encounter_datetime]", session[:datetime]? session[:datetime] : DateTime.now() %>
