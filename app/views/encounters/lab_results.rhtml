@@ -226,6 +226,15 @@
     :tt_onUnLoad => "parsedConceptName = '';",
     :condition => "#{ (params[:update] ? "getSelected().match(/Urine\sProtein/)" : "") }" } %>
 
+   <%= touch_date_tag "Urine Protein Test Date", @patient, nil,
+    {:id => "urine_protein_test_date",
+    :helptext => "Urine Protein Test Date <span class='helper'> Lab Results</span>",
+    :tt_onUnLoad => "parsedConceptName = '';",
+    :tt_onLoad => " parsedConceptName = 'Urine Protein Test Date';",
+    :condition => "#{ (params[:update] ? "getSelected().match(/Urine\sProtein/)" : "") }",
+    :max => "#{session[:datetime].to_date rescue Date.today}"
+  } %>
+
   <%= touch_select_tag "HIV status", @patient,
     options_for_select([["", ""], ["Negative", "Negative"], ["Positive", "Positive"], ["Not Done", "Not Done"]]),
     {:id => "new_test_result_at_current_facility",
