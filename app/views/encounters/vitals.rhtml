@@ -201,7 +201,10 @@
     }
 
     if (pos == -1){
-
+	if (clicked == 1){
+        $("touchscreenInput" + tstCurrentPage).value = "";
+        clicked = 0;
+      }
       if (dbp == 1){
         $("diastolic_blood_pressure").value = $("touchscreenInput" + tstCurrentPage).value
          bp = ($("systolic_blood_pressure").value.trim().length > 0 ? $("systolic_blood_pressure").value.trim() : "?") +
@@ -230,10 +233,7 @@
        $("bp").innerHTML = "Blood Pressure: <i style='font-size: 1.2em; float: right;'>" + bp + "</i>";
     
       }
-      if (clicked == 1){
-        $("touchscreenInput" + tstCurrentPage).value = "";
-        clicked = 0;
-      }
+      
     }
     else if(pos == 1){
       alreadyNoted = false;
