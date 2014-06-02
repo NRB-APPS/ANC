@@ -43,6 +43,8 @@ function resize(){
     
         }
     }
+
+    scroll(__$("scroll_me"));
 }
       
 function __$(id){
@@ -196,7 +198,7 @@ function showNumber(id, global_control, showDefault){
     var row1 = ["1","2","3"];
     var row2 = ["4","5","6"];
     var row3 = ["7","8","9"];
-    var row4 = ["C","0","Done"];
+    var row4 = ["C","0","OK"];
 
     var tbl = document.createElement("table");
     tbl.className = "keyBoardTable";
@@ -339,7 +341,7 @@ function showNumber(id, global_control, showDefault){
         btn.onclick = function(){
             if(this.innerHTML.match(/<span>(.+)<\/span>/)[1] == "C"){
                 __$(global_control).value = __$(global_control).value.substring(0,__$(global_control).value.length - 1);
-            }else if(this.innerHTML.match(/Done/)){
+            }else if(this.innerHTML.match(/OK/)){
 
                 var cells = __$("cummulative").getElementsByClassName("cell");
                               
@@ -606,7 +608,7 @@ function setDuration() {
         duration = __$("duration").value;
         var keyBoardButtons = document.getElementsByClassName("keyboard_button");
         for(var i = 0; i < keyBoardButtons.length; i++){
-            if(keyBoardButtons[i].innerHTML.match(/Done/i)){
+            if(keyBoardButtons[i].innerHTML.match(/OK/i)){
                 if (duration.length > 0) {
                     keyBoardButtons[i].disabled = false;
                 }else{
@@ -859,7 +861,9 @@ function addDrug(id){
     row.id = "row_" + id;
   
     __$("drugs").appendChild(row);
-  
+    scroll(__$("scroll_me"));
+   
+    
     var drug = __$(id).getAttribute("drug");
     var frequency = __$(id).getAttribute("frequency");
     var duration = __$(id).getAttribute("duration");
@@ -910,7 +914,22 @@ function addDrug(id){
     img.style.cursor = "pointer";
   
     img.onclick = function(){
-        removeDrug(this.getAttribute("tag"));
+
+        if (__$("cummulative") != undefined){
+
+            var cells = __$("cummulative").getElementsByClassName("cell");
+            var lastRow = cells[cells.length - 2].id.match(/\d+/)[0];
+            var currentRow = this.getAttribute("tag").match(/\d+/)[0];
+            
+            if (lastRow == currentRow){
+                if (cells.length >= 8 && cells.length % 4 == 0 && (cells[cells.length - 3].innerHTML == "")){
+                    switchViews("All Drugs");
+                }else if (cells.length >= 8 && cells.length % 4 == 0 && (cells[cells.length - 2].innerHTML == "")){
+                    switchViews("All Drugs");
+                }
+            }
+        }
+        removeDrug(this.getAttribute("tag"));   
     }
   
     cell4.appendChild(img);
@@ -919,6 +938,7 @@ function addDrug(id){
 function removeDrug(id){
     if(__$("row_" + id)){
         __$("drugs").removeChild(__$("row_" + id));
+        scroll(__$("scroll_me"))
     }  
         
     if(selectedDrugs[id])
@@ -998,5 +1018,9 @@ if (Object.keys(drug_sets).length > 0){
 }else{
     loadAllDrugs();
 }
-resize();
 
+function scroll(div){
+
+    div.scrollTop = div.scrollHeight - div.clientHeight;
+}
+resize();
