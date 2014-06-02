@@ -91,17 +91,17 @@
           </div>
           <div class="cell" style="border: 0px solid #999; width: 200px; text-align: center; vertical-align: top;">
             <!--button class='button_red' id='btncancel' style='float: none;'-->
-            <button class='button_green' id='btndone' style='float: none;' onmousedown = 'buildParams();'>
+            <button class='big_button button_green' id='btndone' style='float: none;' onmousedown = 'buildParams();'>
               Finish
             </button>
-            <button class='button_blue' id='btnback' style='float: none;' onmousedown="clearAll();">
+            <button class='big_button button_blue' id='btnback' style='float: none;' onmousedown="clearAll();">
               Clear all
             </button>
-            <button class='button_red' id='btncancel' style='float: none;' onmousedown="window.location = tt_cancel_destination">
+            <button class='big_button button_red' id='btncancel' style='float: none;' onmousedown="window.location = tt_cancel_destination">
               Cancel
             </button>
 
-            <button class='button_blue' id='btnswitch' style='float: none; margin-top: 100px;' onmousedown="checkParams(this);">
+            <button class='big_button button_blue' id='btnswitch' style='float: none; margin-top: 100px;' onmousedown="checkParams(this);">
               <%if @drug_sets.present?%>
                 All Drugs
               <%else%>
