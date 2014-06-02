@@ -121,8 +121,8 @@ session_date = session[:datetime]? session[:datetime] : Date.today
   function loadSelections(){
     __$("keyboard").style.display = "none";
     __$("touchscreenInput" + tstCurrentPage).style.display = "none";
-    __$("inputFrame" + tstCurrentPage).style.height = "72vh";
-    __$("inputFrame" + tstCurrentPage).style.marginTop = "5vh";
+    __$("inputFrame" + tstCurrentPage).style.height = 0.72 * screen.height + "px";
+    __$("inputFrame" + tstCurrentPage).style.marginTop = 0.05 * screen.height + "px";
     __$("inputFrame" + tstCurrentPage).style.background = "white";
 
     var pregnancies = __$("enter_gravida").value;
@@ -186,7 +186,11 @@ session_date = session[:datetime]? session[:datetime] : Date.today
         var cell2 = document.createElement("div");
         cell2.id = "cell_" + p + "_2";
         cell2.setAttribute("class", "data-cell");
-        cell2.innerHTML = "<button class = 'minus' onmousedown = 'decrement(" +p+")'></button> <input id = 'input_"+ p +"'  value = '1' class = 'label' id = 'label"+ p + "' >  </input> <button class = 'plus' onmousedown = 'increment("+ p +")'></button>"
+        
+        cell2.style.paddingLeft = "7%";
+        
+        cell2.innerHTML = "<table class='button-table'><tr><td><button class = 'minus' onmousedown = 'decrement(" +p+")'></button> </td> <td><input id = 'input_"+
+          p +"'  value = '1' class = 'label' id = 'label"+ p + "' >  </input> </td><td> <button class = 'plus' onmousedown = 'increment("+ p +")'></button></td></tr></table>"
         row.appendChild(cell2);
 
         var cell3 =  document.createElement("div");
@@ -210,20 +214,52 @@ session_date = session[:datetime]? session[:datetime] : Date.today
   }
 
   function increment(pos){
-        
-    if (parseInt( __$("input_" + pos).value) <= 7){
+
+    var i = parseInt( __$("input_" + pos).value);
+    if (i <= 7){
 
       __$("input_" + pos).value = parseInt( __$("input_" + pos).value) + 1;
       updateInput(pos);
+    }else{
+ 
+      __$("input_" + pos).parentNode.parentNode.children[2].childNodes[1].style.background = "url('/images/up_arrow_gray.png')";
+      __$("input_" + pos).parentNode.parentNode.children[2].childNodes[1].style.backgroundRepeat = "no-repeat";
+    }
+
+    if (i + 1 == 8){
+       
+      __$("input_" + pos).parentNode.parentNode.children[2].childNodes[1].style.background = "url('/images/up_arrow_gray.png')";
+      __$("input_" + pos).parentNode.parentNode.children[2].childNodes[1].style.backgroundRepeat = "no-repeat";
+    }
+
+    if (i + 1 > 1){
+      __$("input_" + pos).parentNode.parentNode.children[0].childNodes[0].style.background = "url('/images/down_arrow.png')";
+      __$("input_" + pos).parentNode.parentNode.children[0].childNodes[0].style.backgroundRepeat = "no-repeat";
     }
   }
 
   function decrement(pos){
-
+    
+    var i = parseInt( __$("input_" + pos).value);
     if (parseInt( __$("input_" + pos).value) > 1){
 
       __$("input_" + pos).value = parseInt( __$("input_" + pos).value) - 1;
       updateInput(pos);
+    }else{
+      
+      __$("input_" + pos).parentNode.parentNode.children[0].childNodes[0].style.background = "url('/images/down_arrow_gray.png')";
+      __$("input_" + pos).parentNode.parentNode.children[0].childNodes[0].style.backgroundRepeat = "no-repeat";
+    }
+
+    if (i - 1 == 1){
+
+      __$("input_" + pos).parentNode.parentNode.children[0].childNodes[0].style.background = "url('/images/down_arrow_gray.png')";
+      __$("input_" + pos).parentNode.parentNode.children[0].childNodes[0].style.backgroundRepeat = "no-repeat";
+    }
+
+    if (i - 1 < 8){
+      __$("input_" + pos).parentNode.parentNode.children[2].childNodes[1].style.background = "url('/images/up_arrow.png')";
+      __$("input_" + pos).parentNode.parentNode.children[2].childNodes[1].style.backgroundRepeat = "no-repeat";
     }
   }
 
@@ -357,14 +393,16 @@ session_date = session[:datetime]? session[:datetime] : Date.today
         background: url('/images/up_arrow.png');
         background-repeat:no-repeat;
         height: 60px;
+        margin-top: 12px;
         border-width: 0px;
         border-style: hidden;
       }
 
       .minus, .minus:hover {
-        background: url('/images/down_arrow.png');
+        background: url('/images/down_arrow_gray.png');
         background-repeat:no-repeat;
         height: 60px;
+        margin-top: 12px;
         border-style: hidden;
         border-width: 0px;
       }
@@ -373,7 +411,7 @@ session_date = session[:datetime]? session[:datetime] : Date.today
         font-size: 27px;
         background: #E6E6E6;
         width: 45px !important;
-        margin-top: 10px;
+        margin-top: 0px;
         margin-right: 20px;
         border-width: 3.5px;
         border-color: #8ABEA1;
@@ -394,7 +432,6 @@ session_date = session[:datetime]? session[:datetime] : Date.today
         margin-top: 10px;
         padding-right: 50%;
       }
-
     </style>
   </head>
   <body>

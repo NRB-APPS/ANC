@@ -35,8 +35,8 @@ function resize(){
     if(__$("selections")){
         if(__$("keying")){
     
-            __$("selections").style.height = (__$('container').offsetHeight - __$("keying").offsetHeight - __$("cummulative").offsetHeight - 55) + "px";
-      
+            __$("selections").style.height = (__$('container').offsetHeight - __$("keying").offsetHeight - __$("cummulative").offsetHeight - 35) + "px";
+                
         } else {
     
             __$("selections").style.height = (__$('container').offsetHeight - __$("cummulative").offsetHeight - 55) + "px";
@@ -401,6 +401,8 @@ function loadAllDrugs(){
             border: "1px solid #ccc",
             overflow: "auto",
             borderRadius: "10px",
+            marginBottom: "2px",
+            height: "230px",
             backgroundColor: "#fff" // "#c8e1d3"
         }
     },
@@ -411,7 +413,8 @@ function loadAllDrugs(){
             overflow: "auto",
             borderRadius: "10px",
             textAlign: "center",
-            height: "180px"
+            height: "180px",
+            paddingBottom: "2px"
         }
     }
     ];
@@ -501,7 +504,7 @@ function loadFrequenciesAndDuration(id){
   
     var cell1 = document.createElement("div");
     cell1.className = "cell";
-    cell1.style.width = "45%";
+    cell1.style.width = "60%";
     cell1.style.border = "1px solid #ccc";
     cell1.style.height = "100%";
     cell1.style.borderRadius = "10px";
@@ -512,7 +515,7 @@ function loadFrequenciesAndDuration(id){
   
     var cell2 = document.createElement("div");
     cell2.className = "cell";
-    cell2.style.width = "45%";
+    cell2.style.width = "40%";
     cell2.style.border = "1px solid #ccc";
     cell2.style.height = "100%";
     cell2.style.borderRadius = "10px";
@@ -546,17 +549,16 @@ function loadFrequenciesAndDuration(id){
     var ul = document.createElement("ul");
     ul.className = "listing";
     ul.style.overflow = "auto";
-    ul.style.height = "52vh";
-    ul.style.width = "100%";
+    ul.style.height = "400px";
+    ul.style.width = "100%"
     ul.id = "ul";
+    ul.style.fontSize = "0.8em";
   
     cell1.appendChild(ul);
   
     var frequencies = ["Once a day (OD)", "Twice a day (BD)", "Three a day (TDS)",
     "Four times a day (QID)", "Five times a day (5X/D)", "Six times a day (Q4HRS)",
-    "In the morning (QAM)", "Once a day at noon (QNOON)", "In the evening (QPM)",
-    "Once a day at night (QHS)", "Every other day (QOD)",
-    "Once a week (QWK)", "Once a month", "Twice a month"]; //"TBD", "NOCTE",
+    "In the morning (QAM)", "Once a week (QWK)", "Once a month", "Twice a month"]; //"TBD", "NOCTE",
       
     for(var i = 0; i < frequencies.length; i++){
         var li = document.createElement("li");
@@ -588,7 +590,7 @@ function loadFrequenciesAndDuration(id){
     input.setAttribute("type", "text");
     input.id = "duration";
     input.className = "input";
-    input.style.width = "90%";
+    input.style.width = "85%";
     input.style.textAlign = "center";
     input.style.fontSize = "32px";
   
