@@ -3,13 +3,15 @@
   <!--
   tt_cancel_show = "/patients/show/<%= @patient.id %>";
   tt_cancel_destination = "/patients/show/<%= @patient.id %>";
-  
-  
+
+
   function checkSelectedOptions(){
-   
+
     if ((__$("smoker").value == "") || (__$("alcohol").value == "") || (__$("civil_status").value == "") || (__$("religion").value == "")){
      dispatchMessage("Not all fields not selected; Do you wish to continue?", tstMessageBoxType.YesNo)
       __$("social_information").value = ""
+    }else{
+      gotoNextPage();
     }
   }
 
@@ -30,15 +32,15 @@
     var v_count = Math.ceil(count/n);
     var h_count = Math.ceil(count/n);
     var e_count = count % n;
-    
+
     __$("keyboard").style.display = "none";
     __$("touchscreenInput" + tstCurrentPage).style.display = "none";
     __$("inputFrame" + tstCurrentPage).style.height = (0.72 * screen.height) + "px";
     __$("inputFrame" + tstCurrentPage).style.marginTop = (0.05 * screen.height) + "px";
     //__$("inputFrame" + tstCurrentPage).style.background = "lightblue";
-   
+
     if (count > 0){
-      
+
       var n = 0;
       var holder = document.createElement("div");
       holder.id = 'holder';
@@ -49,7 +51,7 @@
       holder.style.borderRadius = "5px";
       holder.style.background = "white";
       __$("inputFrame" + tstCurrentPage).appendChild(holder);
-      
+
       for (var r = 1; r <= v_count; r ++){
 
         var row = document.createElement("div");
@@ -86,20 +88,20 @@
           if(r != 1){
             cell.style.borderTop = "1px solid";
           }
-       
+
           cell.style.height = ((72/v_count) - 2) * 0.001 * screen.height + "px";
           cell.style.width = ((100/h_count)) + "%";
-          row.appendChild(cell);          
+          row.appendChild(cell);
 
           n ++;
           if (n != arr.length - 1){
-           
+
             handleResultData(arr[n - 1][0], arr[n - 1][1], "", (r + "_" + c));
           }else{
-           
+
             handleResultData(arr[n - 1][0], arr[n - 1][1], "table", (r + "_" + c));
           }
-          
+
         }
       }
 
@@ -107,19 +109,19 @@
       __$("2_2").style.borderTop = "hidden";
       __$("1_2").style.borderBottom = "1px solid";
       __$("2_1").style.borderRight = "1px solid";
-     
+
     }
     __$("nextButton").setAttribute("onmousedown", "checkSelectedOptions();")
   }
 
   function handleResultData(result, id, n, dom_id) {
-	
+
     var data = result.split('|');
 
     var ul = document.createElement("ul");
     ul.style.paddingLeft = "5px";
     ul.style.paddingRight = "5px";
-           
+
     for(var i = 0; i < data.length; i ++){
 
       var li = document.createElement("li")
@@ -135,12 +137,12 @@
       }
 
       if(i % 2 == 0){
-       
+
         li.className = "even";
         li.setAttribute("group", "even");
-          
+
       } else {
-          
+
         li.className = "odd";
         li.setAttribute("group", "odd");
       }
@@ -154,7 +156,7 @@
       setTimeout(function(){
         __$('holder').style.display = n;
       }, 350);
-    
+
   }
 
 
