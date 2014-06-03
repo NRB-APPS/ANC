@@ -61,7 +61,7 @@
                       </div>
                     </div>
                   </div>                  
-                  <div style="width: 100%; height: 190px; overflow: auto;">
+                  <div id="scroll_me" style="width: 100%; height: 190px; overflow: auto;">
                     <div id="drugs" class="table" style="width: 100%; border-spacing: 0px;">
 
                     </div>
@@ -74,12 +74,12 @@
 
                   <div class="table" style="width: 100%; height: 100%;">
                     <div class="row">
-                      <div id="selections" class="cell" style="border: 0px solid #fff; border-radius: 10px; background-color: #c8e1d3;">
+                      <div id="selections" class="cell" style="border: 0px solid #fff; height: 50px; border-radius: 10px; background-color: #c8e1d3;">
 
                       </div>
                     </div>
                     <div class="row">
-                      <div id="keying" class="cell" style="border: 1px solid #999; overflow: auto; text-align: center; border-radius: 10px; height: 240px;">
+                      <div id="keying" class="cell" style="border: 1px solid #999; overflow: auto; text-align: center; border-radius: 10px; height: 200px;">
 
                       </div>
                     </div>
@@ -89,19 +89,19 @@
               </div>
             </div>
           </div>
-          <div class="cell" style="border: 0px solid #999; width: 300px; text-align: center; vertical-align: top;">
+          <div class="cell" style="border: 0px solid #999; width: 200px; text-align: center; vertical-align: top;">
             <!--button class='button_red' id='btncancel' style='float: none;'-->
-            <button class='button_green' id='btndone' style='float: none;' onmousedown = 'buildParams();'>
+            <button class='big_button button_green' id='btndone' style='float: none;' onmousedown = 'buildParams();'>
               Finish
             </button>
-            <button class='button_blue' id='btnback' style='float: none;' onmousedown="clearAll();">
+            <button class='big_button button_blue' id='btnback' style='float: none;' onmousedown="clearAll();">
               Clear all
             </button>
-            <button class='button_red' id='btncancel' style='float: none;' onmousedown="window.location = tt_cancel_destination">
+            <button class='big_button button_red' id='btncancel' style='float: none;' onmousedown="window.location = tt_cancel_destination">
               Cancel
             </button>
 
-            <button class='button_blue' id='btnswitch' style='float: none; margin-top: 100px;' onmousedown="checkParams(this);">
+            <button class='big_button button_blue' id='btnswitch' style='float: none; margin-top: 100px;' onmousedown="checkParams(this);">
               <%if @drug_sets.present?%>
                 All Drugs
               <%else%>
@@ -109,7 +109,7 @@
               <%end%>
             </button>
 
-            <div id="searchbox" style="position: absolute; bottom: 270px; left: 30px; width: 70%; display: none;">
+            <div id="searchbox" style="position: absolute; bottom: 0%; left: 10px; width: 95.7%; display: none;">
               <input type="text" id="search" value="" class="input" />
             </div>
 
