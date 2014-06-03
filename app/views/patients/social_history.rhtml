@@ -5,7 +5,14 @@
   tt_cancel_destination = "/patients/show/<%= @patient.id %>";
   
   
-  
+  function checkSelectedOptions(){
+   
+    if ((__$("smoker").value == "") || (__$("alcohol").value == "") || (__$("civil_status").value == "") || (__$("religion").value == "")){
+     dispatchMessage("Not all fields not selected; Do you wish to continue?", tstMessageBoxType.YesNo)
+      __$("social_information").value = ""
+    }
+  }
+
   function loadSplitSelections(arr){
     //alert("here")
     //array format [url, input_id, helpText]
@@ -102,6 +109,7 @@
       __$("2_1").style.borderRight = "1px solid";
      
     }
+    __$("nextButton").setAttribute("onmousedown", "checkSelectedOptions();")
   }
 
   function handleResultData(result, id, n, dom_id) {
@@ -234,8 +242,7 @@
   <%= touch_text_field_tag "", @patient, nil,
     {:id => "social_information",
     :helptext => "Social Information <span class='helper'>Social History</span>",
-    :tt_onLoad => "loadSplitSelections();",
-    :optional => "true"
+    :tt_onLoad => "loadSplitSelections();"
   } %>
 
 
