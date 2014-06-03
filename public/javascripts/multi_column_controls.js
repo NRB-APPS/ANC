@@ -17,9 +17,9 @@ function createMultipleSelectControl(){
     parent.id = 'parent' + tstCurrentPage;
     parent.style.width = "100%";
     if (selectAll && selectAll == true){
-        parent.style.height = "71vh";
+        parent.style.height = 0.71 * screen.height + "px";
     }else{
-        parent.style.height = "77vh";
+        parent.style.height = 0.77 * screen.height + "px";
     }
     parent.style.borderRadius = "10px";
     parent.style.marginTop = "0px";
@@ -186,7 +186,7 @@ function createSingleSelectControl(options_div){
 
     var options = tstFormElements[tstCurrentPage].options;
     
-     if (typeof(options) == undefined){
+    if (typeof(options) == undefined){
 
         options = tstFormElements[tstCurrentPage].children;
     }
@@ -211,9 +211,9 @@ function createSingleSelectControl(options_div){
     parent.style.overflow = "auto";
 
     if (selectAll && selectAll == true){
-        parent.style.height = "71vh";
+        parent.style.height = 0.71 * screen.height + "px";
     }else{
-        parent.style.height = "77vh";
+        parent.style.height = 0.77 * screen.height + "px";
     }
 
     __$("inputFrame" + tstCurrentPage).style.width = "96%";
@@ -266,6 +266,10 @@ function createSingleSelectControl(options_div){
     for(var i = 0; i < options.length; i++){
         var li = document.createElement("li");
         li.id = i;
+
+        if (tstFormElements[tstCurrentPage][i].innerHTML == "")
+            li.style.display = "none";
+        
         li.setAttribute("pos", i);
         li.setAttribute("source_id", tstFormElements[tstCurrentPage].id)
 
@@ -286,7 +290,7 @@ function createSingleSelectControl(options_div){
 
             if(img.getAttribute("src").toLowerCase().trim().match(/unchecked/)){
                 img.setAttribute("src", "/touchscreentoolkit/lib/images/checked.png");
-                this.setAttribute("class", "highlighted");
+                this.setAttribute( "class", "highlighted");
 
                 if(__$(this.getAttribute("source_id"))){
                     __$(this.getAttribute("source_id")).options[parseInt(this.getAttribute("pos"))].selected = true;
@@ -295,25 +299,25 @@ function createSingleSelectControl(options_div){
             }
         }
 
-        if(i % 2 == 0){
+        if(i % 2 == 1){
             list1.appendChild(li);
 
             if(j % 2 == 0){
-                li.className = "even";
-                li.setAttribute("group", "even");
-            } else {
                 li.className = "odd";
                 li.setAttribute("group", "odd");
+            } else {
+                li.className = "even";
+                li.setAttribute("group", "even");
             }
         } else {
             list2.appendChild(li);
 
             if(j % 2 == 0){
-                li.className = "even";
-                li.setAttribute("group", "even");
-            } else {
                 li.className = "odd";
                 li.setAttribute("group", "odd");
+            } else {
+                li.className = "even";
+                li.setAttribute("group", "even");
             }
 
             j++;
