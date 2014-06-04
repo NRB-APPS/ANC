@@ -694,6 +694,8 @@ class PrescriptionsController < ApplicationController
     end
 
     if (@patient)
+      
+      redirect_to "/patients/print_exam_label/?patient_id=#{@patient.id}" and return if (encounter.type.name.upcase rescue "") == "TREATMENT"
 			redirect_to next_task(@patient) and return
 		else
 			redirect_to "/patients/treatment_dashboard/#{params[:patient_id]}" and return
