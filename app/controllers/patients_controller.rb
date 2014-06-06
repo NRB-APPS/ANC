@@ -890,6 +890,15 @@ class PatientsController < ApplicationController
       @obs_present = true
     end
 
+    @birth_year = @anc_patient.birth_year
+
+    @min_birth_year = @birth_year + 13
+    @max_birth_year = ((@birth_year + 50) > ((session[:datetime] || Date.today).year) ?
+        ((session[:datetime] || Date.today).year) : (@birth_year + 50))
+
+    @abs_max_birth_year = ((@birth_year + 55) > ((session[:datetime] || Date.today).year) ?
+        ((session[:datetime] || Date.today).year) : (@birth_year + 55))
+
     @current_user_activities = current_user.activities.collect{|u| u.downcase}
   end
 

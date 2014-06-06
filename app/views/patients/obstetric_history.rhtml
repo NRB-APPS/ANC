@@ -16,7 +16,26 @@
       var data = {};
 <%session_date = session[:datetime]? session[:datetime] : Date.today%>
   var anc_visits = <%= @anc_patient.anc_visits(session_date).to_json%>;
+  var birth_year = <%= @birth_year.to_i%>;
+  var max_birth_year = <%= @max_birth_year.to_i%>;
+  var min_birth_year = <%= @min_birth_year.to_i%>;
+  var abs_max_birth_year = <%= @abs_max_birth_year.to_i%>;
+  var current_popup = "Enter Value";
 
+  var hash = {
+    "TBA" : "T.B.A",
+    "Spontaneous vaginal delivery" : "S.V.D",
+    "Caesarean Section" : "C.S",
+    "Vacuum Extraction Delivery" : "V.E.D",
+    "Big Baby (Above 4kg)" : "> 4kg",
+    "Small Baby (Less than 2.5kg)" : "< 2.5kg"
+  }
+
+  var fields = ["Year of birth", "Place of birth",
+    "Gestation (months)", "Method of delivery",
+    "Condition at birth", "Birth weight",
+    "Alive Now"];
+ 
   anc_visits.push("zero");
   var parsedConceptName = "Visit Number";
     </script>
@@ -117,7 +136,7 @@
         <%= touch_text_field_tag "", @patient, nil,
           {:id => "input_page",
           :helptext => "Enter pregnancy details <span class='helper'> Obstetric History</span>",
-          :tt_onLoad => "loadInputWindow();",
+          :tt_onLoad => "parsedConceptName = ''; loadInputWindow();",
           :optional => "true",
           :condition => "__$('enter_gravida').value > 1 && __$('enter_number_of_deliveries').value > 0"
         } %>

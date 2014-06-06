@@ -26,7 +26,7 @@
     var conceptName = conceptHash[tstCurrentPage]
     conceptName = (parsedConceptName && parsedConceptName.length > 1) ? parsedConceptName : conceptName;
     conceptName = (conceptName.toLowerCase() == "parity")? "Number of Pregnancies" : conceptName;
-    
+
     try{
       conceptName = conceptName.charAt(0).toUpperCase() + conceptName.slice(1).toLowerCase();
       if(__$("messageBar") && !__$("messageBar").innerHTML.match(conceptName)){
@@ -53,9 +53,9 @@
     buildConceptsHash();
     setTimeout(function(){ readableMessage()}, 50);
   }
-  
+
   function updateMultiplePregnancy(){
-    
+
     if (max_delivered == 2){
       __$("multiple_pregnancy").value = "Twins"
     }else if(max_delivered == 3){
@@ -65,7 +65,7 @@
     }else if(max_delivered == 1){
       __$("multiple_pregnancy").value = "No"
     }
-         
+
   }
 
   function updateParity(num){
@@ -95,19 +95,19 @@
       }
     }
   }
-   
+
   function validateInput(preg, baby_no){
 
     if (baby_no > 1){
 
       var twin_baby_year = __$("year_of_birth" + preg + "" + (baby_no - 1)).value;
-        
+
       if (!twin_baby_year.toString().match(/unknown/i)){
-         
+
         __$("touchscreenInput" + tstCurrentPage).setAttribute("min", twin_baby_year);
-          
+
         __$("touchscreenInput" + tstCurrentPage).setAttribute("absoluteMin", twin_baby_year);
-            
+
         __$("touchscreenInput" + tstCurrentPage).setAttribute("max", twin_baby_year);
 
         __$("touchscreenInput" + tstCurrentPage).setAttribute("absoluteMax", (parseInt(twin_baby_year) + 1));
@@ -118,7 +118,7 @@
     if (__$("year_of_birth" + preg + (baby_no - 1))){
       __$("year_of_birth" + preg + (baby_no - 1)).value = "";
     }
-        
+
   }
 
   function loadSplitSelections(arr){
@@ -134,15 +134,15 @@
     var v_count = Math.ceil(count/n);
     var h_count = Math.ceil(count/n);
     var e_count = count % n;
-    
+
     __$("keyboard").style.display = "none";
     __$("touchscreenInput" + tstCurrentPage).style.display = "none";
     __$("inputFrame" + tstCurrentPage).style.height = (0.72 * screen.height) + "px";
     __$("inputFrame" + tstCurrentPage).style.marginTop = (0.05 * screen.height) + "px";
     //__$("inputFrame" + tstCurrentPage).style.background = "lightblue";
-   
+
     if (count > 0){
-      
+
       var n = 0;
       var holder = document.createElement("div");
       holder.id = 'holder';
@@ -153,7 +153,7 @@
       holder.style.borderRadius = "5px";
       holder.style.background = "white";
       __$("inputFrame" + tstCurrentPage).appendChild(holder);
-      
+
       for (var r = 1; r <= v_count; r ++){
 
         var row = document.createElement("div");
@@ -190,27 +190,27 @@
           if(r != 1){
             cell.style.borderTop = "1px solid";
           }
-       
+
           cell.style.height = ((72/v_count) - 2) * 0.001 * screen.height + "px";
           cell.style.width = ((100/h_count)) + "%";
-          row.appendChild(cell);          
+          row.appendChild(cell);
 
           n ++;
           if (n != arr.length - 1){
-           
+
             ajaxCustomRequest(arr[n - 1][0], arr[n - 1][1], "", (r + "_" + c));
           }else{
-           
+
             ajaxCustomRequest(arr[n - 1][0], arr[n - 1][1], "table", (r + "_" + c));
           }
-          
+
         }
       }
 
-      __$("2_2").style.display = "none";     
+      __$("2_2").style.display = "none";
       __$("1_2").style.borderBottom = "1px solid";
       __$("2_1").style.borderRight = "1px solid";
-     
+
     }
   }
 
@@ -228,14 +228,14 @@
   }
 
   function handleCustomResult(aXMLHttpRequest, id, n, dom_id) {
-    
+
     if (!aXMLHttpRequest) return;
 
     if (aXMLHttpRequest.readyState == 4 && (aXMLHttpRequest.status == 200 ||
       aXMLHttpRequest.status == 304)) {
 
       var result = aXMLHttpRequest.responseText;
-      
+
       //__$(dom_id).innerHTML = "";
 
       var data = result.split("|");
@@ -243,7 +243,7 @@
       var ul = document.createElement("ul");
       ul.style.paddingLeft = "5px";
       ul.style.paddingRight = "5px";
-           
+
       for(var i = 0; i < data.length; i ++){
 
         var li = document.createElement("li")
@@ -257,31 +257,31 @@
           __$(this.getAttribute("target")).value = this.getAttribute("value");
 
           if (this.getAttribute("target") == 'pre_eclampsia' && this.innerHTML.match(/Yes/i)){
-          
+
             __$("2_2").style.display = "table-cell";
             __$("2_2").style.opacity = 1
             __$("1_2").style.borderBottom = "hidden";
             __$("2_1").style.borderRight = "hidden";
           } else if (this.getAttribute("target") == 'pre_eclampsia' && this.innerHTML.match(/No/i)){
-            
+
             __$("eclampsia").value = ""
-          
+
             __$("1_2").style.borderBottom = "1px solid";
             __$("2_1").style.borderRight = "1px solid";
-          
-            hideMsg("2_2");           
+
+            hideMsg("2_2");
           }
-                
+
           updateTouchscreenInput(this);
         }
 
         if(i % 2 == 0){
-       
+
           li.className = "even";
           li.setAttribute("group", "even");
-          
+
         } else {
-          
+
           li.className = "odd";
           li.setAttribute("group", "odd");
         }
@@ -295,12 +295,12 @@
         setTimeout(function(){
           __$('holder').style.display = n;
         }, 350);
-    
+
     }
   }
 
   function fade(div, opacity){
-   
+
     __$(div).style.opacity = opacity;
     if (opacity >= 0){
       opacity = opacity - 0.01;
