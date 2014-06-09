@@ -950,7 +950,11 @@ function loadInputWindow(){
                                                 but.className += " button_gray";
                                                 but.innerHTML = "?";
                                                 but.removeAttribute("value");
-                                              
+                                                
+                                                but.onclick = function(){
+
+                                                   showMessage("Baby was born dead")
+                                                }
                                                 $[p][n][but.parentNode.parentNode.childNodes[0].innerHTML.trim()] = but.innerHTML
                                             }
                                         }else if (button.innerHTML.match(/Alive/i)){
