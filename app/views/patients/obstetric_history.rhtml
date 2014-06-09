@@ -38,6 +38,8 @@
  
   anc_visits.push("zero");
   var parsedConceptName = "Visit Number";
+
+  
     </script>
     <%= stylesheet_link_tag "obstetric_history" %>
   </head>
@@ -51,6 +53,10 @@
       <%= hidden_field_tag "data", nil,
         {
         :id => 'data'
+      }%>
+    <%= hidden_field_tag "data_obj", nil,
+        {
+        :id => 'data_obj'
       }%>
 
       <%  if params[:with_visit_type] && params[:with_visit_type].to_s == "true" %>
@@ -71,7 +77,7 @@
           {
           :id => "visit",
           :helptext => "ANC visit number <span class='helper'> Obstetric History</span>",
-          :tt_onLoad => "document.forms[0].reset(); disablePastVisits(); transformMessages();",
+          :tt_onLoad => "document.forms[0].reset(); disablePastVisits();",
           :tt_pageStyleClass => "NumbersOnly",
           :max => 7,
           :min => 1
@@ -88,7 +94,6 @@
           :absoluteMin => 0,
           :max => 20,
           :min => 1,
-          :tt_onLoad => "transformMessages();",
           :tt_onUnLoad => "if(__$('category')){__$('content').removeChild(__$('category'))}
       if(__$('enter_gravida').value == 1){
       __$('enter_number_of_abortions').value = 0;
@@ -118,9 +123,6 @@
           :helptext => "Enter Number Of Abortions <span class='helper'> Obstetric History</span>",
           :tt_pageStyleClass => "NumbersWithUnknown",
           :condition => "false",
-          :tt_onLoad => "updateDeliveries(); ",
-          # :min => 0,
-          # :max => 5,
           :validationRule => "[0-5]",
           :validationMessage => "Check your value"
         } %>
@@ -128,7 +130,7 @@
         <%= touch_text_field_tag "", @patient, nil,
           {:id => "known_pregnancies",
           :helptext => "Select pregnancies with available information <span class='helper'> Obstetric History</span>",
-          :tt_onLoad => "loadSelections();",
+          :tt_onLoad => "loadSelections(); jQuery('.dcimg').click();",
           :optional => "true",
           :condition => "__$('enter_gravida').value > 1 && __$('enter_number_of_deliveries').value > 0"
         } %>
@@ -137,6 +139,7 @@
           {:id => "input_page",
           :helptext => "Enter pregnancy details <span class='helper'> Obstetric History</span>",
           :tt_onLoad => "parsedConceptName = ''; loadInputWindow();",
+          :tt_BeforeUnLoad => "buildParams()",
           :optional => "true",
           :condition => "__$('enter_gravida').value > 1 && __$('enter_number_of_deliveries').value > 0"
         } %>

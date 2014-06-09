@@ -176,9 +176,10 @@ function loadSelections(){
             var cell3 =  document.createElement("div");
             cell3.id = "cell_" + p + "_3";
             cell3.setAttribute("class", "data-cell-img");
-            cell3.innerHTML = '<img id = "img_' + p +'" onclick = "checkSelection(' + p + ')" src="/images/unticked.jpg" height="45" width="45"> ';
+            cell3.setAttribute("p", p);
+            cell3.innerHTML = '<img class = "dcimg" id = "img_' + p +'" onclick = "checkSelection(' + p + ')" src="/images/unticked.jpg" height="45" width="45"> ';
             row.appendChild(cell3);
-
+            
             data[p] = {};
             data[p]["condition"] = false;
             data[p]["count"] = 1;
@@ -392,7 +393,12 @@ function loadInputWindow(){
             c = 0;
 
             for (var pos in $){
-                loadPregnancy(pos);
+                loadPregnancy(pos, "pregnancy");
+            }
+
+            for (var i = 1; i <= parseInt(__$("enter_number_of_abortions").value); i ++){
+             
+                loadPregnancy(i, "abortion");
             }
 
             var width  = (__$("details").parentNode.offsetWidth + __$("pregs").parentNode.offsetWidth - 2) + "px";
@@ -466,7 +472,7 @@ function loadInputWindow(){
             __$("inputFrame" + tstCurrentPage).appendChild(popup);
         }
         
-        function loadPregnancy(n){
+        function loadPregnancy(n, type){
 
             var row1 = document.createElement("div");
             row1.id = "preg_row_" + n;
@@ -475,7 +481,8 @@ function loadInputWindow(){
             var d1 = document.createElement("div");
             d1.id = n;
             d1.innerHTML = "<img height='46' class = 'img-preg-cell' src='/touchscreentoolkit/lib/images/unchecked.jpg'>" +
-            n + (n == 1 ? "<sup>st</sup>" : ((n == 2 ? "<sup>nd</sup>" : (n == 3 ? "<sup>rd</sup>" : "<sup>th</sup>"))));
+            n + (n == 1 ? "<sup>st</sup>" : ((n == 2 ? "<sup>nd</sup>" : (n == 3 ? "<sup>rd</sup>" : "<sup>th</sup>")))) +
+            " <span style='font-size: 15px; font-style: italic; color: " +(type == "abortion" ? "red" : "black")  + "'>(" + type + ")</span>";
             d1.setAttribute("class", "preg-cell");
 
             d1.setAttribute("selected", "false");
@@ -577,15 +584,18 @@ function loadInputWindow(){
                     var button = td2.getElementsByClassName("input-button")[0]
                   
                     if (i > fields.indexOf("Condition at birth")){
-                        button.className += " button_gray"
+
+                        if(label.trim() == "?"){
+                            button.className += " button_gray";
+                        }
                         button.onclick = function(){
                             var ni = fields.indexOf("Condition at birth");
                             var text = jQ(jQ("#details").find("div[pos=" + ni + "]")[0]).find("div[class=input-button]")[0].innerHTML;
 
                             if(text.trim() == "?"){
-                                showMessage("Select condition at birth")
+                                showMessage("Select condition at birth");
                             }else if (text.toLowerCase().trim() == "still birth"){
-                                showMessage("Baby was born dead")
+                                showMessage("Baby was born dead");
                             }
                         }
                     }else{
@@ -593,7 +603,7 @@ function loadInputWindow(){
                         if (button != undefined){
                             button.onclick = function(){
 
-                                enterData(this.parentNode.parentNode)
+                                enterData(this.parentNode.parentNode);
                             }
                         }
                     }
@@ -953,7 +963,7 @@ function loadInputWindow(){
                                                 
                                                 but.onclick = function(){
 
-                                                   showMessage("Baby was born dead")
+                                                    showMessage("Baby was born dead")
                                                 }
                                                 $[p][n][but.parentNode.parentNode.childNodes[0].innerHTML.trim()] = but.innerHTML
                                             }
@@ -1026,4 +1036,9 @@ function loadInputWindow(){
     })(jQuery, data);
 
     myModule.load();
+}
+
+function buildParams(){
+
+    __$("data_obj").value = JSON.stringify(data);
 }

@@ -950,7 +950,8 @@ class PatientsController < ApplicationController
     @procedures = ["", "Manual Vacuum Aspiration (MVA)", "Evacuation"]
     @place = ["", "Health Facility", "Home", "TBA", "Other"]
     @delivery_modes = ["", "Spontaneous vaginal delivery", "Caesarean Section", "Vacuum Extraction Delivery", "Breech"]
-
+    @data = JSON.parse(params[:data_obj])
+    save
   end
 
   def medical_history
@@ -1495,6 +1496,61 @@ class PatientsController < ApplicationController
   
   def verify_route
     redirect_to next_task(@patient) and return
+  end
+
+  def save
+  
+    encounter = Encounter.new(
+      :patient_id => @patient.id,
+      :encounter_type => EncounterType.find_by_name("OBSTETRIC HISTORY").id,
+      :encounter_datetime => (session[:datetime].to_date_time rescue DateTime.now),
+      :provider_id => (session[:user_id] || current_user.user_id)
+    )
+    encounter.save
+
+    (params[:observations] || []).each do |observation|
+
+      values = ['coded_or_text', 'coded_or_text_multiple', 'group_id', 'boolean', 'coded', 'drug', 'datetime', 'numeric', 'modifier', 'text'].map{|value_name|
+        observation["value_#{value_name}"] unless observation["value_#{value_name}"].blank? rescue nil
+      }.compact
+      
+      next if observation[:concept_name].blank?
+      observation[:encounter_id] = encounter.id
+      observation[:person_id] ||= encounter.patient_id
+      observation.delete(:patient_id)
+      observation.delete(:value_coded_or_text_multiple)
+      Observation.create(observation) 
+    end
+    
+    @data.keys.each do |preg|
+      keys = @data[preg].keys
+
+      keys.each do |baby|
+        
+        next if baby.match(/condition|count/) or baby.to_i < 1
+
+        @data[preg][baby].each do |key, value|
+
+          concept_id = ConceptName.find_by_name(key.sub(/Alive Now/i, "Alive").sub("Gestation (months)", "Gestation")).concept_id
+          observation = Observation.new(
+            :person_id => encounter.patient_id,
+            :encounter_id => encounter.encounter_id,
+            :obs_datetime =>  (session[:datetime].to_date_time rescue DateTime.now),
+            :concept_id => concept_id,
+            :comments => "p#{preg}-b#{baby}",
+            :creator => current_user.user_id
+          )
+
+          if value.to_i > 0
+            observation[:value_numeric] = value
+          else
+            observation[:value_text] = value
+          end
+
+          observation.save
+        end       
+      end
+    end
   end
 
   private
