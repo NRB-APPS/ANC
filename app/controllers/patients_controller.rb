@@ -950,8 +950,10 @@ class PatientsController < ApplicationController
     @procedures = ["", "Manual Vacuum Aspiration (MVA)", "Evacuation"]
     @place = ["", "Health Facility", "Home", "TBA", "Other"]
     @delivery_modes = ["", "Spontaneous vaginal delivery", "Caesarean Section", "Vacuum Extraction Delivery", "Breech"]
-    @data = JSON.parse(params[:data_obj])
-    save
+    @data = JSON.parse(params[:data_obj]) rescue {}
+    @abortions_data = JSON.parse(params[:abortion_obj]) rescue {}
+    save    
+    redirect_to next_task(@patient)
   end
 
   def medical_history
@@ -1499,7 +1501,7 @@ class PatientsController < ApplicationController
   end
 
   def save
-  
+ 
     encounter = Encounter.new(
       :patient_id => @patient.id,
       :encounter_type => EncounterType.find_by_name("OBSTETRIC HISTORY").id,
@@ -1549,6 +1551,32 @@ class PatientsController < ApplicationController
 
           observation.save
         end       
+      end
+    end
+
+    @abortions_data.keys.each do |key|
+
+      @abortions_data[key].each do |ky, value|
+
+        concept_id = ConceptName.find_by_name(ky.sub(/Year of abortion/i, "Year of birth").sub("Gestation (months)", 
+            "Gestation").sub(/Place of abortion/i, "Place of birth")).concept_id
+        
+        observation = Observation.new(
+          :person_id => encounter.patient_id,
+          :encounter_id => encounter.encounter_id,
+          :obs_datetime =>  (session[:datetime].to_date_time rescue DateTime.now),
+          :concept_id => concept_id,
+          :comments => "a#{key}",
+          :creator => current_user.user_id
+        )
+
+        if value.to_i > 0
+          observation[:value_numeric] = value
+        else
+          observation[:value_text] = value
+        end
+
+        observation.save
       end
     end
   end

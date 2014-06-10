@@ -94,7 +94,8 @@ EOF
     elsif name == "ANC VISIT TYPE"
       observations.collect{|o| (o.value_numeric.blank? ? nil : "Visit No.: " +  (o.value_numeric.to_i.to_s))}.compact.join(", ")
     else  
-      observations.collect{|observation| observation.to_s.titleize}.join(", ")
+      observations.collect{|observation| observation.to_s.sub(/^Pregnancy\:/, 
+          "Gestation").sub(/^Patient Pregnant\:/i, "Gravida").titleize}.join(", ")
     end  
   end
 

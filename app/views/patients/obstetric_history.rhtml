@@ -35,7 +35,19 @@
     "Gestation (months)", "Method of delivery",
     "Condition at birth", "Birth weight",
     "Alive Now"];
- 
+
+  var abortionHash = {
+    "Incomplete abortion" : "Incomplete",
+    "Complete abortion" : "Complete",
+    "Manual Vacuum Aspiration (MVA)" : "M.V.A"
+  }
+
+  var abortionFields = ["Year of abortion", "Place of abortion",
+    "Type of abortion", "Procedure done", "Gestation (months)"
+  ];
+
+  var $$ = {}
+  
   anc_visits.push("zero");
   var parsedConceptName = "Visit Number";
 
@@ -54,9 +66,13 @@
         {
         :id => 'data'
       }%>
-    <%= hidden_field_tag "data_obj", nil,
+      <%= hidden_field_tag "data_obj", nil,
         {
         :id => 'data_obj'
+      }%>
+    <%= hidden_field_tag "abortion_obj", nil,
+        {
+        :id => 'abortion_obj'
       }%>
 
       <%  if params[:with_visit_type] && params[:with_visit_type].to_s == "true" %>
@@ -141,7 +157,7 @@
           :tt_onLoad => "parsedConceptName = ''; loadInputWindow();",
           :tt_BeforeUnLoad => "buildParams()",
           :optional => "true",
-          :condition => "__$('enter_gravida').value > 1 && __$('enter_number_of_deliveries').value > 0"
+          :condition => "__$('enter_gravida').value > 1"
         } %>
       <%end%>
       <%= submit_tag 'Finish' %>
