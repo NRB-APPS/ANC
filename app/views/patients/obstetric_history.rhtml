@@ -13,7 +13,7 @@
       var max_delivered = 1;
       var parity;
       var parsedConceptName;
-      var data = {};
+
 <%session_date = session[:datetime]? session[:datetime] : Date.today%>
   var anc_visits = <%= @anc_patient.anc_visits(session_date).to_json%>;
   var birth_year = <%= @birth_year.to_i%>;
@@ -46,7 +46,9 @@
     "Type of abortion", "Procedure done", "Gestation (months)"
   ];
 
-  var $$ = {}
+  var $$ = <%= @abortions.to_json%>;
+  var data = <%= @pregnancies.to_json%>;
+  var counts = <%= @twin_counts.to_json%>;
   
   anc_visits.push("zero");
   var parsedConceptName = "Visit Number";
@@ -70,7 +72,7 @@
         {
         :id => 'data_obj'
       }%>
-    <%= hidden_field_tag "abortion_obj", nil,
+      <%= hidden_field_tag "abortion_obj", nil,
         {
         :id => 'abortion_obj'
       }%>
@@ -104,7 +106,7 @@
       if  @obs_present != true && @current_user_activities.include?('obstetric history')
       %>
 
-        <%= touch_numeric_tag "GRAVIDA", @patient, nil,
+        <%= touch_numeric_tag "GRAVIDA", @patient, @gravida,
           {:id => "enter_gravida",
           :helptext => "Gravida <span class='helper'> Obstetric History</span>",
           :absoluteMin => 0,
@@ -116,7 +118,7 @@
       };",
           :tt_pageStyleClass => "NumbersOnly"} %>
 
-        <%= touch_numeric_tag "PARITY", @patient, nil,
+        <%= touch_numeric_tag "PARITY", @patient, @parity,
           {:id => "enter_number_of_deliveries",
           :helptext => "Enter Number Of Delivered Pregnancies <span class='helper'> Obstetric History</span>",
           :tt_pageStyleClass => "NumbersWithUnknown",

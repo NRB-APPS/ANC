@@ -895,7 +895,63 @@ class PatientsController < ApplicationController
     @min_birth_year = @birth_year + 13
     @max_birth_year = ((@birth_year + 50) > ((session[:datetime] || Date.today).year) ?
         ((session[:datetime] || Date.today).year) : (@birth_year + 50))
+    @previous_encounter = @patient.encounters.find_last_by_encounter_type(
+      EncounterType.find_by_name("OBSTETRIC HISTORY"))
 
+    @pregnancies = {}
+    @abortions = {}
+    @twin_counts = {}
+    @gravida = nil
+    @parity = nil
+    
+    if @previous_encounter.present?
+
+      @previous_encounter.observations.each do |obs|
+
+        if (@previous_encounter.encounter_datetime.to_date > 1.25.years.ago.to_date)
+          @gravida = obs.answer_string.to_i if obs.concept_id == ConceptName.find_by_name("Gravida").concept_id
+          @parity = obs.answer_string.to_i if obs.concept_id == ConceptName.find_by_name("Parity").concept_id
+        end
+        
+        comment = obs.comments
+        next if comment.blank?
+        pregnancy = comment.match(/^p\d+/)
+        baby = comment.match(/b\d+$/)
+        abortion = comment.match(/a\d+$/)
+        value = obs.answer_string.strip
+        value = value.to_i > 0  ? value.to_i : value
+        concept_name = obs.concept.name.name.strip
+        concept_name = concept_name.sub(/Gestation|Pregnancy/i, 
+          "Gestation (months)").sub(/Alive/i,  "Alive Now").gsub(/Year of birth/i, 
+          "Year of birth").sub(/Condition at birth/i, "Condition at birth")
+        
+        if pregnancy.present?
+          
+          p = pregnancy[0].match(/\d+/)[0].to_i
+          b = baby[0].match(/\d+/)[0].to_i          
+          
+          @pregnancies[p] = {} if @pregnancies[p].blank?
+          @pregnancies[p][b] = {} if @pregnancies[p][b].blank?
+          @pregnancies[p][b][concept_name] = value
+        end
+
+        if abortion.present?
+
+          a = abortion[0].match(/\d+/)[0].to_i
+          concept_name = concept_name.sub(/Year of birth/i, "Year of abortion").sub(/Place of birth/i,
+            "Place of abortion").sub(/Type of abortion/i, "Type of abortion")
+          
+          @abortions[a] = {} if @abortions[a].blank?
+          @abortions[a][concept_name] = value
+        end
+      end      
+    end
+
+    @pregnancies.keys.each do |preg|
+
+      @twin_counts[preg] = @pregnancies[preg].keys.length
+    end
+    
     @abs_max_birth_year = ((@birth_year + 55) > ((session[:datetime] || Date.today).year) ?
         ((session[:datetime] || Date.today).year) : (@birth_year + 55))
 
@@ -1501,7 +1557,7 @@ class PatientsController < ApplicationController
   end
 
   def save
- 
+
     encounter = Encounter.new(
       :patient_id => @patient.id,
       :encounter_type => EncounterType.find_by_name("OBSTETRIC HISTORY").id,
@@ -1531,15 +1587,72 @@ class PatientsController < ApplicationController
         
         next if baby.match(/condition|count/) or baby.to_i < 1
 
-        @data[preg][baby].each do |key, value|
+        if (@data[preg][baby]).present?
+          
+          @data[preg][baby].each do |key, value|
 
-          concept_id = ConceptName.find_by_name(key.sub(/Alive Now/i, "Alive").sub("Gestation (months)", "Gestation")).concept_id
+            concept_id = ConceptName.find_by_name(key.sub(/Alive Now/i, "Alive").sub("Gestation (months)", "Gestation")).concept_id
+            observation = Observation.new(
+              :person_id => encounter.patient_id,
+              :encounter_id => encounter.encounter_id,
+              :obs_datetime =>  (session[:datetime].to_date_time rescue DateTime.now),
+              :concept_id => concept_id,
+              :comments => "p#{preg}-b#{baby}",
+              :creator => current_user.user_id
+            )
+
+            value_concept = ConceptName.find_by_name(value)
+            if value.to_i > 0
+              observation[:value_numeric] = value
+            elsif value_concept.present?
+              observation[:value_coded] = value_concept.concept_id
+              observation[:value_coded_name_id] = value_concept.id
+            else
+              observation[:value_text] = value
+            end
+
+            observation.save
+          end 
+        else
+
+          concept_id = ConceptName.find_by_name("Place of birth").concept_id
           observation = Observation.new(
             :person_id => encounter.patient_id,
             :encounter_id => encounter.encounter_id,
             :obs_datetime =>  (session[:datetime].to_date_time rescue DateTime.now),
             :concept_id => concept_id,
             :comments => "p#{preg}-b#{baby}",
+            :creator => current_user.user_id
+          )
+
+          value_concept = ConceptName.find_by_name("Unknown")
+
+          if value_concept.present?
+            observation[:value_coded] = value_concept.concept_id
+            observation[:value_coded_name_id] = value_concept.id
+          else
+            observation[:value_text] = "Unknown"
+          end
+
+          observation.save
+        end
+      end
+    end
+
+    @abortions_data.keys.each do |key|
+
+      if @abortions_data[key].present?
+        @abortions_data[key].each do |ky, value|
+
+          concept_id = ConceptName.find_by_name(ky.sub(/Year of abortion/i, "Year of birth").sub("Gestation (months)",
+              "Gestation").sub(/Place of abortion/i, "Place of birth")).concept_id
+        
+          observation = Observation.new(
+            :person_id => encounter.patient_id,
+            :encounter_id => encounter.encounter_id,
+            :obs_datetime =>  (session[:datetime].to_date_time rescue DateTime.now),
+            :concept_id => concept_id,
+            :comments => "a#{key}",
             :creator => current_user.user_id
           )
 
@@ -1550,17 +1663,10 @@ class PatientsController < ApplicationController
           end
 
           observation.save
-        end       
-      end
-    end
+        end
+      else
 
-    @abortions_data.keys.each do |key|
-
-      @abortions_data[key].each do |ky, value|
-
-        concept_id = ConceptName.find_by_name(ky.sub(/Year of abortion/i, "Year of birth").sub("Gestation (months)", 
-            "Gestation").sub(/Place of abortion/i, "Place of birth")).concept_id
-        
+        concept_id = ConceptName.find_by_name("Place of birth").concept_id
         observation = Observation.new(
           :person_id => encounter.patient_id,
           :encounter_id => encounter.encounter_id,
@@ -1570,10 +1676,12 @@ class PatientsController < ApplicationController
           :creator => current_user.user_id
         )
 
-        if value.to_i > 0
-          observation[:value_numeric] = value
+        value_concept = ConceptName.find_by_name("Unknown")
+        if value_concept.present?
+          observation[:value_coded] = value_concept.concept_id
+          observation[:value_coded_name_id] = value_concept.id
         else
-          observation[:value_text] = value
+          observation[:value_text] = "Unknown"
         end
 
         observation.save

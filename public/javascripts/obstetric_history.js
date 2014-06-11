@@ -170,7 +170,7 @@ function loadSelections(){
             cell2.style.paddingLeft = "7%";
 
             cell2.innerHTML = "<table class='button-table'><tr><td><button class = 'minus' onmousedown = 'decrement(" +p+")'></button> </td> <td><input id = 'input_"+
-            p +"'  value = '1' class = 'label' id = 'label"+ p + "' >  </input> </td><td> <button class = 'plus' onmousedown = 'increment("+ p +")'></button></td></tr></table>"
+            p +"'  value = '" + (counts[p] == undefined ? 1 : counts[p]) + "' class = 'label' id = 'label"+ p + "' >  </input> </td><td> <button class = 'plus' onmousedown = 'increment("+ p +")'></button></td></tr></table>"
             row.appendChild(cell2);
 
             var cell3 =  document.createElement("div");
@@ -180,7 +180,8 @@ function loadSelections(){
             cell3.innerHTML = '<img class = "dcimg" id = "img_' + p +'" onclick = "checkSelection(' + p + ')" src="/images/unticked.jpg" height="45" width="45"> ';
             row.appendChild(cell3);
             
-            data[p] = {};
+            if (data[p] == undefined)
+                data[p] = {};
             data[p]["condition"] = false;
             data[p]["count"] = 1;
             table.appendChild(row);
@@ -481,6 +482,11 @@ function loadInputWindow(){
             row1.id = "preg_row_" + n;
             row1.setAttribute("class", "preg-row");
 
+            if(type == "abortion"){
+                if ($$[n] == undefined){
+                    $$[n] = {};
+                }
+            }
             var d1 = document.createElement("div");
             d1.id = n;
             d1.innerHTML = " <span style=' color: " +(type == "abortion" ? "red" : "black")  + "'> " + "<img height='46' class = 'img-preg-cell' src='/touchscreentoolkit/lib/images/unchecked.jpg'>" +
@@ -544,11 +550,15 @@ function loadInputWindow(){
 
             jQ(table).fadeOut(2);
             table.innerHTML = "";
-                         
+            
+            if ($[id] == undefined)
+                $[id] = {}
             for (var n = 1; n <= $[id]["count"]; n ++){
-
+                if ($[id][n] == undefined)
+                    $[id][n] = {}
+                
                 for (var i = 0; i < fields.length; i ++){
-
+                    
                     if ($[id]["count"] > 1 && i == 0){
 
                         var rowd = document.createElement("div");
@@ -581,7 +591,7 @@ function loadInputWindow(){
                     td1.setAttribute("class", "detail-row-label");
                     row.appendChild(td1);
                     var label = "?";
-                    
+                  
                     if ($[id][n] != undefined && $[id][n][fields[i]] != undefined){                       
                         
                         label =  hash[$[id][n][fields[i]]] != undefined ? hash[$[id][n][fields[i]]] : $[id][n][fields[i]]
@@ -1075,8 +1085,26 @@ function loadInputWindow(){
                                             }
                                         }
                                     }
+
+                                /*verify completeness
+                                    var check_str = ""
+                                    for(var h = 1; h <= n; h++){
+                                        
+                                        var baby_set = jQ("[id^=" + p + "_" + h + "]");
+
+                                        for(var r = 0; r < baby_set.length ; r ++){
+                                            
+                                            var bt =  baby_set[r].childNodes[1].childNodes[0]
+                                            if (!bt.className.match(/gray/))
+                                                check_str += $[p][h][fields[r]];
+                                        }
+                                    }
+
+                                    if (!check_str.match(/undefined/)){
+                                        alert("preg_row_")
+                                    }
+                                    */
                                 }
-                            /////
                             }
                         }else{
                             showMessage("Failed to update input");
@@ -1166,7 +1194,28 @@ function loadInputWindow(){
 }
 
 function buildParams(){
+    var keys = Object.keys(data)
+    for (var i = 0; i < keys.length; i ++){
+        
+        var count = data[keys[i]]["count"];
+        for (var c = 1; c <= count; c ++){
+            
+            if (data[keys[i]]== undefined)
+                data[keys[i]] = {};
+            if (data[keys[i]][c] == undefined)
+                data[keys[i]][c] = {};            
+        }
+    }
 
+    var abortions = parseInt(__$("enter_number_of_abortions").value);
+
+    if(abortions > 0){
+
+        for (var i = 1; i <= abortions; i ++){
+            if ($$[i] == undefined)
+                $$[i] = {};
+        }
+    }
     __$("data_obj").value = JSON.stringify(data);
     __$("abortion_obj").value = JSON.stringify($$);
 }
