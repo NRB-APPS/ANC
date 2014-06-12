@@ -153,6 +153,55 @@
           :condition => "__$('enter_gravida').value > 1 && __$('enter_number_of_deliveries').value > 0"
         } %>
 
+        <%= touch_select_tag "STILL BIRTH", @patient, options_for_select([["", ""], ["No", "No"], ["Yes", "Yes"]]),
+          {:id => "ever_had_still_births",
+          :helptext => "Ever Had Still Births?",
+          :tt_onLoad => " parsedConceptName = 'STILL BIRTH'",
+          :tt_onUnLoad => "parsedConceptName = ''",
+          :condition => "false"} %>
+        <%= touch_select_tag "Caesarean section", @patient, options_for_select([["", ""], ["No", "No"], ["Yes", "Yes"]]),
+          {:id => "ever_had_c_sections",
+          :helptext => "Ever Had C-sections?",
+          :tt_onLoad => " parsedConceptName = 'Caesarean section'",
+          :tt_onUnLoad => "parsedConceptName = ''",
+          :condition => "false" } %>
+        <%= touch_select_tag "Vacuum extraction delivery", @patient, options_for_select([["", ""], ["No", "No"], ["Yes", "Yes"]]),
+          {:id => "ever_had_a_vacuum_extraction",
+          :helptext => "Ever Had A Vacuum Extraction",
+          :tt_onLoad => " parsedConceptName = 'Vacuum extraction delivery'",
+          :tt_onUnLoad => "parsedConceptName = ''",
+          :condition => "false" } %>
+
+        <%= touch_select_tag "SYMPHYSIOTOMY", @patient, options_for_select([["", ""], ["No", "No"], ["Yes", "Yes"]]),
+          {:id => "ever_had_symphysiotomy",
+          :helptext => "Ever Had Symphysiotomy?",
+          :tt_onLoad => " parsedConceptName = 'SYMPHYSIOTOMY'",
+          :tt_onUnLoad => "parsedConceptName = ''",
+          :condition => "false"
+        } %>
+
+        <%= touch_select_tag "HEMORRHAGE", @patient, options_for_select([["", ""], ["No", "No"], ["APH", "APH"], ["PPH", "PPH"]]),
+          {:id => "hemorrhage",
+          :helptext => "Ever Had Hemorrhage?",
+          :tt_onLoad => " parsedConceptName = 'HEMORRHAGE'",
+          :tt_onUnLoad => "parsedConceptName = ''",
+          :condition => "false"
+        } %>
+
+        <%= touch_select_tag "PRE-ECLAMPSIA", @patient, options_for_select([["", ""], ["No", "No"], ["Yes", "Yes"]]),
+          {:id => "pre_eclampsia",
+          :helptext => "Ever Had Pre-Eclampsia?",
+          :tt_onLoad => " parsedConceptName = 'PRE-ECLAMPSIA'",
+          :tt_onUnLoad => "parsedConceptName = ''",
+          :condition => "false" } %>
+
+        <%= touch_select_tag "ECLAMPSIA", @patient, options_for_select([["", ""], ["No", "No"], ["Yes", "Yes"]]),
+          {:id => "eclampsia",
+          :helptext => "Ever Had Eclampsia?",
+          :tt_onLoad => " parsedConceptName = 'ECLAMPSIA'",
+          :tt_onUnLoad => "parsedConceptName = ''",
+          :condition => "false" } %>
+
         <%= touch_text_field_tag "", @patient, nil,
           {:id => "input_page",
           :helptext => "Enter pregnancy details <span class='helper'> Obstetric History</span>",
@@ -161,6 +210,15 @@
           :optional => "true",
           :condition => "__$('enter_gravida').value > 1"
         } %>
+
+        <%= touch_text_field_tag "", @patient, nil,
+          {:id => "complications",
+          :helptext => "Previous complications <span class='helper'>Obstetric History</span>",
+          :tt_onLoad => "loadSplitSelections();",
+          :optional => "true",
+          :condition => "__$('enter_gravida').value > 1"
+        } %>
+
       <%end%>
       <%= submit_tag 'Finish' %>
     <% end %>

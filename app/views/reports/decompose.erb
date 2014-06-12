@@ -70,14 +70,14 @@
     </style>
     <script type="text/javascript" language="javascript">
       <!--
-      
+
       function __$(id){
         return document.getElementById(id);
       }
-      
+
       function expand(id){
         if(id.trim().length > 0){
-        
+
           if(__$(id).style.display == "none"){
             if(__$("__" + id)){
               __$("__" + id).style.display = "none";
@@ -93,7 +93,7 @@
           }
         }
       }
-      
+
       //-->
     </script>
   </head>
@@ -104,7 +104,7 @@
         <table style="width: 100%; border: 1px solid #999; -moz-user-select: none;">
           <tr>
             <th style="font-size: 1.8em; color: #eee; background-color: #999; padding: 10px;">
-              ANC C<span style="font-size: 0.8em">LINIC</span> - 
+              ANC C<span style="font-size: 0.8em">LINIC</span> -
               F<span style="font-size: 0.8em">ACILITY</span>
               D<span style="font-size: 0.8em">RILL-DOWN</span>
             </th>
@@ -141,7 +141,7 @@
                         <%= patient.name rescue "" %>
                       </div>
                       <div class="cell">
-                        <%= patient.patient.date_created.strftime("%d/%b/%Y") rescue "" %>
+                        <%= patient.patient.date_registered(session[:report_start_date], session[:report_end_date]).strftime("%d/%b/%Y") rescue "&nbsp"%>
                       </div>
                       <div class="cell">
                         <%= patient.birthdate_formatted rescue "" %>
@@ -150,11 +150,11 @@
                         <div class="table">
                           <div class="row">
                             <div style="display: table-cell; padding: 0px; padding-left: 10px; padding-right: 10px;">
-                              <img onclick="this.src=expand('<%= patient.national_id rescue "" %>')" 
-                                   style="height: 32px; width: 32px; cursor: pointer;" 
+                              <img onclick="this.src=expand('<%= patient.national_id rescue "" %>')"
+                                   style="height: 32px; width: 32px; cursor: pointer;"
                                    src="/images/plus.png" />
                             </div>
-                            <div id="<%= "__" + patient.national_id rescue "" %>" 
+                            <div id="<%= "__" + patient.national_id rescue "" %>"
                                  style="display: block; display: table-cell; vertical-align: middle; font-size: 1.5em;">
                               <%= patient.patient.encounters.length %>
                             </div>
@@ -167,20 +167,20 @@
                                 <div style="display: table; width: 100%;">
                                   <div style="display: table-row;">
                                     <div style="display: table-cell;">
-                                      <%= "<b style='color: #333; float: left;'>" + pos.to_s + ". "+ 
-                                        (encounter.type.name.titleize rescue "&nbsp;") + " <i>(" + 
-                                        (encounter.encounter_datetime.strftime("%d/%b/%Y") rescue "&nbsp;") + 
+                                      <%= "<b style='color: #333; float: left;'>" + pos.to_s + ". "+
+                                        (encounter.type.name.titleize rescue "&nbsp;") + " <i>(" +
+                                        (encounter.encounter_datetime.strftime("%d/%b/%Y") rescue "&nbsp;") +
                                         ")</i></b>" %>
                                     </div>
                                     <div style="display: table-cell;">
-                                      <img onclick="this.src=expand('<%= (patient.national_id rescue "") + "_" + pos.to_s %>')" 
-                                           style="height: 32px; width: 32px; cursor: pointer; float: right; margin-left: 20px;" 
+                                      <img onclick="this.src=expand('<%= (patient.national_id rescue "") + "_" + pos.to_s %>')"
+                                           style="height: 32px; width: 32px; cursor: pointer; float: right; margin-left: 20px;"
                                            src="/images/plus.png" />
                                     </div>
                                   </div>
                                 </div>
-                                <%= ("<div id='" + (patient.national_id rescue "") + "_" + pos.to_s + 
-                                    "' style='margin: 20px; border-radius: 10px; background-color: #ee6; padding: 10px; display: none;'>" + 
+                                <%= ("<div id='" + (patient.national_id rescue "") + "_" + pos.to_s +
+                                    "' style='margin: 20px; border-radius: 10px; background-color: #ee6; padding: 10px; display: none;'>" +
                                     encounter.to_s + "</div><br />" rescue "&nbsp;") if !encounter.to_s.nil? %>
                               <% end %>
                             </div>

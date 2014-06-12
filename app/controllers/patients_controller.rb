@@ -600,12 +600,12 @@ class PatientsController < ApplicationController
       #Observation.find(:all, :conditions => ["person_id = ? AND encounter_id IN (?) AND value_coded = ?", 40, Encounter.find(:all, :conditions => ["patient_id = ?", 40]).collect{|e| e.encounter_id}, ConceptName.find_by_name('Caesarean section').concept_id])
     
       @csections = Observation.find(:all,
-        :conditions => ["person_id = ? AND encounter_id IN (?) AND (concept_id = ? AND value_coded = ?)", @patient.id,
+        :conditions => ["person_id = ? AND encounter_id IN (?) AND (concept_id = ? AND (value_coded = ? OR value_text = 'Yes'))", @patient.id,
           encs.collect{|e| e.encounter_id},
           ConceptName.find_by_name('Caesarean section').concept_id, ConceptName.find_by_name('Yes').concept_id]).length rescue nil
 
       @vacuum = Observation.find(:all,
-        :conditions => ["person_id = ? AND encounter_id IN (?) AND value_coded = ?", @patient.id,
+        :conditions => ["person_id = ? AND encounter_id IN (?) AND (value_coded = ? OR value_text = 'Yes')", @patient.id,
           encs.collect{|e| e.encounter_id},
           ConceptName.find_by_name('Vacuum extraction delivery').concept_id]).length rescue nil
 
@@ -1557,7 +1557,7 @@ class PatientsController < ApplicationController
   end
 
   def save
-
+    
     encounter = Encounter.new(
       :patient_id => @patient.id,
       :encounter_type => EncounterType.find_by_name("OBSTETRIC HISTORY").id,
@@ -1577,7 +1577,8 @@ class PatientsController < ApplicationController
       observation[:person_id] ||= encounter.patient_id
       observation.delete(:patient_id)
       observation.delete(:value_coded_or_text_multiple)
-      Observation.create(observation) 
+     
+      o = Observation.create(observation)
     end
     
     @data.keys.each do |preg|
@@ -1601,12 +1602,9 @@ class PatientsController < ApplicationController
               :creator => current_user.user_id
             )
 
-            value_concept = ConceptName.find_by_name(value)
+            
             if value.to_i > 0
-              observation[:value_numeric] = value
-            elsif value_concept.present?
-              observation[:value_coded] = value_concept.concept_id
-              observation[:value_coded_name_id] = value_concept.id
+              observation[:value_numeric] = value            
             else
               observation[:value_text] = value
             end
@@ -1624,16 +1622,9 @@ class PatientsController < ApplicationController
             :comments => "p#{preg}-b#{baby}",
             :creator => current_user.user_id
           )
-
-          value_concept = ConceptName.find_by_name("Unknown")
-
-          if value_concept.present?
-            observation[:value_coded] = value_concept.concept_id
-            observation[:value_coded_name_id] = value_concept.id
-          else
-            observation[:value_text] = "Unknown"
-          end
-
+         
+          observation[:value_text] = "Unknown"
+        
           observation.save
         end
       end
@@ -1675,15 +1666,8 @@ class PatientsController < ApplicationController
           :comments => "a#{key}",
           :creator => current_user.user_id
         )
-
-        value_concept = ConceptName.find_by_name("Unknown")
-        if value_concept.present?
-          observation[:value_coded] = value_concept.concept_id
-          observation[:value_coded_name_id] = value_concept.id
-        else
-          observation[:value_text] = "Unknown"
-        end
-
+       
+        observation[:value_text] = "Unknown"
         observation.save
       end
     end

@@ -446,7 +446,7 @@ function loadInputWindow(){
             popupHeader.id = "popup-header";
             popupHeader.innerHTML = current_popup;
             jQ(popupHeader).css({
-                "max-width" : 0.35 * screen.width + "px",
+                "width" : "100%",
                 "height" :  0.055 * screen.height + "px",
                 "font-size" : "22px",
                 "font-weight" : "bold",
@@ -724,11 +724,21 @@ function loadInputWindow(){
                 max = (new Date()).getFullYear();
             }
 
+            var cl = document.createElement("div");
+            cl.className = "button_red cancel";
+            cl.innerHTML = "Cancel";
+            jQ(cl).css({
+                "float":"left",
+                "border-left" : "1.5px dotted black",
+                "margin-top" : 0.297 * screen.height + "px",
+                "margin-left" : "55px"
+            });            
             var tbl = document.createElement("table");
             tbl.className = "keyBoardTable";
             tbl.cellSpacing = 0;
             tbl.cellPadding = 3;
             tbl.id = "tblKeyboard";
+            tbl.style.minWidth = 0.20 * screen.width + "px";
             jQ(tbl).css({
                 "float":"right",
                 "border-left" : "1.5px dotted black"
@@ -945,6 +955,8 @@ function loadInputWindow(){
 
             tbl.appendChild(tr4);
 
+            //__$(id).appendChild(cl);
+          
             __$(id).appendChild(tbl);
             var input = document.createElement("div");
             input.id = "input";
@@ -960,6 +972,8 @@ function loadInputWindow(){
             })
             __$(id).appendChild(input);
             __$("popup-header").innerHTML = current_popup;
+           
+            __$("input").style.minWidth = (parseInt(__$("popup").style.minWidth.replace("px", "")) - parseInt(__$("tblKeyboard").style.minWidth.replace("px", ""))) + "px";
             jQ("#shield, #popup").css("display", "block");
         }
 
@@ -1216,19 +1230,242 @@ function buildParams(){
                 $$[i] = {};
         }
     }
+
+    // update various fields
     __$("data_obj").value = JSON.stringify(data);
+
     __$("abortion_obj").value = JSON.stringify($$);
+
+    var str = __$("data_obj").value.replace(/[^a-z0-9\s]/gi, '').replace(/[_\s+]/g, ' ')
+    
+    if (str.match(/caesarean section/i)){
+        __$("ever_had_c_sections").value = "Yes";
+    }else{
+        __$("ever_had_c_sections").value = "No";
+    }
+
+    if (str.match(/vacuum extraction delivery/i)){
+        __$("ever_had_a_vacuum_extraction").value = "Yes";
+    }else{
+        __$("ever_had_a_vacuum_extraction").value = "No";
+    }
+
+    if (str.match(/still birth/i)){
+        __$("ever_had_still_births").value = "Yes";
+    }else{
+        __$("ever_had_still_births").value = "No";
+    }
 }
 
-function diff(longArr, shortArr){
+function loadSplitSelections(arr){
+    //array format [url, input_id, helpText]
+    var arr = [["/encounters/yes_no_options", "ever_had_symphysiotomy"],
+    ["/encounters/hemorrhage_options", "hemorrhage"],
+    ["/encounters/yes_no_options", "pre_eclampsia"],
+    ["/encounters/yes_no_options", "eclampsia"]
+    ];
 
-    var result = [];
+    var count = arr.length;
+    var n = Math.floor(Math.sqrt(count));
+    var v_count = Math.ceil(count/n);
+    var h_count = Math.ceil(count/n);
+    var e_count = count % n;
 
-    longArr.forEach(function(key) {
-        if (-1 === shortArr.indexOf(key)) {
-            result.push(key);
+    __$("keyboard").style.display = "none";
+    __$("touchscreenInput" + tstCurrentPage).style.display = "none";
+    __$("inputFrame" + tstCurrentPage).style.height = (0.72 * screen.height) + "px";
+    __$("inputFrame" + tstCurrentPage).style.marginTop = (0.05 * screen.height) + "px";
+    //__$("inputFrame" + tstCurrentPage).style.background = "lightblue";
+
+    if (count > 0){
+
+        var n = 0;
+        var holder = document.createElement("div");
+        holder.id = 'holder';
+        holder.style.height =  (0.72 * screen.height) + "px";
+        holder.style.width = "100%";
+        holder.style.display = "none";
+        holder.setAttribute("class", "options");
+        holder.style.borderRadius = "5px";
+        holder.style.background = "white";
+        __$("inputFrame" + tstCurrentPage).appendChild(holder);
+
+        for (var r = 1; r <= v_count; r ++){
+
+            var row = document.createElement("div");
+            row.id = r;
+            row.style.display = "table-row";
+            row.setAttribute("class", "row");
+            holder.appendChild(row);
+
+            for(var c = 1; c <= h_count; c ++){
+
+                var cell = document.createElement("div");
+                cell.id = r + "_" + c;
+                cell.style.display = "table-cell";
+                cell.setAttribute("class", "cell");
+                cell.style.background = "white";
+
+                var helpText = __$(arr[n][1]).getAttribute("helpText");
+                var heada = document.createElement("div");
+                heada.style.height = "40px";
+                heada.innerHTML = helpText;
+                heada.style.marginTop = "5px";
+                heada.style.background = "#CFE4CD";
+                heada.style.borderRadius = "3px";
+                heada.style.border = "2px gray solid";
+                heada.style.fontSize = "28px";
+                heada.style.marginLeft = "5px";
+                heada.style.marginRight = "5px";
+                cell.appendChild(heada);
+
+                if(c != 1){
+                    cell.style.borderLeft = "1px solid";
+                }
+
+                if(r != 1){
+                    cell.style.borderTop = "1px solid";
+                }
+
+                cell.style.height = ((72/v_count) - 2) * 0.001 * screen.height + "px";
+                cell.style.width = ((100/h_count)) + "%";
+                row.appendChild(cell);
+
+                n ++;
+                if (n != arr.length - 1){
+
+                    ajaxCustomRequest(arr[n - 1][0], arr[n - 1][1], "", (r + "_" + c));
+                }else{
+
+                    ajaxCustomRequest(arr[n - 1][0], arr[n - 1][1], "table", (r + "_" + c));
+                }
+
+            }
         }
-    }, this);
-    
-    return result;
+
+        __$("2_2").style.display = "none";
+        __$("1_2").style.borderBottom = "1px solid";
+        __$("2_1").style.borderRight = "1px solid";
+
+    }
+}
+
+function ajaxCustomRequest(aUrl, id, n, dom_id) {
+
+    var httpRequest = new XMLHttpRequest();
+    httpRequest.onreadystatechange = function() {
+        handleCustomResult(httpRequest, id, n, dom_id);
+    };
+    try {
+        httpRequest.open('GET', aUrl, true);
+        httpRequest.send(null);
+    } catch(e){
+    }
+}
+
+function handleCustomResult(aXMLHttpRequest, id, n, dom_id) {
+
+    if (!aXMLHttpRequest) return;
+
+    if (aXMLHttpRequest.readyState == 4 && (aXMLHttpRequest.status == 200 ||
+        aXMLHttpRequest.status == 304)) {
+
+        var result = aXMLHttpRequest.responseText;
+
+        //__$(dom_id).innerHTML = "";
+
+        var data = result.split("|");
+
+        var ul = document.createElement("ul");
+        ul.style.paddingLeft = "5px";
+        ul.style.paddingRight = "5px";
+
+        for(var i = 0; i < data.length; i ++){
+
+            var li = document.createElement("li")
+            li.setAttribute("class", "cell-data");
+            li.setAttribute("target", id);
+            li.value = data[i];
+            li.setAttribute("value", data[i]);
+            li.innerHTML = data[i];
+            li.onmousedown = function(){
+
+                __$(this.getAttribute("target")).value = this.getAttribute("value");
+
+                if (this.getAttribute("target") == 'pre_eclampsia' && this.innerHTML.match(/Yes/i)){
+
+                    __$("2_2").style.display = "table-cell";
+                    __$("2_2").style.opacity = 1
+                    __$("1_2").style.borderBottom = "hidden";
+                    __$("2_1").style.borderRight = "hidden";
+                } else if (this.getAttribute("target") == 'pre_eclampsia' && this.innerHTML.match(/No/i)){
+
+                    __$("eclampsia").value = ""
+
+                    __$("1_2").style.borderBottom = "1px solid";
+                    __$("2_1").style.borderRight = "1px solid";
+
+                    hideMsg("2_2");
+                }
+
+                updateTouchscreenInput(this);
+            }
+
+            if(i % 2 == 0){
+
+                li.className = "even";
+                li.setAttribute("group", "even");
+
+            } else {
+
+                li.className = "odd";
+                li.setAttribute("group", "odd");
+            }
+
+            ul.appendChild(li);
+        }
+
+        __$(dom_id).appendChild(ul);
+
+        if (n == "table")
+            setTimeout(function(){
+                __$('holder').style.display = n;
+            }, 350);
+
+    }
+}
+
+function fade(div, opacity){
+
+    __$(div).style.opacity = opacity;
+    if (opacity >= 0){
+        opacity = opacity - 0.01;
+        setTimeout(function(){
+            fade(div, opacity)
+        }, 1)
+    }
+    else{
+        __$(div).style.display = "none";
+    }
+}
+
+function fadeOut(div, opacity){
+
+    __$(div).style.opacity = opacity;
+    if (opacity <= 1){
+        opacity = opacity + 0.01;
+        setTimeout(function(){
+            fade(div, opacity)
+        }, 5)
+    }
+}
+function hideMsg(div){
+    __$(div).style.display = "none"
+// setTimeout(function(){fade(div, 1);}, 5);
+}
+
+function showMsg(div){
+    setTimeout(function(){
+        fadeOut(div, 0);
+    }, 1);
 }
