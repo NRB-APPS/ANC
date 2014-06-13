@@ -56,7 +56,7 @@
 
 .detail-row-input{
     padding-right: 5%;
-     padding-left: 5%;
+    padding-left: 5%;
 }
 
 .detail-row-label{
@@ -64,8 +64,11 @@
 }
 
 .demarcation-td{
+    background-color: #CFE4CD;
     text-align: center;
     height: 30px;
+    font-family:arial, helvetica, sans-serif;
+    font-style: italic;
     border: 0px hidden;
     border-bottom: 1px dotted;
 }
@@ -124,7 +127,6 @@
 }
 
 .minus, .minus:hover {
-    background: url('/images/down_arrow_gray.png');
     background-repeat:no-repeat;
     height: 60px;
     margin-top: 12px;

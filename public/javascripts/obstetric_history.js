@@ -155,7 +155,8 @@ function loadSelections(){
             if (p % 2 == 1){
                 row.style.background = "#F8F8F8";
             }
-
+            table.appendChild(row);
+ 
             var cell1 = document.createElement("div");
             cell1.id = "cell_" + p + "_1";
             cell1.style.paddingLeft = "15%";
@@ -169,10 +170,26 @@ function loadSelections(){
 
             cell2.style.paddingLeft = "7%";
 
-            cell2.innerHTML = "<table class='button-table'><tr><td><button class = 'minus' onmousedown = 'decrement(" +p+")'></button> </td> <td><input id = 'input_"+
-            p +"'  value = '" + (counts[p] == undefined ? 1 : counts[p]) + "' class = 'label' id = 'label"+ p + "' >  </input> </td><td> <button class = 'plus' onmousedown = 'increment("+ p +")'></button></td></tr></table>"
+            cell2.innerHTML = "<table class='button-table'><tr><td><button id = 'inc"+ p + "' class = 'minus' onmousedown = 'decrement(" +p+")'></button> </td> <td><input id = 'input_"+
+            p +"'  value = '" + (counts[p] == undefined ? 1 : counts[p]) + "' class = 'label' id = 'label"+ p + "' >  </input> </td><td> <button  id = 'dec"+ p + "' class = 'plus' onmousedown = 'increment("+ p +")'></button></td></tr></table>"
             row.appendChild(cell2);
 
+            if (counts[p] != undefined && parseInt(counts[p]) > 1){
+                __$("inc" + p).style.background = "url('/images/down_arrow.png')";
+                __$("inc" + p).style.backgroundRepeat = "no-repeat";
+            }else{
+                __$("inc" + p).style.background = "url('/images/down_arrow_gray.png')";
+                __$("inc" + p).style.backgroundRepeat = "no-repeat";
+            }
+
+            if (counts[p] != undefined && parseInt(counts[p]) == 8){
+                __$("dec" + p).style.background = "url('/images/up_arrow_gray.png')";
+                __$("dec" + p).style.backgroundRepeat = "no-repeat";
+            }else{
+                __$("dec" + p).style.background = "url('/images/up_arrow.png')";
+                __$("dec" + p).style.backgroundRepeat = "no-repeat";
+            }
+            
             var cell3 =  document.createElement("div");
             cell3.id = "cell_" + p + "_3";
             cell3.setAttribute("class", "data-cell-img");
@@ -184,7 +201,7 @@ function loadSelections(){
                 data[p] = {};
             data[p]["condition"] = false;
             data[p]["count"] = 1;
-            table.appendChild(row);
+           
 
         }
 
@@ -327,6 +344,7 @@ function loadInputWindow(){
             __$("inputFrame" + tstCurrentPage).style.height = 0.741 * screen.height + "px";
             __$("inputFrame" + tstCurrentPage).style.marginTop = 0.05 * screen.height + "px";
             __$("inputFrame" + tstCurrentPage).style.background = "white";
+            __$("inputFrame" + tstCurrentPage).style.width = 0.93 * screen.width + "px";
 
             var headerHolder = document.createElement("div");
             headerHolder.id = "hheader"
@@ -708,12 +726,19 @@ function loadInputWindow(){
 
                         label =  $$[id][abortionFields[i]]
                     }
-                    var td2 = document.createElement("div");
-                    td2.innerHTML = "<div style='font-size: 22px;' class = 'input-button'> " + label + "</div>";
-                    td2.setAttribute("class", "detail-row-input");
-                    row.appendChild(td2);
 
-                    var button = td2.getElementsByClassName("input-button")[0];
+                    var td2 = document.createElement("div");
+                    td2.innerHTML = "<div style='font-size: 22px;' class = 'display-space'> " + label + "</div>";
+                    td2.setAttribute("class", "detail-row-space");
+                    row.appendChild(td2);
+                    
+                    var td3 = document.createElement("div");
+                    td3.innerHTML = "<div style='font-size: 22px;' class = 'input-button'>Edit</div>";
+                    td3.setAttribute("class", "detail-row-input");
+                    row.appendChild(td3);
+
+
+                    var button = td3.getElementsByClassName("input-button")[0];
 
                     if (button != undefined){
                         button.onclick = function(){
@@ -1090,6 +1115,7 @@ function loadInputWindow(){
                                     display.innerHTML = value;
                                     //button.setAttribute("value", value);
                                     $$[a][label.innerHTML] = value;
+                                  
                                 }else{
                                     display.innerHTML =  value;
                                     //button.setAttribute("value", value);
@@ -1136,25 +1162,6 @@ function loadInputWindow(){
                                             }
                                         }
                                     }
-
-                                /*verify completeness
-                                    var check_str = ""
-                                    for(var h = 1; h <= n; h++){
-                                        
-                                        var baby_set = jQ("[id^=" + p + "_" + h + "]");
-
-                                        for(var r = 0; r < baby_set.length ; r ++){
-                                            
-                                            var bt =  baby_set[r].childNodes[1].childNodes[0]
-                                            if (!bt.className.match(/gray/))
-                                                check_str += $[p][h][fields[r]];
-                                        }
-                                    }
-
-                                    if (!check_str.match(/undefined/)){
-                                        alert("preg_row_")
-                                    }
-                                    */
                                 }
                             }
                         }else{
@@ -1409,8 +1416,6 @@ function handleCustomResult(aXMLHttpRequest, id, n, dom_id) {
 
         var result = aXMLHttpRequest.responseText;
 
-        //__$(dom_id).innerHTML = "";
-
         var data = result.split("|");
 
         var ul = document.createElement("ul");
@@ -1498,7 +1503,6 @@ function fadeOut(div, opacity){
 }
 function hideMsg(div){
     __$(div).style.display = "none"
-// setTimeout(function(){fade(div, 1);}, 5);
 }
 
 function showMsg(div){
