@@ -20,13 +20,13 @@
 
 .input-button{
     height: 30px;
-    min-width: 130px;
+    min-width: 100px;
     float: right;
     cursor: pointer;
     margin-bottom: -10px;
     padding-top: 4px;
     overflow: hidden;
-    border-radius: 15px !important;
+    border-radius: 18px !important;
     text-align: center;
     border:1px solid #7eb9d0; -webkit-border-radius: 3px; -moz-border-radius: 3px;border-radius: 3px;font-size:22px;font-family:arial, helvetica, sans-serif; padding: 10px 10px 10px 10px; text-decoration:none; display:inline-block;text-shadow: -1px -1px 0 rgba(0,0,0,0.3); color: #FFFFFF;
     background-color: #a7cfdf; background-image: -webkit-gradient(linear, left top, left bottom, from(#a7cfdf), to(#23538a));
@@ -35,7 +35,7 @@
     background-image: -ms-linear-gradient(top, #a7cfdf, #23538a);
     background-image: -o-linear-gradient(top, #a7cfdf, #23538a);
     background-image: linear-gradient(to bottom, #a7cfdf, #23538a);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#a7cfdf, endColorstr=#23538a);
-    
+
 }
 
 .input-button:active{
@@ -56,16 +56,17 @@
 
 .detail-row-input{
     padding-right: 5%;
+     padding-left: 5%;
 }
 
-.detail-row-label, .detail-row-input{
-    padding-left: 5%;
+.detail-row-label{
+    padding-left: 2.5%;
 }
 
 .demarcation-td{
     text-align: center;
-    width: 100%;
     height: 30px;
+    border: 0px hidden;
     border-bottom: 1px dotted;
 }
 
@@ -99,7 +100,6 @@
 .data-row{
     display: table-row;
     width: 100%;
-
 }
 
 .data-cell{
@@ -163,20 +163,22 @@
 }
 
 .preg-cell{
-    font-size: 26px;
+    font-size: 24px;
     display: table-cell;
     cursor: pointer;
     vertical-align: middle;
     text-decoration:none;
-    width: 33%;
-    margin: 5px;
+    width: 100%;
+    margin: 0px;
     height: 70px;
+    border-style: hidden;
 }
 
 .img-preg-cell{
-    margin-bottom: -2%;
-    margin-right: 5%;
-    margin-left: 8%;
+    margin-right: 2%;
+    margin-bottom: -3%;
+    margin-left: 2%;
+    border-style: hidden;
 }
 
 .keyboard_button {
@@ -318,4 +320,15 @@
 }
 .cancel{
     float: right;
+}
+.display-space{
+    width: 100%;
+    text-decoration: underline;
+    padding-left: 3%;
+}
+
+.detail-row-label{
+    font-weight: bold;
+    font-size: 19px;
+    width: 30%;
 }

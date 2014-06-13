@@ -341,18 +341,18 @@ function loadInputWindow(){
 
             var t1 = document.createElement("div");
             t1.innerHTML = "Pregnancy";
-            t1.style.width = "30%";
+            t1.style.width = "20%";
             t1.setAttribute("class", "h-cell");
             header.appendChild(t1);
 
             var t2 = document.createElement("div");
             t2.innerHTML = "Details";
-            t2.style.width = "70%";
+            t2.style.width = "80%";
             t2.setAttribute("class", "h-cell");
             header.appendChild(t2);
 
             __$("inputFrame" + tstCurrentPage).appendChild(headerHolder);
-            __$("inputFrame" + tstCurrentPage).style.zIndex = 5
+            __$("inputFrame" + tstCurrentPage).style.zIndex = 7;
 
             var container = document.createElement("div");
             container.style.height = 0.64 * screen.height + "px";
@@ -371,14 +371,14 @@ function loadInputWindow(){
             var pcell = document.createElement("div");
             pcell.innerHTML = "<div id ='pcell' style='width: 100%; overflow: auto;'><table style='width: 100%;' id = 'pregs'></table></div>";
             pcell.style.display = "table-cell";
-            pcell.style.width = "30%";
+            pcell.style.width = "20%";
             pcell.style.overflow = "hidden";
             pregRow.appendChild(pcell);
 
             var dcell = document.createElement("div");
             dcell.innerHTML = "<div id = 'dcell' style='width: 100%; overflow: auto;'><table style='width: 100%;' id = 'details'></table></div>";
             dcell.style.display = "table-cell";
-            dcell.style.width = "70%";
+            dcell.style.width = "80%";
             dcell.style.borderLeft = "1px black solid";
             dcell.style.overflow = "hidden";
             pregRow.appendChild(dcell);
@@ -389,7 +389,8 @@ function loadInputWindow(){
             table.style.display = "table";
 
             container.appendChild(pTable);
-            jQ("#dcell").css("height", (0.625 * screen.height + "px"));
+            jQ("#dcell").css("height", (0.64 * screen.height + "px"));
+            jQ("#details").css("margin-top", "20px");
             jQ("#pcell").css("height", (0.64 * screen.height + "px"));
             c = 0;
 
@@ -442,6 +443,10 @@ function loadInputWindow(){
                 opacity : "1"
             });
 
+            if(__$("popup-header") != undefined){
+                __$("popup-header").innerHTML = "";
+                __$("popup-header").parentNode.removeChild(__$("popup-header"))
+            }
             var popupHeader = document.createElement("div");
             popupHeader.id = "popup-header";
             popupHeader.innerHTML = current_popup;
@@ -457,6 +462,11 @@ function loadInputWindow(){
                 color : "white"
             });
 
+            if(__$("shiled") != undefined){
+                __$("shield").innerHTML = "";
+                __$("shield").parentNode.removeChild(__$("shield"))
+                __$("shield") = null;
+            }
             var shield = document.createElement("div");
             shield.id = "shield";
             shield.style.display = "none";
@@ -466,8 +476,8 @@ function loadInputWindow(){
             shield.style.left = "0px";
             shield.style.top = "0px";
             shield.style.backgroundColor = "#333";
-            shield.style.opacity = "0.5";
-            shield.style.zIndex = 90;
+            shield.style.opacity = "0.4";
+            shield.style.zIndex = 50;
 
             __$("inputFrame" + tstCurrentPage).appendChild(shield);
 
@@ -566,15 +576,21 @@ function loadInputWindow(){
                         rowd.id = "p_" + n;
 
                         var d= document.createElement("div");
-                        d.innerHTML = n + (n == 1 ? "<sup>st</sup>" : ((n == 2 ? "<sup>nd</sup>" : (n == 3 ? "<sup>rd</sup>" : "<sup>th</sup>")))) +
-                        " born in " +  id + (id == 1 ? "<sup>st</sup>" : ((id == 2 ? "<sup>nd</sup>" : (id == 3 ? "<sup>rd</sup>" : "<sup>th</sup>")))) + " pregnancy";
+                        d.innerHTML = "&nbsp"
                         d.setAttribute("class", "demarcation-td");
+                        
                         rowd.appendChild(d);
 
                         var d = document.createElement("div");
-                        d.innerHTML = "&nbsp";
+                        d.innerHTML = n + (n == 1 ? "<span><sup>st</sup>" : ((n == 2 ? "<sup>nd</sup>" : (n == 3 ? "<sup>rd</sup>" : "<sup>th</sup>")))) +
+                        " born in " +  id + (id == 1 ? "<sup>st</sup>" : ((id == 2 ? "<sup>nd</sup>" : (id == 3 ? "<sup>rd</sup>" : "<sup>th</sup>")))) + " pregnancy</span>";
                         d.setAttribute("class", "demarcation-td");
                         rowd.appendChild(d);
+                                             
+                        var dd = document.createElement("div");
+                        dd.innerHTML = "&nbsp";
+                        dd.setAttribute("class", "demarcation-td");
+                        rowd.appendChild(dd);
                         table.appendChild(rowd);
                     }
 
@@ -594,27 +610,34 @@ function loadInputWindow(){
                   
                     if ($[id][n] != undefined && $[id][n][fields[i]] != undefined){                       
                         
-                        label =  hash[$[id][n][fields[i]]] != undefined ? hash[$[id][n][fields[i]]] : $[id][n][fields[i]]
+                        label = $[id][n][fields[i]]
                     }
-                   
-                    var td2 = document.createElement("div");
-                    td2.innerHTML = "<div style='font-size: 22px;' class = 'input-button'> " + label + "</div>";
-                    td2.setAttribute("class", "detail-row-input");
-                    row.appendChild(td2);
 
-                    var button = td2.getElementsByClassName("input-button")[0];
-                                        
+                    var td2 = document.createElement("div");
+                    td2.innerHTML = "<div style='font-size: 22px;' class = 'display-space'> " + label + "</div>";
+                    td2.setAttribute("class", "detail-row-space");
+                    row.appendChild(td2);
+                    
+                    var td3 = document.createElement("div");
+                    td3.innerHTML = "<div style='font-size: 22px;' class = 'input-button'> Edit</div>";
+                    td3.setAttribute("class", "detail-row-input");
+                    row.appendChild(td3);
+
+                    var button = td3.getElementsByClassName("input-button")[0];
+                    var display = td2.getElementsByClassName("display-space")[0];
+
                     var ni = fields.indexOf("Condition at birth");
                     
                     var c_node = jQ("[id^=" + id + "_" + n + "_detail_row_" + ni + "]");
                     var txt = "?";
                     if (c_node.length == 1)
                         txt = c_node[0].childNodes[1].childNodes[0].innerHTML;
-                 
+               
                     if (i > fields.indexOf("Condition at birth") && !txt.match(/Alive/i)){
                         
-                        if(label.trim() == "?"){
+                        if(!button.className.match("gray")){
                             button.className += " button_gray";
+                            display.innerHTML = "?";
                         }
                         
                         button.onclick = function(){
@@ -683,7 +706,7 @@ function loadInputWindow(){
 
                     if ($$[id] != undefined && $$[id][abortionFields[i]] != undefined){
 
-                        label =  abortionHash[$$[id][abortionFields[i]]] != undefined ? abortionHash[$$[id][abortionFields[i]]] : $$[id][abortionFields[i]]
+                        label =  $$[id][abortionFields[i]]
                     }
                     var td2 = document.createElement("div");
                     td2.innerHTML = "<div style='font-size: 22px;' class = 'input-button'> " + label + "</div>";
@@ -727,12 +750,23 @@ function loadInputWindow(){
             var cl = document.createElement("div");
             cl.className = "button_red cancel";
             cl.innerHTML = "Cancel";
+            cl.onclick = function(){
+
+                jQ("#shield, #popup").css("display", "none");
+            }
             jQ(cl).css({
-                "float":"left",
-                "border-left" : "1.5px dotted black",
-                "margin-top" : 0.297 * screen.height + "px",
-                "margin-left" : "55px"
-            });            
+                "float" : "left",
+                "margin-top" : "170px",
+                "margin-left" : "10px"
+            });
+            var holder = document.createElement("div");
+            holder.innerHTML = "<table style='width: 100%;'><tr><td id = 'left' style='width: 35%;'></td><td id='right' style='width: 65%;' rowspan='2'></td></tr>" +
+            "<tr><td id = 'bcancel'></td></tr></table>"
+            jQ(holder).css({
+                "width":"100%",
+                "border" : "hidden"
+            });
+            
             var tbl = document.createElement("table");
             tbl.className = "keyBoardTable";
             tbl.cellSpacing = 0;
@@ -740,7 +774,6 @@ function loadInputWindow(){
             tbl.id = "tblKeyboard";
             tbl.style.minWidth = 0.20 * screen.width + "px";
             jQ(tbl).css({
-                "float":"right",
                 "border-left" : "1.5px dotted black"
             });
             tbl.style.margin = "auto";
@@ -760,7 +793,7 @@ function loadInputWindow(){
                 var btn = document.createElement("div");
                 btn.className = "button_blue keyboard_button";
                 btn.innerHTML = "<span>" + row1[i] + "</span>";
-                btn.onclick = function(){
+                btn.onmousedown = function(){
                     if(!this.innerHTML.match(/^__$/)){
                         
                         global_control += this.innerHTML.match(/<span>(.+)<\/span>/)[1];
@@ -794,7 +827,7 @@ function loadInputWindow(){
                 var btn = document.createElement("div");
                 btn.className = "button_blue keyboard_button";
                 btn.innerHTML = "<span>" + row2[i] + "</span>";
-                btn.onclick = function(){
+                btn.onmousedown = function(){
                     if(!this.innerHTML.match(/^$/)){
                         
                         global_control += this.innerHTML.match(/<span>(.+)<\/span>/)[1];
@@ -830,7 +863,7 @@ function loadInputWindow(){
                 var btn = document.createElement("div");
                 btn.className = "button_blue keyboard_button";
                 btn.innerHTML = "<span>" + row3[i] + "</span>";
-                btn.onclick = function(){
+                btn.onmousedown = function(){
                     if(!this.innerHTML.match(/^__$/)){
                         
                         global_control += this.innerHTML.match(/<span>(.+)<\/span>/)[1];
@@ -872,7 +905,7 @@ function loadInputWindow(){
                 }else if (i == 2){
                     btn.className = "button_green keyboard_button";
                 }
-                btn.onclick = function(){
+                btn.onmousedown = function(){
                     if(this.innerHTML.match(/<span>(.+)<\/span>/)[1] == "C"){
 
                         if (global_control.length == 1){
@@ -904,13 +937,14 @@ function loadInputWindow(){
 
                             if (row){
                                 var button = row.getElementsByClassName("input-button")[0];
+                                var display = row.getElementsByClassName("display-space")[0];
                                 var label = row.getElementsByClassName("detail-row-label")[0];
                                 var n = __$("popup").getAttribute("n-tuple");
                                 var p = __$("popup").getAttribute("p-tuple");
                                 var a = __$("popup").getAttribute("a-tuple");
                                 
-                                button.innerHTML = global_control;
-                                button.setAttribute("value", global_control);
+                                display.innerHTML = global_control;
+                                // button.setAttribute("value", global_control);
 
                                 if(a != undefined && $$[a] != undefined){
 
@@ -955,9 +989,6 @@ function loadInputWindow(){
 
             tbl.appendChild(tr4);
 
-            //__$(id).appendChild(cl);
-          
-            __$(id).appendChild(tbl);
             var input = document.createElement("div");
             input.id = "input";
             input.innerHTML = "";
@@ -970,7 +1001,10 @@ function loadInputWindow(){
                 "padding-top" : "13%",
                 "padding-left" : "2%"
             })
-            __$(id).appendChild(input);
+            __$(id).appendChild(holder);
+            __$("left").appendChild(input);
+            __$("right").appendChild(tbl);
+            __$("bcancel").appendChild(cl);
             __$("popup-header").innerHTML = current_popup;
            
             __$("input").style.minWidth = (parseInt(__$("popup").style.minWidth.replace("px", "")) - parseInt(__$("tblKeyboard").style.minWidth.replace("px", ""))) + "px";
@@ -1048,16 +1082,17 @@ function loadInputWindow(){
                             if(__$("ok").className.match(/button\_blue/) && !__$("ok").className.match(/nosave/)){
 
                                 var button = row.getElementsByClassName("input-button")[0];
+                                var display = row.getElementsByClassName("display-space")[0];
                                 var label = row.getElementsByClassName("detail-row-label")[0];
                                 
                                 if(a != undefined && $$[a] != undefined){
 
-                                    button.innerHTML = abortionHash[value] ? abortionHash[value] : value;
-                                    button.setAttribute("value", value);
+                                    display.innerHTML = value;
+                                    //button.setAttribute("value", value);
                                     $$[a][label.innerHTML] = value;
                                 }else{
-                                    button.innerHTML = hash[value] ? hash[value] : value;
-                                    button.setAttribute("value", value);
+                                    display.innerHTML =  value;
+                                    //button.setAttribute("value", value);
                                     if ($[p][n] == undefined){
                                         $[p][n] = {};
                                     }
@@ -1074,12 +1109,14 @@ function loadInputWindow(){
                                             
                                             var baby_rows = jQ("[id^=" + p + "_" + n + "]"); //matches only single baby rows
                                             
-                                            var but = baby_rows[m].childNodes[1].childNodes[0];
-                                       
-                                            if (button.innerHTML.match(/still birth/i)){
+                                            var but = baby_rows[m].childNodes[2].childNodes[0];
+                                            var displaybut = baby_rows[m].childNodes[1].childNodes[0];
+                                      
+                                            if (display.innerHTML.match(/still birth/i)){
                                                 if(!but.className.match(/gray/)){
+                                                   
                                                     but.className += " button_gray";
-                                                    but.innerHTML = "?";
+                                                    displaybut.innerHTML = "?";
                                                     but.removeAttribute("value");
                                                 
                                                     but.onclick = function(){
@@ -1088,7 +1125,7 @@ function loadInputWindow(){
                                                     }
                                                     $[p][n][but.parentNode.parentNode.childNodes[0].innerHTML.trim()] = but.innerHTML
                                                 }
-                                            }else if (button.innerHTML.match(/Alive/i)){
+                                            }else if (display.innerHTML.match(/Alive/i)){
                                                 if(but.className.match(/gray/)){
                                                     but.className = but.className.replace(/button\_gray/, "").trim();
                                                     but.onclick = function(){
