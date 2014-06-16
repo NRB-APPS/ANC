@@ -984,7 +984,7 @@ class PatientsController < ApplicationController
 
       if ((params[:observations].length == 1) rescue false)
        
-        redirect_to next_task(@patient)
+        redirect_to next_task(@patient) and return
       end
     end
    
