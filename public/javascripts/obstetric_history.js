@@ -413,7 +413,9 @@ function loadInputWindow(){
             c = 0;
 
             for (var pos in $){
-                loadPregnancy(pos, "delivery");
+
+                if ($[pos]["condition"] == true)
+                    loadPregnancy(pos, "delivery");
             }
 
             for (var i = 1; i <= parseInt(__$("enter_number_of_abortions").value); i ++){
