@@ -1213,13 +1213,95 @@ function loadInputWindow(){
                
                 loadPopup(row);
                 if (type == "number"){
-                    showNumber("popup", row.id, fields[field_names[pos]][1], fields[field_names[pos]][2]);
+
+                    var min = validateMin(row, fields[field_names[pos]][1]);
+                    var max = validateMax(row, fields[field_names[pos]][2]);
+                    
+                    showNumber("popup", row.id, min, max);
                 }else if (type == "list"){
                     var listItems = fields[field_names[pos]];
                     showList("popup", listItems);
                 }
             }
         }
+
+        function validateMin(r, v, p, label){
+
+            global_value = "";
+            
+            if (r != undefined){
+                var p = parseInt(r.id.match(/^\d+/)[0]);
+                var label = r.childNodes[0].innerHTML;
+            }
+            
+            if ($[p - 1] != undefined){
+                
+                var maxN = parseInt($[p - 1]["count"]);
+                
+                if (maxN > 0){                   
+                                      
+                    var value = undefined;
+                    if ($[p - 1][maxN] != undefined){
+
+                        for(var i = 1; i <= maxN; i ++){
+                            if ($[p - 1][i][label] != undefined)
+                                value = parseInt($[p - 1][i][label]);
+                        }
+                    }
+                  
+                    if (value != undefined && value.toString().match(/^\d+/) && parseInt(v) < parseInt(value)){
+                       
+                        global_value = value
+                        
+                    }else if (value == undefined){
+
+                        if (p > 1)
+                            validateMin(undefined, v, (p - 1), label)
+                    }
+                }         
+            }
+
+            return (global_value == "") ? v : global_value;
+        }
+
+        function validateMax(r, v, p, label){
+
+            global_value = "";
+
+            if (r != undefined){
+                var p = parseInt(r.id.match(/^\d+/)[0]);
+                var label = r.childNodes[0].innerHTML;
+            }
+
+            if ($[p + 1] != undefined){
+
+                var maxN = parseInt($[p + 1]["count"]);
+
+                if (maxN > 0){
+
+                    var value = undefined;
+                    if ($[p + 1][maxN] != undefined){
+
+                        for(var i = maxN; i > 0 ; i --){
+                            if ($[p + 1][i][label] != undefined)
+                                value = parseInt($[p + 1][i][label]);
+                        }
+                    }
+
+                    if (value != undefined && value.toString().match(/^\d+/) && parseInt(v) > parseInt(value)){
+
+                        global_value = value;
+
+                    }else if (value == undefined){
+                        
+                            validateMax(undefined, v, (p + 1), label)
+                    }
+                }
+            }
+
+            return (global_value == "") ? v : global_value;
+        }
+
 
         function enterAbortionData(row){
 
