@@ -182,7 +182,7 @@ function loadSelections(){
                 __$("inc" + p).style.backgroundRepeat = "no-repeat";
             }
 
-            if (counts[p] != undefined && parseInt(counts[p]) == 8){
+            if (counts[p] != undefined && parseInt(counts[p]) == 13){
                 __$("dec" + p).style.background = "url('/images/up_arrow_gray.png')";
                 __$("dec" + p).style.backgroundRepeat = "no-repeat";
             }else{
@@ -215,7 +215,7 @@ function loadSelections(){
 function increment(pos){
 
     var i = parseInt( __$("input_" + pos).value);
-    if (i <= 7){
+    if (i <= 12){
 
         __$("input_" + pos).value = parseInt( __$("input_" + pos).value) + 1;
         updateInput(pos);
@@ -225,7 +225,7 @@ function increment(pos){
         __$("input_" + pos).parentNode.parentNode.children[2].childNodes[1].style.backgroundRepeat = "no-repeat";
     }
 
-    if (i + 1 == 8){
+    if (i + 1 == 13){
 
         __$("input_" + pos).parentNode.parentNode.children[2].childNodes[1].style.background = "url('/images/up_arrow_gray.png')";
         __$("input_" + pos).parentNode.parentNode.children[2].childNodes[1].style.backgroundRepeat = "no-repeat";
@@ -256,7 +256,7 @@ function decrement(pos){
         __$("input_" + pos).parentNode.parentNode.children[0].childNodes[0].style.backgroundRepeat = "no-repeat";
     }
 
-    if (i - 1 < 8){
+    if (i - 1 < 13){
         __$("input_" + pos).parentNode.parentNode.children[2].childNodes[1].style.background = "url('/images/up_arrow.png')";
         __$("input_" + pos).parentNode.parentNode.children[2].childNodes[1].style.backgroundRepeat = "no-repeat";
     }
@@ -634,7 +634,7 @@ function loadInputWindow(){
                     row.appendChild(td1);
                     var label = "?";
                   
-                    if ($[id][n] != undefined && $[id][n][fields[i]] != undefined){                       
+                    if ($[id][n] != undefined && $[id][n][fields[i]] != undefined){
                         
                         label = $[id][n][fields[i]]
                     }
@@ -1197,7 +1197,7 @@ function loadInputWindow(){
  
                 var fields = {
                     "Year of birth" : ["number", min_birth_year, abs_max_birth_year] ,
-                    "Place of birth" : ["list", "Health facility", "In transit", "TBA", "Home", "Unknown"],
+                    "Place of birth" : ["list", "Health facility", "In transit", "TBA", "Home"],
                     "Gestation (months)" : ["number", 5, 10],
                     "Method of delivery" : ["list", "Spontaneous vaginal delivery", "Caesarean Section", "Vacuum Extraction Delivery", "Breech"],
                     "Condition at birth" : ["list", "Alive", "Still Birth"],
@@ -1214,8 +1214,16 @@ function loadInputWindow(){
                 loadPopup(row);
                 if (type == "number"){
 
-                    var min = validateMin(row, fields[field_names[pos]][1]);
-                    var max = validateMax(row, fields[field_names[pos]][2]);
+                    if (row.childNodes[0].innerHTML.match(/Year of birth/i)){
+                        var min = validateMin(row, fields[field_names[pos]][1]);
+                        var max = validateMax(row, fields[field_names[pos]][2]);
+                    }else if(row.childNodes[0].innerHTML.match(/Gestation/i)){
+                        var min = validateGestation(row, fields[field_names[pos]][1]);
+                        var max = validateGestation(row, fields[field_names[pos]][2]);
+                    }else{
+                        var min = fields[field_names[pos]][1];
+                        var max = fields[field_names[pos]][2];
+                    }
                     
                     showNumber("popup", row.id, min, max);
                 }else if (type == "list"){
@@ -1225,20 +1233,87 @@ function loadInputWindow(){
             }
         }
 
+        function validateGestation(r, v){
+
+            global_value = v;
+            var p = parseInt(r.id.match(/^\d+/)[0]);
+            var n = parseInt(r.getAttribute("n-tuple"))
+            var label = r.childNodes[0].innerHTML;
+
+            if (parseInt($[p]["count"]) > 1){
+                for (var i = 1; i <= parseInt($[p]["count"]); i ++){
+                    if (i != n &&  $[p][i] != undefined && $[p][i][label] != undefined){
+                        global_value = $[p][i][label];
+                        break;
+                    }
+                }
+            }
+            
+            return global_value;
+        }
+        
         function validateMin(r, v, p, label){
 
             global_value = "";
+            skipNext = false;
             
             if (r != undefined){
                 var p = parseInt(r.id.match(/^\d+/)[0]);
+                var n = parseInt(r.getAttribute("n-tuple"))
                 var label = r.childNodes[0].innerHTML;
+
+                if (n >= 1 && parseInt($[p]["count"]) > 1){
+
+                    var firstY = $[p][1] !=  undefined ? $[p][1][label] : undefined;
+
+                    if (firstY == undefined && parseInt($[p]["count"]) > n && 2 < n){
+                        firstY = $[p][2] !=  undefined ? $[p][2][label] : undefined;
+                    }
+
+                    if (firstY == undefined && parseInt($[p]["count"]) > n && 3 < n){
+                        firstY = $[p][3] !=  undefined ? $[p][3][label] : undefined;
+                    }
+
+                    if (firstY == undefined && parseInt($[p]["count"]) > n && 4 < n){
+                        firstY = $[p][4] !=  undefined ? $[p][4][label] : undefined;
+                    }
+
+                    if (firstY != undefined && parseInt(firstY) > 1950){
+                        global_value = parseInt(firstY);
+                        skipNext = true;
+                    }else{
+
+                        var lastY = undefined;
+                        if (lastY == undefined && (n + 4) <= parseInt($[p]["count"])){
+                            lastY = $[p][n+4] !=  undefined ? $[p][n+4][label] : undefined;
+                        }
+
+                        if (lastY == undefined && (n + 3) <= parseInt($[p]["count"])){
+                            lastY = $[p][n+3] !=  undefined ? $[p][n+3][label] : undefined;
+                        }
+
+                        if (lastY == undefined && (n + 2) <= parseInt($[p]["count"])){
+                            lastY = $[p][n+2] !=  undefined ? $[p][n+2][label] : undefined;
+                        }
+
+                        if (lastY == undefined && (n + 1) <= parseInt($[p]["count"])){
+                            lastY = $[p][n+1] !=  undefined ? $[p][n+1][label] : undefined;
+                        }                                             
+
+                        if (lastY != undefined && parseInt(lastY) > 1950){
+                            global_value = parseInt(lastY) - 1;
+                            skipNext = true;
+                        }
+                    }
+
+                }
             }
             
-            if ($[p - 1] != undefined){
+            if (!skipNext && $[p - 1] != undefined){
                 
                 var maxN = parseInt($[p - 1]["count"]);
                 
-                if (maxN > 0){                   
+                if (maxN > 0){
                                       
                     var value = undefined;
                     if ($[p - 1][maxN] != undefined){
@@ -1258,7 +1333,7 @@ function loadInputWindow(){
                         if (p > 1)
                             validateMin(undefined, v, (p - 1), label)
                     }
-                }         
+                }
             }
 
             return (global_value == "") ? v : global_value;
@@ -1267,13 +1342,58 @@ function loadInputWindow(){
         function validateMax(r, v, p, label){
 
             global_value = "";
-
+            skipNext = false;
+                       
             if (r != undefined){
                 var p = parseInt(r.id.match(/^\d+/)[0]);
+                var n = parseInt(r.getAttribute("n-tuple"))
                 var label = r.childNodes[0].innerHTML;
+
+                if (n >= 1 && parseInt($[p]["count"]) > 1){
+
+                    var firstY = $[p][1] !=  undefined ? $[p][1][label] : undefined;
+
+                    if (firstY == undefined && parseInt($[p]["count"]) > n && 2 < n){
+                        firstY = $[p][2] !=  undefined ? $[p][2][label] : undefined;
+                    }
+
+                    if (firstY == undefined && parseInt($[p]["count"]) > n && 3 < n){
+                        firstY = $[p][3] !=  undefined ? $[p][3][label] : undefined;
+                    }
+
+                    if (firstY == undefined && parseInt($[p]["count"]) > n && 4 < n){
+                        firstY = $[p][4] !=  undefined ? $[p][4][label] : undefined;
+                    }
+                    
+                    if (firstY != undefined && parseInt(firstY) > 1950){
+                        global_value = parseInt(firstY) + 1;
+                        skipNext = true;
+                    }else{
+
+                        var lastY = $[p][n + 1] !=  undefined ? $[p][n + 1][label] : undefined;
+                        
+                        if (lastY == undefined && (n + 2) <= parseInt($[p]["count"])){
+                            lastY = $[p][n+2] !=  undefined ? $[p][n+2][label] : undefined;
+                        }
+
+                        if (lastY == undefined && (n + 3) <= parseInt($[p]["count"])){
+                            lastY = $[p][n+3] !=  undefined ? $[p][n+3][label] : undefined;
+                        }
+
+                        if (lastY == undefined && (n + 4) <= parseInt($[p]["count"])){
+                            lastY = $[p][n+4] !=  undefined ? $[p][n+4][label] : undefined;
+                        }
+
+                        if (lastY != undefined && parseInt(lastY) > 1950){
+                            global_value = parseInt(lastY);
+                            skipNext = true;
+                        }
+                    }
+
+                }
             }
 
-            if ($[p + 1] != undefined){
+            if (!skipNext && $[p + 1] != undefined){
 
                 var maxN = parseInt($[p + 1]["count"]);
 
@@ -1294,7 +1414,7 @@ function loadInputWindow(){
 
                     }else if (value == undefined){
                         
-                            validateMax(undefined, v, (p + 1), label)
+                        validateMax(undefined, v, (p + 1), label)
                     }
                 }
             }
@@ -1309,7 +1429,7 @@ function loadInputWindow(){
 
                 var fields = {
                     "Year of abortion" : ["number", min_birth_year, abs_max_birth_year] ,
-                    "Place of abortion" : ["list", "Health facility", "In transit", "TBA", "Home", "Other", "Unknown"],
+                    "Place of abortion" : ["list", "Health facility", "In transit", "TBA", "Home", "Other"],
                     "Type of abortion" : ["list", "Complete abortion", "Incomplete abortion"],
                     "Procedure done" : ["list", "Manual Vacuum Aspiration (MVA)", "Evacuation"],
                     "Gestation (months)" : ["number", 0, 7]
@@ -1351,7 +1471,7 @@ function buildParams(){
             if (data[keys[i]]== undefined)
                 data[keys[i]] = {};
             if (data[keys[i]][c] == undefined)
-                data[keys[i]][c] = {};            
+                data[keys[i]][c] = {};
         }
     }
 
