@@ -536,11 +536,20 @@
 
   <%= text_field_tag "person[addresses][address1]",  params[:address1],
     {	:id => 'address1',
-    :helpText => 'Closest Landmark or Plot Number',
+    :helpText => 'Closest Landmark',
     :tt_requireNextClick => false,
     :ajaxURL => '/people/landmark?filter_value=',
     :tt_pageStyleClass => "NoKeyboard",
     :tt_onLoad => "hideNext()"
+    #:tt_onLoad => "set_ajaxURL_for_suggestions('/people/landmark?filter_value=' ,document.getElementById('person_addresses_city_village').value);$('nextButton').style.display = 'block';"
+  }%>
+
+  <%= text_field_tag "p[addresses][address1]",  nil,
+    {	:id => 'address1_1',
+    :helpText => 'Specify Closest Landmark or Plot Number',
+    :condition => "__$('address1').value == 'Other'",
+    :tt_onUnLoad => "__$('address1').value = __$('address1_1').value",
+    :tt_onLoad => "showNext()"
     #:tt_onLoad => "set_ajaxURL_for_suggestions('/people/landmark?filter_value=' ,document.getElementById('person_addresses_city_village').value);$('nextButton').style.display = 'block';"
   }%>
 

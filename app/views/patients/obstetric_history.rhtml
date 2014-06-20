@@ -94,7 +94,7 @@
         <%= touch_numeric_tag "Type of visit", @patient, nil,
           {
           :id => "visit",
-          :helptext => "ANC visit number <span class='helper'> Obstetric History</span>",
+          :helptext => "ANC visit number <span class='helper'> ANC Visit</span>",
           :tt_onLoad => "document.forms[0].reset(); disablePastVisits();",
           :tt_pageStyleClass => "NumbersOnly",
           :max => 7,
@@ -214,8 +214,8 @@
         <%= touch_text_field_tag "", @patient, nil,
           {:id => "complications",
           :helptext => "Previous complications <span class='helper'>Obstetric History</span>",
-          :tt_onLoad => "loadSplitSelections();",
-          :optional => "true",
+          :tt_onLoad => "loadSplitSelections(); validationInterval = addValidationInterval()",
+          :tt_onUnLoad => "clearInterval(validationInterval)",          
           :condition => "__$('enter_gravida').value > 1"
         } %>
 

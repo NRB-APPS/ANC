@@ -12,7 +12,7 @@ function readableMessage(){
     }catch(ex){}
 
     setTimeout(function(){
-        readableMessage()
+        readableMessage();
     }, 50);
 }
 
@@ -31,20 +31,20 @@ function buildConceptsHash(){
 function transformMessages(){
     buildConceptsHash();
     setTimeout(function(){
-        readableMessage()
+        readableMessage();
     }, 50);
 }
 
 function updateMultiplePregnancy(){
 
     if (max_delivered == 2){
-        __$("multiple_pregnancy").value = "Twins"
+        __$("multiple_pregnancy").value = "Twins";
     }else if(max_delivered == 3){
-        __$("multiple_pregnancy").value = "Triplets"
+        __$("multiple_pregnancy").value = "Triplets";
     }else if(max_delivered == 4){
-        __$("multiple_pregnancy").value = "Quadruplet"
+        __$("multiple_pregnancy").value = "Quadruplet";
     }else if(max_delivered == 1){
-        __$("multiple_pregnancy").value = "No"
+        __$("multiple_pregnancy").value = "No";
     }
 
 }
@@ -56,7 +56,8 @@ function updateParity(num){
             if (parseInt(__$('gestation_type' + i).value) > 0){
                 par = par + parseInt(__$("gestation_type" + i).value);
             }
-        }catch(ex){
+        }
+        catch(ex){
         }
     }
     parity = par;
@@ -771,7 +772,7 @@ function loadInputWindow(){
             var row1 = ["1","2","3"];
             var row2 = ["4","5","6"];
             var row3 = ["7","8","9"];
-            var row4 = ["C","0","OK"];
+            var row4 = ["Del","0","OK"];
 
             if (min == undefined){
                 min = 0
@@ -939,7 +940,7 @@ function loadInputWindow(){
                     btn.className = "button_green keyboard_button";
                 }
                 btn.onmousedown = function(){
-                    if(this.innerHTML.match(/<span>(.+)<\/span>/)[1] == "C"){
+                    if(this.innerHTML.match(/<span>(.+)<\/span>/)[1] == "Del"){
 
                         if (global_control.length == 1){
                             global_control = ""
@@ -1682,7 +1683,7 @@ function handleCustomResult(aXMLHttpRequest, id, n, dom_id) {
         if (n == "table")
             setTimeout(function(){
                 __$('holder').style.display = n;
-            }, 350);
+            }, 150);
 
     }
 }
@@ -1719,4 +1720,35 @@ function showMsg(div){
     setTimeout(function(){
         fadeOut(div, 0);
     }, 1);
+}
+
+function addValidationInterval(){
+
+    var interval = setInterval(function(){
+        var arr = ["ever_had_symphysiotomy", "hemorrhage", "pre_eclampsia"];
+
+        if (__$("2_2").style.display != "none"){
+            arr.push("eclampsia");
+        }
+
+        var check = 0
+        for (var i = 0; i < arr.length; i ++){
+
+            var node = __$(arr[i]);
+            if (node != undefined && node.value == ""){
+                check = check + 1;
+            }
+        }
+
+        if (check > 0){
+            __$("nextButton").onmousedown = function(){
+                showMessage("Select all fields to proceed");
+            }
+        }else{
+            __$("nextButton").onmousedown = function(){
+                gotoNextPage();
+            }
+        }
+    }, 100);
+    return interval;
 }

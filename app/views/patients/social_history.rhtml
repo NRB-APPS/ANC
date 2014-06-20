@@ -5,16 +5,6 @@
   tt_cancel_destination = "/patients/show/<%= @patient.id %>";
 
 
-  function checkSelectedOptions(){
-
-    if ((__$("smoker").value == "") || (__$("alcohol").value == "") || (__$("civil_status").value == "") || (__$("religion").value == "")){
-     dispatchMessage("Not all fields not selected; Do you wish to continue?", tstMessageBoxType.YesNo)
-      __$("social_information").value = ""
-    }else{
-      gotoNextPage();
-    }
-  }
-
   function loadSplitSelections(arr){
     //alert("here")
     //array format [url, input_id, helpText]
@@ -111,7 +101,6 @@
       __$("2_1").style.borderRight = "1px solid";
 
     }
-    __$("nextButton").setAttribute("onmousedown", "checkSelectedOptions();")
   }
 
   function handleResultData(result, id, n, dom_id) {
@@ -164,6 +153,33 @@
     setTimeout(function(){fadeOut(div, 0);}, 1);
   }
 
+  function addValidationInterval(){
+
+    var interval = setInterval(function(){
+      var arr = ["smoker", "alcohol", "civil_status", "religion"];
+     
+      var check = 0
+      for (var i = 0; i < arr.length; i ++){
+
+        var node = __$(arr[i]);
+        if (node != undefined && node.value == ""){
+          check = check + 1;
+        }
+      }
+
+      if (check > 0){
+        __$("nextButton").onmousedown = function(){
+          showMessage("Select all fields to proceed");
+        }
+      }else{
+        __$("nextButton").onmousedown = function(){
+          gotoNextPage();
+        }
+      }
+    }, 100);
+    return interval;
+  }
+
 </script>
 
 <style>
@@ -178,6 +194,7 @@
     margin: 2px;
     -moz-user-select: none;
   }
+
 
 </style>
 
@@ -221,19 +238,7 @@
     :tt_onLoad => "",
     :helptext => "Marital status" } %>
 
-  <%#= touch_select_tag "Religion", @patient,
-  options_for_select([["", ""],
-  ["Jehovah's Witness", "Jehovahs Witness"],
-  ["Roman Catholic", "Roman Catholic"],
-  ["Presbyterian (C.C.A.P.)", "Presbyterian (C.C.A.P.)"],
-  ["Seventh Day Adventist", "Seventh Day Adventist"],
-  ["Baptist", "Baptist"],
-  ["Moslem", "Moslem"],
-  ["Other", "Other"]]),
-  {:id => "religion",
-  :helptext => "Religion" } %>
-
-  <%= touch_select_tag "Religion", @patient, options_for_select(@religions),
+  <%= touch_select_tag "Religion", @patient, options_for_select([""] + @religions),
     {:id => "religion",
     :tt_onLoad => "",
     :condition => 'false',
@@ -244,7 +249,8 @@
   <%= touch_text_field_tag "", @patient, nil,
     {:id => "social_information",
     :helptext => "Social Information <span class='helper'>Social History</span>",
-    :tt_onLoad => "loadSplitSelections();"
+    :tt_onLoad => "loadSplitSelections(); validationInterval = addValidationInterval()",
+    :tt_onUnLoad => "clearInterval(validationInterval)"
   } %>
 
 

@@ -19,10 +19,10 @@
     margin-right:10px;
   }
 
-#dia, #sys {
+  #dia, #sys {
     margin-left: 85px;
     float: right;
-}
+  }
 
   .lowWeightForHeight{color:black;background:red;}
   .medWeightForHeight {color:black;background:yellow;}
@@ -88,7 +88,7 @@
     document.getElementById('inputFrame'+tstCurrentPage).innerHTML = '<div id="summary">' + displayText + '</div><div id="charts" style="height:185px;margin:2px 6px 6px;padding:2px;width:380px;"></div>' ;
     //alert(fisrt)
     if (first == "false"){
-    jQuery('#charts').empty().load('/patients/graphs/<%= @patient.id -%>?data=weight&currentWeight=' + currentWeight);
+      jQuery('#charts').empty().load('/patients/graphs/<%= @patient.id -%>?data=weight&currentWeight=' + currentWeight);
     }
   }
         
@@ -174,10 +174,10 @@
     }
     displayText += "</table></td><td><table width='50%'>";
     if (first == "false"){
-	displayText += "<tr><th>Last Vitals</th></td></tr>";
-	displayText += "<tr><td>Weight : <%= @vital["weight"] rescue "" %> Kg </td></tr>"
-	displayText += "<tr><td>Height : <%= @vital["height"] rescue "" %> Cm </td></tr>"
-	displayText += "<tr><td><span class='title'>BMI :</span> <%= @vital["bmi"] rescue "none" %> </td></tr>"
+      displayText += "<tr><th>Last Vitals</th></td></tr>";
+      displayText += "<tr><td>Weight : <%= @vital["weight"] rescue "" %> Kg </td></tr>"
+      displayText += "<tr><td>Height : <%= @vital["height"] rescue "" %> Cm </td></tr>"
+      displayText += "<tr><td><span class='title'>BMI :</span> <%= @vital["bmi"] rescue "none" %> </td></tr>"
     }
     
     displayText += "</table></td></tr></table></div>";
@@ -201,36 +201,36 @@
     }
 
     if (pos == -1){
-	if (clicked == 1){
+      if (clicked == 1){
         $("touchscreenInput" + tstCurrentPage).value = "";
         clicked = 0;
       }
       if (dbp == 1){
         $("diastolic_blood_pressure").value = $("touchscreenInput" + tstCurrentPage).value
-         bp = ($("systolic_blood_pressure").value.trim().length > 0 ? $("systolic_blood_pressure").value.trim() : "?") +
-        "/" + ($("touchscreenInput" + tstCurrentPage).value.trim().length > 0 ? $("touchscreenInput" +
-        tstCurrentPage).value.trim() : "?");
+        bp = ($("systolic_blood_pressure").value.trim().length > 0 ? $("systolic_blood_pressure").value.trim() : "?") +
+          "/" + ($("touchscreenInput" + tstCurrentPage).value.trim().length > 0 ? $("touchscreenInput" +
+          tstCurrentPage).value.trim() : "?");
 
-      if(parseInt(__$("touchscreenInput" + tstCurrentPage).value) > 90 && alreadyNoted == false){
+        if(parseInt(__$("touchscreenInput" + tstCurrentPage).value) > 90 && alreadyNoted == false){
       
-        if ($("systolic_blood_pressure").value.trim().length > 0 && $("diastolic_blood_pressure").value.trim().length){
-        	showMessage('Client is at risk of pre-eclampsia. Please refer her for Urine Protein test.',false,false);
+          if ($("systolic_blood_pressure").value.trim().length > 0 && $("diastolic_blood_pressure").value.trim().length){
+            showMessage('Client is at risk of pre-eclampsia. Please refer her for Urine Protein test.',false,false);
+          }
+        
+          alreadyNoted = true;
+        
+        } else if(parseInt(__$("touchscreenInput" + tstCurrentPage).value) <= 90){
+          alreadyNoted = false;
         }
-        
-        alreadyNoted = true;
-        
-      } else if(parseInt(__$("touchscreenInput" + tstCurrentPage).value) <= 90){
-        alreadyNoted = false;
-      }
-      $("bp").innerHTML = "Blood Pressure: <i style='font-size: 1.2em; float: right;'>" + bp + "</i>";
+        $("bp").innerHTML = "Blood Pressure: <i style='font-size: 1.2em; float: right;'>" + bp + "</i>";
 
       }else{
         $("systolic_blood_pressure").value = $("touchscreenInput" + tstCurrentPage).value
-           alreadyNoted = false;
-      bp = ($("touchscreenInput" + tstCurrentPage).value.trim().length > 0 ? $("touchscreenInput" +
-        tstCurrentPage).value.trim() : "?") +
-        "/" + ($("diastolic_blood_pressure").value.trim().length > 0 ? $("diastolic_blood_pressure").value.trim() : "?");
-       $("bp").innerHTML = "Blood Pressure: <i style='font-size: 1.2em; float: right;'>" + bp + "</i>";
+        alreadyNoted = false;
+        bp = ($("touchscreenInput" + tstCurrentPage).value.trim().length > 0 ? $("touchscreenInput" +
+          tstCurrentPage).value.trim() : "?") +
+          "/" + ($("diastolic_blood_pressure").value.trim().length > 0 ? $("diastolic_blood_pressure").value.trim() : "?");
+        $("bp").innerHTML = "Blood Pressure: <i style='font-size: 1.2em; float: right;'>" + bp + "</i>";
     
       }
       
@@ -240,7 +240,7 @@
       bp = ($("touchscreenInput" + tstCurrentPage).value.trim().length > 0 ? $("touchscreenInput" +
         tstCurrentPage).value.trim() : "?") +
         "/" + ($("diastolic_blood_pressure").value.trim().length > 0 ? $("diastolic_blood_pressure").value.trim() : "?");
-       $("bp").innerHTML = "Blood Pressure: <i style='font-size: 1.2em; float: right;'>" + bp + "</i>";
+      $("bp").innerHTML = "Blood Pressure: <i style='font-size: 1.2em; float: right;'>" + bp + "</i>";
     } else if(pos == 2){
       bp = ($("systolic_blood_pressure").value.trim().length > 0 ? $("systolic_blood_pressure").value.trim() : "?") +
         "/" + ($("touchscreenInput" + tstCurrentPage).value.trim().length > 0 ? $("touchscreenInput" +
@@ -248,8 +248,8 @@
       
       if(parseInt(__$("touchscreenInput" + tstCurrentPage).value) > 90 && alreadyNoted == false){ 
       
-       if ($("systolic_blood_pressure").value.trim().length > 0 && $("diastolic_blood_pressure").value.trim().length > 0){
-        	showMessage('Client is at risk of pre-eclampsia. Please refer her for Urine Protein test.',false,false); 
+        if ($("systolic_blood_pressure").value.trim().length > 0 && $("diastolic_blood_pressure").value.trim().length > 0){
+          showMessage('Client is at risk of pre-eclampsia. Please refer her for Urine Protein test.',false,false);
         }
         
         alreadyNoted = true;
@@ -322,80 +322,102 @@
 
 
   function checkText(pos){
-   if (pos == 1){
+    if (pos == 1){
 
-    if(!$('status')){
-      $("touchscreenInput" + tstCurrentPage).value = ""
-      var div = document.createElement("div");
-      div.id = "status";
-      div.className = "statusLabel";
+      if(!$('status')){
+        $("touchscreenInput" + tstCurrentPage).value = ""
+        var div = document.createElement("div");
+        div.id = "status";
+        div.className = "statusLabel";
 
-      $("inputFrame" + tstCurrentPage).appendChild(div);
-    }
-    value = $("touchscreenInput" + tstCurrentPage).value
-    if (value.length > 0){
-      $("status").style.display = "inline"
-      if (value == "Unknown"){
-        $("status").innerHTML = "Measured Weight = " + value
-      }else{
-        $("status").innerHTML = "Measured Weight = " + value + " Kg"
+        $("inputFrame" + tstCurrentPage).appendChild(div);
       }
+      value = $("touchscreenInput" + tstCurrentPage).value
+      if (value.length > 0){
+        $("status").style.display = "inline"
+        if (value == "Unknown"){
+          $("status").innerHTML = "Measured Weight = " + value
+        }else{
+          $("status").innerHTML = "Measured Weight = " + value + " Kg"
+        }
       
-    }
+      }
     
-    else{
-       $("status").innerHTML = ""
-       $("status").style.display = "none"
-    }
-    if  ((value.indexOf(".") > 1) || (value == "Unknown")){
-       $("nextButton").style.display = "inline"
-       if (value.split('.')[1] != undefined){
-		if (value.split('.')[1].length == 1){
-			return
-       }
-     }
-    }
-    else{
-       $("nextButton").style.display = "none"
+      else{
+        $("status").innerHTML = ""
+        $("status").style.display = "none"
+      }
+      if  ((value.indexOf(".") > 1) || (value == "Unknown")){
+        $("nextButton").style.display = "inline"
+        if (value.split('.')[1] != undefined){
+          if (value.split('.')[1].length == 1){
+            return
+          }
+        }
+      }
+      else{
+        $("nextButton").style.display = "none"
         if (value.length < 1){
-         $("status").innerHTML = ""
-         $("status").style.display = "none"
-       }
-    }
+          $("status").innerHTML = ""
+          $("status").style.display = "none"
+        }
+      }
     }
     setTimeout('checkText(' + pos + ')', 500);
   }
   function addKeys(){
-   keyboard = document.getElementById('keyboard')
-   keyboard.innerHTML+= getButtonString('dia','Diastolic')
-   keyboard.innerHTML+= getButtonString('sys','Systolic')
-   dia  = document.getElementById('dia')
-   sys  = document.getElementById('sys')
+
+    __$("nextButton").onmousedown = function(){
+
+      if(__$("systolic_blood_pressure").value == ""){
+        showMessage("Enter systolic blood pressure!");
+      }else if(__$("diastolic_blood_pressure").value == ""){
+        showMessage("Enter diastolic blood pressure!");
+      }else{
+        gotoNextPage();
+      }
+    }
+    keyboard = document.getElementById('keyboard')
+    keyboard.innerHTML+= getButtonString('dia','Switch to diastolic')
+    keyboard.innerHTML+= getButtonString('sys','Switch to systolic')
+    dia  = document.getElementById('dia')
+    sys  = document.getElementById('sys')
    
-   dia.setAttribute('onmousedown', 'changeSelected("dia")')
-   dia.setAttribute('class', 'green')
-   sys.setAttribute('onmousedown', 'changeSelected("sys")')
-   sys.setAttribute('class', 'green')
-  } 
+    dia.setAttribute('onmousedown', 'changeSelected("dia")')
+    dia.setAttribute('class', 'green')
+    sys.setAttribute('onmousedown', 'changeSelected("sys")')
+    sys.setAttribute('class', 'gray')
+  }
   
   function changeSelected(selected){
+    
     bp = document.getElementById('blood_pressure');
     clicked = 1;
-   // alert(selected)
-    if (selected == "dia"){
-      dbp = 1;
-      sbp = 0;
+    if (__$(selected).className == "gray"){
+
+      var text = selected == "sys" ? "systolic" : "diastolic"
+      showMessage("Already on " + text + " blood pressure", false, false)
     }else{
-      sbp = 1;
-      dbp = 0;
+      if (selected == "dia"){
+
+        dbp = 1;
+        sbp = 0;
+        __$("dia").className = "gray";
+        __$("sys").className = "green";
+      }else{
+        sbp = 1;
+        dbp = 0;
+        __$("dia").className = "green";
+        __$("sys").className = "gray";
+      }
     }
   }
  
- function clearFields(){
- 	__$('systolic_blood_pressure').value = "";
- 	__$('diastolic_blood_pressure').value = "";
- 	__$('bp').innerHTML = "";
- }
+  function clearFields(){
+    __$('systolic_blood_pressure').value = "";
+    __$('diastolic_blood_pressure').value = "";
+    __$('bp').innerHTML = "";
+  }
 </script>
 
 <form action="/encounters/create/vitals">
@@ -463,7 +485,7 @@ end
   <% if current_user.activities.include?("Weight and Height") %>
     <% if params[:weight] %>
 
-      
+
       <%= text_field_tag "observations[][value_coded_or_text]", nil,
         {:id => "weight",
         :field_type => 'number',
@@ -496,7 +518,7 @@ end
 
       <% else %>
 
-       
+
         <%= text_field_tag "observations[][value_coded_or_text]", nil,
           {:id => "height",
           :field_type => 'number',
@@ -525,20 +547,20 @@ end
   <% if current_user.activities.include?("BP") %>
     <% if params[:bp] %>
 
-          <%#= text_field_tag :showBp, nil,
-        {
-        :tt_onLoad => "clearFields();__$('keyboard').style.display = 'none'",
-        :optional => "true",
-        :tt_pageStyleClass => "NoControls NoKeyboard",
-        :condition => "",
-        :helpText => "Blood Pressure"
-      } %>
+    <%#= text_field_tag :showBp, nil,
+    {
+    :tt_onLoad => "clearFields();__$('keyboard').style.display = 'none'",
+    :optional => "true",
+    :tt_pageStyleClass => "NoControls NoKeyboard",
+    :condition => "",
+    :helpText => "Blood Pressure"
+    } %>
 
 
 
       <% options = default.merge({
           :id => "blood_pressure",
-          :helptext => "Blood Pressure <span class='helper'> Vitals</span>",
+          :helptext => "Blood Pressure (systolic)<span class='helper'> Vitals</span>",
           :field_type => "number",
           :tt_pageStyleClass => "NumbersWithUnknown",
           :tt_onLoad => "timedEvent1 = window.setInterval('bpAlerts(1)', 110); timedEvent = setTimeout('calculateBP(-1)', 100);addKeys();",
@@ -590,7 +612,7 @@ end
 
     <% end %>
   <% end %>
-  
+
   <%= text_field_tag :showSummary, nil,
     {
     :tt_onLoad => "growthIndicators(); __$('keyboard').style.display = 'none'",
