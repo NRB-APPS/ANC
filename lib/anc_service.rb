@@ -182,31 +182,60 @@ module ANCService
         "METHOD OF DELIVERY", "CONDITION AT BIRTH", "BIRTH WEIGHT", "ALIVE",
         "AGE AT DEATH", "UNITS OF AGE OF CHILD", "PROCEDURE DONE"]
       current_level = 0
-    
-      Encounter.find(:all, :conditions => ["encounter_type = ? AND patient_id = ?", 
-          EncounterType.find_by_name("OBSTETRIC HISTORY").id, @patient.id]).each{|e| 
-        e.observations.each{|obs|
-          concept = obs.concept.concept_names.map(& :name).last rescue nil
-          if(!concept.nil?)
-            if search_set.include?(concept.upcase)
-              if obs.concept_id == (ConceptName.find_by_name("YEAR OF BIRTH").concept_id rescue nil)
-                current_level += 1
+
+      @new_encounter = @patient.encounters.find(:last, :joins => [:observations], :conditions => ["encounter_type = ? AND comments regexp 'p'",
+          EncounterType.find_by_name("OBSTETRIC HISTORY")])
+
+      if @new_encounter.blank?
+        Encounter.find(:all, :order => ["encounter_datetime ASC"], :conditions => ["encounter_type = ? AND patient_id = ?",
+            EncounterType.find_by_name("OBSTETRIC HISTORY").id, @patient.id]).each{|e|
+          e.observations.each{|obs|
+            concept = obs.concept.concept_names.map(& :name).last rescue nil
+            if(!concept.nil?)
+              if search_set.include?(concept.upcase)
+                if obs.concept_id == (ConceptName.find_by_name("YEAR OF BIRTH").concept_id rescue nil)
+                  current_level += 1
             
-                @obstetrics[current_level] = {}
-              end
-          
-              if @obstetrics[current_level]
-                @obstetrics[current_level][concept.upcase] = obs.answer_string rescue nil
-              
-                if obs.concept_id == (ConceptName.find_by_name("YEAR OF BIRTH").concept_id rescue nil) && obs.answer_string.to_i == 0
-                  @obstetrics[current_level]["YEAR OF BIRTH"] = "Unknown"
+                  @obstetrics[current_level] = {}
                 end
-              end
+          
+                if @obstetrics[current_level]
+                  @obstetrics[current_level][concept.upcase] = obs.answer_string rescue nil
+              
+                  if obs.concept_id == (ConceptName.find_by_name("YEAR OF BIRTH").concept_id rescue nil) && obs.answer_string.to_i == 0
+                    @obstetrics[current_level]["YEAR OF BIRTH"] = "Unknown"
+                  end
+                end
                         
+              end
             end
+          }
+        }
+      else
+        
+        @data = {}
+        @new_encounter.observations.each do |obs|
+         
+         
+          next if !(obs.comments || "").match(/p/i)
+          p = obs.comments.match(/p\d+/i)[0].match(/\d+/)[0]
+          n = obs.comments.match(/b\d+/i)[0].match(/\d+/)[0]
+          @data[p] = {} if @data[p].blank?
+          @data[p][n] = {} if @data[p][n].blank?
+          concept = obs.concept.concept_names.map(& :name).last rescue nil
+          @data[p][n][concept.upcase.strip] = obs.answer_string
+        end
+
+        current_level = 1
+        @data.keys.sort.each do |prg|
+
+          @data[prg].keys.sort.each do |key|
+            
+            @obstetrics[current_level] = @data[prg][key]
+            current_level += 1
           end
-        }      
-      }
+        end
+      end
 
       #grab units of age of child
       unit = Observation.find(:last,
