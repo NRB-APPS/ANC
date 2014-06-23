@@ -91,11 +91,11 @@ module Bart2Connection::Openmrs
   end 
   
   def add_location_obs
-    obs = Observation.new()
+    obs = Bart2Connection::Observation.new()
     obs.person_id = self.patient_id
     obs.encounter_id = self.id
-    obs.concept_id = ConceptName.find_by_name("WORKSTATION LOCATION").concept_id
-    obs.value_text = Location.current_location.name
+    obs.concept_id = Bart2Connection::ConceptName.find_by_name("WORKSTATION LOCATION").concept_id
+    obs.value_text = Bart2Connection::Location.current_location.name
     obs.obs_datetime = self.encounter_datetime
     obs.save
   end

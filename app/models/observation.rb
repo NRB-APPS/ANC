@@ -40,8 +40,8 @@ class Observation < ActiveRecord::Base
   
   def concept_name=(concept_name)
     self.concept_id = ConceptName.find_by_name(concept_name).concept_id
-    rescue
-      raise "\"#{concept_name}\" does not exist in the concept_name table"
+  rescue
+    raise "\"#{concept_name}\" does not exist in the concept_name table"
   end
 
   def value_coded_or_text=(value_coded_or_text)
@@ -115,15 +115,15 @@ class Observation < ActiveRecord::Base
     return coded_name unless coded_name.blank?
     answer = Concept.find_by_concept_id(self.value_coded).shortname rescue nil
 	
-	if answer.nil?
-		answer = Concept.find_by_concept_id(self.value_coded).fullname rescue nil
-	end
+    if answer.nil?
+      answer = Concept.find_by_concept_id(self.value_coded).fullname rescue nil
+    end
 
-	if answer.nil?
-		answer = Concept.find_with_voided(self.value_coded).fullname + ' - retired'
-	end
+    if answer.nil?
+      answer = Concept.find_with_voided(self.value_coded).fullname + ' - retired'
+    end
 	
-	return answer
+    return answer
   end
 
   def self.new_accession_number
@@ -165,4 +165,10 @@ class Observation < ActiveRecord::Base
     [formatted_name, self.answer_string(tags)]
   end
 
+  def to_piped_s(tags=[])
+    formatted_name = self.concept_name.typed(tags).name rescue nil
+    formatted_name ||= self.concept.concept_names.typed(tags).first.name || self.concept.fullname rescue nil
+    formatted_name ||= self.concept.concept_names.first.name rescue 'Unknown concept name'
+    "#{formatted_name}|  #{self.answer_string(tags)}"
+  end
 end

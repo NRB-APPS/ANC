@@ -338,10 +338,17 @@ class PatientsController < ApplicationController
     render :template => "graphs/weight_chart", :layout => false
   end
   
-  def void 
-    @encounter = Encounter.find(params[:encounter_id])
-    @patient = @encounter.patient
-    @encounter.void
+  def void
+  
+    if params[:cat] && params[:cat] == "bart2_encounter"
+      @encounter = Bart2Connection::Encounter.find(params[:encounter_id])     
+      @encounter.void
+      @patient = Patient.find(params[:patient_id])     
+    else
+      @encounter = Encounter.find(params[:encounter_id])
+      @patient = @encounter.patient
+      @encounter.void
+    end
     # redirect_to "/patients/tab_visit_summary/?patient_id=#{@patient.id}" and return
     redirect_to "/patients/show/#{@patient.id}" and return
   end
@@ -509,8 +516,27 @@ class PatientsController < ApplicationController
 
     @external_encounters = Bart2Connection::PatientIdentifier.search_by_identifier(@anc_patient.national_id).patient.encounters rescue [] if @anc_patient.hiv_status.downcase == "positive" 
 
-    @encounters = @encounters + @external_encounters
+    @encounter_data = @encounters.collect{|e|
+      [
+        e.encounter_id,
+        e.type.name.titleize.gsub(/Hiv/i, "HIV").gsub(/Anc\s/i, "ANC ").gsub(/Ttv\s/i, 
+          "TTV ").gsub(/Art\s/i, "ART ").sub(/Observations/, "ANC Examinations"),
+        e.encounter_datetime.strftime("%H:%M"),
+        e.creator
+      ]
+    }
 
+    @bart2_encounter_data = @external_encounters.collect{|e|
+      [
+        e.encounter_id,
+        e.type.name.titleize.gsub(/Hiv/i, "HIV").gsub(/Anc\s/i, "ANC ").gsub(/Ttv\s/i, 
+          "TTV ").gsub(/Art\s/i, "ART ").sub(/Observations/, "ANC Examinations"),
+        e.encounter_datetime.strftime("%H:%M"),
+        e.creator
+      ]
+    }
+    @encounters = @encounters + @external_encounters
+   
     @encounter_names = @encounters.map{|encounter| encounter.name}.uniq rescue []
     
     role_encounter = {
@@ -536,9 +562,7 @@ class PatientsController < ApplicationController
       "Manage ART Prescriptions" => "TREATMENT", 
       "ART Drug Dispensations" => "DISPENSING"
     }
-    
-    @roles = current_user.user_roles.collect{|r|r.role.downcase} rescue []
-    
+
     activities = current_user.activities rescue []
     
     active_names = []
@@ -548,10 +572,28 @@ class PatientsController < ApplicationController
     }
 
     @encounter_names = active_names.uniq
-
-    @encounter_names = @encounter_names
-
     render :layout => false
+  end
+
+  def list_observations
+    obs = []
+    if params[:bart2].blank?
+      encounter = Encounter.find(params[:encounter_id])
+    else
+      encounter = Bart2Connection::Encounter.find(params[:encounter_id])
+    end
+   
+    if encounter.type.name.upcase == "TREATMENT"
+      obs = encounter.orders.collect{|o|
+        ["drg", o.to_s]
+      }
+    else
+      obs = encounter.observations.collect{|o|
+        [o.id, o.to_piped_s] rescue nil
+      }.compact
+    end
+
+    render :text => obs.to_json
   end
 
   def tab_obstetric_history
@@ -1347,24 +1389,7 @@ class PatientsController < ApplicationController
   
   def social_history
 
-    @religions = ["Other",
-      "Assemblies of God",
-      "Jehovahs Witness",
-      "Roman Catholic",
-      "Church of Christ",
-      "Deeper Life",
-      "Bible Believer",
-      "Anglican Church",
-      "Calvary Family",
-      "Evangelical",
-      "Living Waters",
-      "Moslem",
-      "Presbyterian (C.C.A.P.)",
-      "Seventh Day Adventist", 
-      "Baptist",
-      "Hindu",
-      "Atheist",
-      "Moslem"]
+    @religions = ["", "None", "Christian", "Jehova witness", "Muslim", "Hindu", "African traditional", "Other"];
     
     # @religions = Observation.find_most_common(ConceptName.find_by_name("Religion").concept_id, "", 15)
  
