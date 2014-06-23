@@ -75,7 +75,7 @@ module Bart2Connection::Openmrs
   end
   
   def void(reason = "Voided through #{BART_VERSION}",date_voided = Time.now,
-      voided_by = (User.current.user_id unless User.current.nil?))
+      voided_by = (Bart2Connection::User.current.user_id unless Bart2Connection::User.current.nil?))
     unless voided?
       self.date_voided = date_voided
       self.voided = 1
@@ -98,6 +98,6 @@ module Bart2Connection::Openmrs
     obs.value_text = Bart2Connection::Location.current_location.name
     obs.obs_datetime = self.encounter_datetime
     obs.save
-  end
+  end rescue nil
    
 end
