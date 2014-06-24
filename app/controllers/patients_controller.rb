@@ -583,10 +583,11 @@ class PatientsController < ApplicationController
       encounter = Bart2Connection::Encounter.find(params[:encounter_id])
     end
    
-    if encounter.type.name.upcase == "TREATMENT"
+    if encounter.type.name.upcase == "TREATMENT" || encounter.type.name.upcase == "DISPENSING"
       obs = encounter.orders.collect{|o|
         ["drg", o.to_s]
       }
+      obs = [["drg", "TTV : Not dispensed"]] if obs.blank? && encounter.type.name.upcase == "DISPENSING"
     else
       obs = encounter.observations.collect{|o|
         [o.id, o.to_piped_s] rescue nil

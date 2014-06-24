@@ -164,8 +164,7 @@
                                  onclick="__$('obs').innerHTML = '';checkRadio('encounter<%= @encounter_data[e][0] %>', controlsSet1);
                                      ajaxCustomRequest(__$('obs'), 'list_observations?encounter_id=<%= @encounter_data[e][0] %>', 'encounter')">
 
-                              <img id="encounter<%= @encounter_data[e][0] %>"
-                                   src="/touchscreentoolkit/lib/images/unchecked.png" height="30"
+                              <img src="/touchscreentoolkit/lib/images/unchecked.png" height="30"
                                    alt="O" />
 
                             </div>
@@ -183,7 +182,7 @@
 
                             <% if (current_user.user_id == @encounter_data[e][3]) %>
                               <div onclick="confirmDeletion('Do you really want to delete this encounter?', '<%= @encounter_data[e][0]%>', 'encounter')" class="void" style="display: table-cell; float:right; padding: 11px; background: white; cursor: pointer;">
-                                <img height="28" src="/images/cancel_flat_small_red.png" alt="X"/>
+                                <img height="30" src="/images/cancel_flat_small_red.png" alt="X"/>
                               </div>
                             <% end %>
                           </div>
@@ -200,12 +199,11 @@
                             <div class="<%=  "e#{e}"%>" style="display: table-cell; vertical-align: middle; cursor: pointer;
                             <%= (e == 0 ? " border-top: 1px dotted #6281a7; " : "") %>
                                  width: 40px; text-align: center; border-bottom: 1px dotted #6281a7;"
-                                 onclick="__$('obs').innerHTML = '';checkRadio('bart2_encounter<%= @bart2_encounter_data[e][0] %>', controlsSet1);
+                                 onclick="checkRadio('bart2_encounter<%= @bart2_encounter_data[e][0] %>', controlsSet1);
                                      ajaxCustomRequest(__$('obs'), 'list_observations?bart2=true&encounter_id=<%= @bart2_encounter_data[e][0] %>', 'bart2_encounter')"
                                  >
 
-                              <img id="bart2_encounter<%= @bart2_encounter_data[e][0] %>"
-                                   src="/touchscreentoolkit/lib/images/unchecked.png" height="30"
+                              <img src="/touchscreentoolkit/lib/images/unchecked.png" height="30"
                                    alt="O" />
 
                             </div>
@@ -223,7 +221,7 @@
 
                             <% if (current_user.user_id == @bart2_encounter_data[e][3]) %>
                               <div onclick="confirmDeletion('Do you really want to delete this encounter?', '<%=  @bart2_encounter_data[e][0]%>', 'bart2_encounter')" class="void" style="display: table-cell; float:right; padding: 10px; background: white; cursor: pointer;">
-                                <img height="28" src="/images/cancel_flat_small_red.png" alt="X"/>
+                                <img height="30" src="/images/cancel_flat_small_red.png" alt="X"/>
                               </div>
                             <% end %>
                           </div>
@@ -270,14 +268,15 @@
       }
 
       function checkRadio(id, controls){
+
         for(var i = 0; i < controls.length; i++){
           if(__$(controls[i])){
-            __$(controls[i]).src = "/touchscreentoolkit/lib/images/unchecked.png";
+            __$(controls[i]).getElementsByTagName("img")[0].src = "/touchscreentoolkit/lib/images/unchecked.png";
             __$("parent_" + controls[i].trim()).style.backgroundColor = "white";
           }
         }
 
-        __$(id).src = "/touchscreentoolkit/lib/images/checked.png";
+        __$(id).getElementsByTagName("img")[0].src = "/touchscreentoolkit/lib/images/checked.png";
         __$("parent_" + id).style.backgroundColor = "lightblue";
       }
 
