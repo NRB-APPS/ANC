@@ -1152,17 +1152,22 @@ function loadInputWindow(){
                                             var displaybut = baby_rows[m].childNodes[1].childNodes[0];
                                       
                                             if (display.innerHTML.match(/still birth/i)){
-                                                if(!but.className.match(/gray/)){
+                                                if(but.className.match(/gray/)){
                                                    
-                                                    but.className += " button_gray";
-                                                    displaybut.innerHTML = "?";
-                                                    but.removeAttribute("value");
-                                                
+                                                   // but.className += " button_gray";
+                                                   // displaybut.innerHTML = "?";
+                                                   // but.removeAttribute("value");
+                                                    
                                                     but.onclick = function(){
-
-                                                        showMessage("Baby was born dead")
+                                                        if(this.parentNode.parentNode.innerHTML.match(/birth weigh/i)){
+                                                             this.className = this.className.replace(/button\_gray/, "").trim();
+                                                             enterData(this.parentNode.parentNode)
+                                                        }
+                                                        else{
+                                                             showMessage("Baby was born dead")
+                                                         }
                                                     }
-                                                    $[p][n][but.parentNode.parentNode.childNodes[0].innerHTML.trim()] = but.innerHTML
+                                                   // $[p][n][but.parentNode.parentNode.childNodes[0].innerHTML.trim()] = but.innerHTML
                                                 }
                                             }else if (display.innerHTML.match(/Alive/i)){
                                                 if(but.className.match(/gray/)){
