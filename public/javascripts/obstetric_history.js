@@ -769,6 +769,7 @@ function loadInputWindow(){
         }
 
         function showNumber(id, global_control, min, max){
+            jQ("#nextButton").css("display", "none");
             cn = 9;
             global_control = ""
             var row1 = ["1","2","3"];
@@ -787,7 +788,7 @@ function loadInputWindow(){
             cl.className = "button_red cancel";
             cl.innerHTML = "Cancel";
             cl.onclick = function(){
-
+                 jQ("#nextButton").css("display", "inline");
                 jQ("#shield, #popup").css("display", "none");
             }
             jQ(cl).css({
@@ -1003,6 +1004,7 @@ function loadInputWindow(){
                                 showMessage("Failed to update input!");
                             }
                             jQ("#shield, #popup").css("display", "none");
+                             jQ("#nextButton").css("display", "inline");
                         }
                        
                     }else if(!this.innerHTML.match(/^$/)){
@@ -1048,7 +1050,7 @@ function loadInputWindow(){
         }
 
         function showList(id, data){
-
+            jQ("#nextButton").css("display", "none");
             if (data.length > 1){
 
                 var ul = document.createElement("ul");
@@ -1179,13 +1181,14 @@ function loadInputWindow(){
                             showMessage("Failed to update input");
                         }
                         jQ("#shield, #popup").css("display", "none");
+                        jQ("#nextButton").css("display", "inline");
                     }else{
                         showMessage("Please select a value");
                     }
                 }
 
                 __$("cancel").onclick = function(){
-
+                    jQ("#nextButton").css("display", "inline");
                     jQ("#shield, #popup").css("display", "none");
                 }
 
