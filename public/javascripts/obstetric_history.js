@@ -342,10 +342,12 @@ function loadInputWindow(){
 
             jQ("#touchscreenInput" + tstCurrentPage + ", #keyboard").css("display", "none");
 
-            __$("inputFrame" + tstCurrentPage).style.height = 0.741 * screen.height + "px";
+           // __$("inputFrame" + tstCurrentPage).style.height = 0.741 * screen.height + "px";
+           __$("inputFrame" + tstCurrentPage).style.height = "80%"
             __$("inputFrame" + tstCurrentPage).style.marginTop = 0.05 * screen.height + "px";
             __$("inputFrame" + tstCurrentPage).style.background = "white";
-            __$("inputFrame" + tstCurrentPage).style.width = 0.93 * screen.width + "px";
+           // __$("inputFrame" + tstCurrentPage).style.width = 0.93 * screen.width + "px";
+           __$("inputFrame" + tstCurrentPage).style.width = "98%"
 
             var headerHolder = document.createElement("div");
             headerHolder.id = "hheader"
@@ -408,9 +410,9 @@ function loadInputWindow(){
             table.style.display = "table";
 
             container.appendChild(pTable);
-            jQ("#dcell").css("height", (0.64 * screen.height + "px"));
+            jQ("#dcell").css("height", "464px");
             jQ("#details").css("margin-top", "20px");
-            jQ("#pcell").css("height", (0.64 * screen.height + "px"));
+            jQ("#pcell").css("height",  "464px");
             c = 0;
 
             for (var pos in $){
