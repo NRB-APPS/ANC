@@ -342,12 +342,12 @@ function loadInputWindow(){
 
             jQ("#touchscreenInput" + tstCurrentPage + ", #keyboard").css("display", "none");
 
-           // __$("inputFrame" + tstCurrentPage).style.height = 0.741 * screen.height + "px";
-           __$("inputFrame" + tstCurrentPage).style.height = "80%"
+            // __$("inputFrame" + tstCurrentPage).style.height = 0.741 * screen.height + "px";
+            __$("inputFrame" + tstCurrentPage).style.height = "80%"
             __$("inputFrame" + tstCurrentPage).style.marginTop = 0.05 * screen.height + "px";
             __$("inputFrame" + tstCurrentPage).style.background = "white";
-           // __$("inputFrame" + tstCurrentPage).style.width = 0.93 * screen.width + "px";
-           __$("inputFrame" + tstCurrentPage).style.width = "98%"
+            // __$("inputFrame" + tstCurrentPage).style.width = 0.93 * screen.width + "px";
+            __$("inputFrame" + tstCurrentPage).style.width = "98%"
 
             var headerHolder = document.createElement("div");
             headerHolder.id = "hheader"
@@ -769,7 +769,7 @@ function loadInputWindow(){
         }
 
         function showNumber(id, global_control, min, max){
-            jQ("#nextButton").css("display", "none");
+            jQ('#backButton, #nextButton').attr("disabled", true);
             cn = 9;
             global_control = ""
             var row1 = ["1","2","3"];
@@ -788,7 +788,7 @@ function loadInputWindow(){
             cl.className = "button_red cancel";
             cl.innerHTML = "Cancel";
             cl.onclick = function(){
-                 jQ("#nextButton").css("display", "inline");
+                jQ('#backButton, #nextButton').attr("disabled", false);
                 jQ("#shield, #popup").css("display", "none");
             }
             jQ(cl).css({
@@ -1004,7 +1004,7 @@ function loadInputWindow(){
                                 showMessage("Failed to update input!");
                             }
                             jQ("#shield, #popup").css("display", "none");
-                             jQ("#nextButton").css("display", "inline");
+                            jQ('#backButton, #nextButton').attr("disabled", false);
                         }
                        
                     }else if(!this.innerHTML.match(/^$/)){
@@ -1050,7 +1050,7 @@ function loadInputWindow(){
         }
 
         function showList(id, data){
-            jQ("#nextButton").css("display", "none");
+            jQ('#backButton, #nextButton').attr("disabled", true);
             if (data.length > 1){
 
                 var ul = document.createElement("ul");
@@ -1154,20 +1154,20 @@ function loadInputWindow(){
                                             if (display.innerHTML.match(/still birth/i)){
                                                 if(but.className.match(/gray/)){
                                                    
-                                                   // but.className += " button_gray";
-                                                   // displaybut.innerHTML = "?";
-                                                   // but.removeAttribute("value");
+                                                    // but.className += " button_gray";
+                                                    // displaybut.innerHTML = "?";
+                                                    // but.removeAttribute("value");
                                                     
                                                     but.onclick = function(){
                                                         if(this.parentNode.parentNode.innerHTML.match(/birth weigh/i)){
-                                                             this.className = this.className.replace(/button\_gray/, "").trim();
-                                                             enterData(this.parentNode.parentNode)
+                                                            this.className = this.className.replace(/button\_gray/, "").trim();
+                                                            enterData(this.parentNode.parentNode)
                                                         }
                                                         else{
-                                                             showMessage("Baby was born dead")
-                                                         }
+                                                            showMessage("Baby was born dead")
+                                                        }
                                                     }
-                                                   // $[p][n][but.parentNode.parentNode.childNodes[0].innerHTML.trim()] = but.innerHTML
+                                                // $[p][n][but.parentNode.parentNode.childNodes[0].innerHTML.trim()] = but.innerHTML
                                                 }
                                             }else if (display.innerHTML.match(/Alive/i)){
                                                 if(but.className.match(/gray/)){
@@ -1186,14 +1186,14 @@ function loadInputWindow(){
                             showMessage("Failed to update input");
                         }
                         jQ("#shield, #popup").css("display", "none");
-                        jQ("#nextButton").css("display", "inline");
+                          jQ('#backButton, #nextButton').attr("disabled", false);
                     }else{
                         showMessage("Please select a value");
                     }
                 }
 
                 __$("cancel").onclick = function(){
-                    jQ("#nextButton").css("display", "inline");
+                      jQ('#backButton, #nextButton').attr("disabled", false);
                     jQ("#shield, #popup").css("display", "none");
                 }
 
