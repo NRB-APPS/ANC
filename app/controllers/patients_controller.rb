@@ -1281,11 +1281,11 @@ class PatientsController < ApplicationController
        
     @alcohol = Observation.find(:last, :conditions => ["person_id = ? AND encounter_id IN (?) AND concept_id = ?",
         @patient.id, Encounter.find(:all, :conditions => ["patient_id = ?", @patient.id]).collect{|e| e.encounter_id},
-        ConceptName.find_by_name('Patient currently consumes alcohol').concept_id]).answer_string rescue nil
+        ConceptName.find_by_name('Patient currently consumes alcohol').concept_id]).answer_string.squish  rescue nil
 
     @smokes = Observation.find(:last, :conditions => ["person_id = ? AND encounter_id IN (?) AND concept_id = ?",
         @patient.id, Encounter.find(:all, :conditions => ["patient_id = ?", @patient.id]).collect{|e| e.encounter_id},
-        ConceptName.find_by_name('Patient currently smokes').concept_id]).answer_string rescue nil
+        ConceptName.find_by_name('Patient currently smokes').concept_id]).answer_string.squish rescue nil
 
     @nutrition = Observation.find(:last, :conditions => ["person_id = ? AND encounter_id IN (?) AND concept_id = ?",
         @patient.id, Encounter.find(:all, :conditions => ["patient_id = ?", @patient.id]).collect{|e| e.encounter_id},
