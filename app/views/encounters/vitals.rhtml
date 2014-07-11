@@ -19,9 +19,14 @@
     margin-right:10px;
   }
 
-  #dia, #sys {
-    margin-left: 85px;
-    float: right;
+  #sys {
+    position: absolute;
+    margin-left: 36.5%;
+  }
+
+  #dia {
+    position: absolute;
+    margin-left: 53%;
   }
 
   .lowWeightForHeight{color:black;background:red;}
@@ -188,9 +193,27 @@
   var timedEvent;
   var alreadyNoted = false;
 
-  function calculateBP(pos){
-    var bp;
+  function calculateBP(){
 
+    if (__$("sys").className == "gray"){
+      __$("systolic_blood_pressure").value = __$("touchscreenInput" + tstCurrentPage).value;
+    }
+
+    if (__$("dia").className == "gray"){
+      __$("diastolic_blood_pressure").value = __$("touchscreenInput" + tstCurrentPage).value;
+    }
+    
+    var sb = $("systolic_blood_pressure").value;
+    var db = $("diastolic_blood_pressure").value;
+
+    var complication = (sb > 180) || (db > 110) ?
+      "Emergency Care Needed" : ((sb >= 160 && sb <= 180) || (db >= 100 && db <= 110) ?
+      "Hypertension Stage 2" : ((sb >= 140 && sb <= 159) || (db >= 90 && db <= 99)?
+      "Hypertension Stage 1" : ((sb >= 120 && sb <= 139) || (db >= 80 && db <= 89) ?
+      "Prehypertension" : "")));
+ 
+    var txt = "<div style='color:red;width:100%;text-align:center;' id='bpFlag'><i style='float=right;align:center;'>" + complication + "</i></div>";
+      
     if(!$('bp')){
       var div = document.createElement("div");
       div.id = "bp";
@@ -200,66 +223,21 @@
       $("inputFrame" + tstCurrentPage).appendChild(div);
     }
 
-    if (pos == -1){
-      if (clicked == 1){
-        $("touchscreenInput" + tstCurrentPage).value = "";
-        clicked = 0;
-      }
-      if (dbp == 1){
-        $("diastolic_blood_pressure").value = $("touchscreenInput" + tstCurrentPage).value
-        bp = ($("systolic_blood_pressure").value.trim().length > 0 ? $("systolic_blood_pressure").value.trim() : "?") +
-          "/" + ($("touchscreenInput" + tstCurrentPage).value.trim().length > 0 ? $("touchscreenInput" +
-          tstCurrentPage).value.trim() : "?");
-
-        if(parseInt(__$("touchscreenInput" + tstCurrentPage).value) > 90 && alreadyNoted == false){
-      
-          if ($("systolic_blood_pressure").value.trim().length > 0 && $("diastolic_blood_pressure").value.trim().length){
-            showMessage('Client is at risk of pre-eclampsia. Please refer her for Urine Protein test.',false,false);
-          }
-        
-          alreadyNoted = true;
-        
-        } else if(parseInt(__$("touchscreenInput" + tstCurrentPage).value) <= 90){
-          alreadyNoted = false;
-        }
-        $("bp").innerHTML = "Blood Pressure: <i style='font-size: 1.2em; float: right;'>" + bp + "</i>";
-
-      }else{
-        $("systolic_blood_pressure").value = $("touchscreenInput" + tstCurrentPage).value
-        alreadyNoted = false;
-        bp = ($("touchscreenInput" + tstCurrentPage).value.trim().length > 0 ? $("touchscreenInput" +
-          tstCurrentPage).value.trim() : "?") +
-          "/" + ($("diastolic_blood_pressure").value.trim().length > 0 ? $("diastolic_blood_pressure").value.trim() : "?");
-        $("bp").innerHTML = "Blood Pressure: <i style='font-size: 1.2em; float: right;'>" + bp + "</i>";
+    var bp = ((sb > 0 ? sb.trim() : "?") +
+      "/" + (db > 0 ? db.trim() : "?"));
     
-      }
-      
-    }
-    else if(pos == 1){
-      alreadyNoted = false;
-      bp = ($("touchscreenInput" + tstCurrentPage).value.trim().length > 0 ? $("touchscreenInput" +
-        tstCurrentPage).value.trim() : "?") +
-        "/" + ($("diastolic_blood_pressure").value.trim().length > 0 ? $("diastolic_blood_pressure").value.trim() : "?");
-      $("bp").innerHTML = "Blood Pressure: <i style='font-size: 1.2em; float: right;'>" + bp + "</i>";
-    } else if(pos == 2){
-      bp = ($("systolic_blood_pressure").value.trim().length > 0 ? $("systolic_blood_pressure").value.trim() : "?") +
-        "/" + ($("touchscreenInput" + tstCurrentPage).value.trim().length > 0 ? $("touchscreenInput" +
-        tstCurrentPage).value.trim() : "?");
-      
-      if(parseInt(__$("touchscreenInput" + tstCurrentPage).value) > 90 && alreadyNoted == false){ 
-      
-        if ($("systolic_blood_pressure").value.trim().length > 0 && $("diastolic_blood_pressure").value.trim().length > 0){
-          showMessage('Client is at risk of pre-eclampsia. Please refer her for Urine Protein test.',false,false);
-        }
-        
-        alreadyNoted = true;
-      } else if(parseInt(__$("touchscreenInput" + tstCurrentPage).value) <= 90){
-        alreadyNoted = false;
-      }
-      $("bp").innerHTML = "Blood Pressure: <i style='font-size: 1.2em; float: right;'>" + bp + "</i>";
-    }
+    var bp = (sb || "?") + "/" + (db || "?")
+    if (alreadyNoted == false && (sb > 140 || db > 90)){
 
-    timedEvent = setTimeout('calculateBP(' + pos + ')', 500);
+      showMessage('Client is at risk of pre-eclampsia. Please refer her for Urine Protein Test.',false,false);
+      alreadyNoted = true;
+    } else if(sb <= 140 && db <= 90){
+      alreadyNoted = false;
+    }
+      
+    $("bp").innerHTML = "Blood Pressure: <i style='font-size: 1.2em; float: right;'>" + bp + "</i>" + txt;
+       
+    timedEvent = setTimeout('calculateBP()', 100);
   }
 
   function readableMessage(){
@@ -293,33 +271,6 @@
     buildConceptsHash();
     setTimeout(function(){ readableMessage()}, 50);
   }
-
-  function bpAlerts(type){
-    //case of systolic blood pressure type = 1; case dystolic blood pressure type = 2
-    //var val1 = ($("diastolic_blood_pressure") && $("diastolic_blood_pressure").value != undefined )? $("diastolic_blood_pressure").value : -1;
-    //var val2 = ($("systolic_blood_pressure") && $("systolic_blood_pressure").value != undefined )? $("systolic_blood_pressure").value : -1;
-    //var val = (type == 1) ? val1 : val2;
-    var val = $("touchscreenInput" + tstCurrentPage).value
-    var complication = "";
-    
-    if (val > 0){
-      // check for complications
-      var val = parseInt(val);      
-      if (type == 1){
-        complication = (val >= 120 && val <= 139) ? "Prehypertension" : ((val >= 140 && val <= 159 ) ? "Hypertension Stage 1" : ((val >= 160 && val <= 180) ? "Hypertension Stage 2" : ((val > 180)? "Emergency Care Needed" : "")));
-      }else{
-        complication = (val >= 80 && val <= 89) ? "Prehypertension" : ((val >= 90 && val <= 99 ) ? "Hypertension Stage 1" : ((val >= 100 && val <= 110) ? "Hypertension Stage 2" : ((val > 110)? "Emergency Care Needed" : "")));
-      }
-    }
-    
-    if(!$("bpFlag")){
-      try{ $("bp").innerHTML += "<div style='color:red;width:100%;text-align:center;' id='bpFlag'><i style='float=right;align:center;'>" + complication + "</i></div>";}catch(e){};
-    }else{
-      $("bpFlag").innerHTML = "<div style='color:red;width:100%;text-align:center;' id='bpFlag'><i style='float=right;align:center;'>" + complication + "</i></div>";
-    }
-  }
-
-
 
   function checkText(pos){
     if (pos == 1){
@@ -374,14 +325,25 @@
       }else if(__$("diastolic_blood_pressure").value == ""){
         showMessage("Enter diastolic blood pressure!");
       }else{
-        gotoNextPage();
+
+        if (__$("systolic_blood_pressure").value > 300){
+          showMessage("Systolic blood pressure greater than maximum 300");
+        }else if (__$("diastolic_blood_pressure").value > 250){
+          showMessage("Diastolic blood pressure greater than maximum 250");
+        }else{
+          gotoNextPage();
+        }
       }
     }
+       
     keyboard = document.getElementById('keyboard')
     keyboard.innerHTML+= getButtonString('dia','Switch to diastolic')
     keyboard.innerHTML+= getButtonString('sys','Switch to systolic')
     dia  = document.getElementById('dia')
     sys  = document.getElementById('sys')
+
+    dia.style.bottom = (__$("keyboard").offsetHeight - 73)+ "px"
+    sys.style.bottom = (__$("keyboard").offsetHeight - 73)+ "px";
    
     dia.setAttribute('onmousedown', 'changeSelected("dia")')
     dia.setAttribute('class', 'green')
@@ -404,11 +366,17 @@
         sbp = 0;
         __$("dia").className = "gray";
         __$("sys").className = "green";
+        __$('touchscreenInput' + tstCurrentPage).value = "";
+        __$('diastolic_blood_pressure').value = "";
+        __$("helpText" + tstCurrentPage).innerHTML = __$("helpText" + tstCurrentPage).innerHTML.replace(/\(systolic\)/, "(diastolic)");
       }else{
         sbp = 1;
         dbp = 0;
         __$("dia").className = "green";
         __$("sys").className = "gray";
+        __$('touchscreenInput' + tstCurrentPage).value = "";
+        __$('systolic_blood_pressure').value = "";
+        __$("helpText" + tstCurrentPage).innerHTML = __$("helpText" + tstCurrentPage).innerHTML.replace(/\(diastolic\)/, "(systolic)");
       }
     }
   }
@@ -430,37 +398,10 @@
   <%= hidden_field_tag "encounter[patient_id]", @patient.id %>
   <%= hidden_field_tag "encounter[encounter_datetime]", session_date %>
   <%= hidden_field_tag "encounter[provider_id]", session[:user_id] %>
-  <input type='hidden' name="concept[systolic blood pressure]" id="systolic_blood_pressure" />
-  <input type='hidden' name="concept[Diastolic blood pressure]" id="diastolic_blood_pressure" />
+  <input type='hidden' name="concept[systolic blood pressure]" id="systolic_blood_pressure" value = "" />
+  <input type='hidden' name="concept[Diastolic blood pressure]" id="diastolic_blood_pressure" value = "" />
 
-  <% options = [""]
-=begin
-if ask_temperature
-options << "Temperature"
-end
-
-if current_user.activities.include?("Weight and Height") && (params[:weight] || params[:height])
-options << "Weight"
-
-if @anc_patient.age <= 18 || @anc_patient.current_height == 0
-options << "Height"
-end
-end
-
-if current_user.activities.include?("BP") && params[:bp]
-options << "BP"
-end
-=end
-%>
-
-<%#= select_tag("choice", options_for_select(options),
-{
-:helpText => 'Select Task(s)', 
-:id => "choice",        
-:tt_onLoad => "showCategory('Vitals');",
-:multiple => true,
-:condition => "#{options.length} > 2"
-})%>
+  <% options = [""]%>
 
   <% if ask_temperature %>
     <label for="temperature">Temperature (C)</label>
@@ -489,8 +430,8 @@ end
       <%= text_field_tag "observations[][value_coded_or_text]", nil,
         {:id => "weight",
         :field_type => 'number',
-        :min => 40, # number_with_precision(@patient.min_weight, :precision => 1),
-        :max => 200, # number_with_precision(@patient.max_weight, :precision => 1),
+        :min => 40,
+        :max => 200,
         :absoluteMin => 20,
         :absoluteMax => 200,
         :condition => "if(#{options.length} > 2){getSelected().match(/Weight/)}else{true}",
@@ -547,28 +488,15 @@ end
   <% if current_user.activities.include?("BP") %>
     <% if params[:bp] %>
 
-    <%#= text_field_tag :showBp, nil,
-    {
-    :tt_onLoad => "clearFields();__$('keyboard').style.display = 'none'",
-    :optional => "true",
-    :tt_pageStyleClass => "NoControls NoKeyboard",
-    :condition => "",
-    :helpText => "Blood Pressure"
-    } %>
-
-
-
       <% options = default.merge({
           :id => "blood_pressure",
           :helptext => "Blood Pressure (systolic)<span class='helper'> Vitals</span>",
           :field_type => "number",
           :tt_pageStyleClass => "NumbersWithUnknown",
-          :tt_onLoad => "timedEvent1 = window.setInterval('bpAlerts(1)', 110); timedEvent = setTimeout('calculateBP(-1)', 100);addKeys();",
-          :tt_onUnLoad => "window.clearInterval(timedEvent1); parsedConceptName = ''; clearTimeout(timedEvent);",
+          :tt_onLoad => "timedEvent = setTimeout('calculateBP()', 100);addKeys();",
+          :tt_onUnLoad => "parsedConceptName = ''; clearTimeout(timedEvent);",
           :absoluteMin => 1,
-          :min => 110,
           :condition => "if(#{options.length} > 2){getSelected().match(/BP/)}else{true}",
-          :max => 140
         }) %>
 
       <%= text_field_tag("observations[][value_coded_or_text]", nil,options) %>
