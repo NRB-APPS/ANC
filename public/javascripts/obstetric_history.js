@@ -1644,17 +1644,21 @@ function handleCustomResult(aXMLHttpRequest, id, n, dom_id) {
         ul.id = id + "_ul"
         ul.style.paddingLeft = "5px";
         ul.style.paddingRight = "5px";
-
+        __$(dom_id).appendChild(ul);
+        var items = [];
+        
         for(var i = 0; i < data.length; i ++){
 
             var li = document.createElement("li");
             li.setAttribute("class", "cell-data");
             li.setAttribute("target", id);
             li.value = data[i];
+            ul.appendChild(li);           
             li.setAttribute("value", data[i]);
             li.innerHTML = "<img height=34 style='margin-right: 10px; margin-bottom: -5px;' src='/touchscreentoolkit/lib/images/unchecked.png' />" + data[i];
-            li.onmousedown = function(){
-                
+            items.push(li)
+           
+            li.onmousedown = function(){                
                 __$(this.getAttribute("target")).value = this.getAttribute("value");
 
                 if (this.getAttribute("target") == 'pre_eclampsia' && this.innerHTML.match(/Yes/i)){
@@ -1694,11 +1698,28 @@ function handleCustomResult(aXMLHttpRequest, id, n, dom_id) {
                 li.className = "odd";
                 li.setAttribute("group", "odd");
             }
-
-            ul.appendChild(li);
+            
         }
 
-        __$(dom_id).appendChild(ul);
+        for (var j = 0; j < items.length; j++){
+
+            if(__$(id).value && __$(id).value == items[j].getAttribute("value")){
+
+                updateTouchscreenInput(items[j]);
+                __$(items[j].getAttribute("target")).value = items[j].getAttribute("value");
+                var nodes = jQuery("[target=" + id + "]");
+                for (var i = 0; i< nodes.length; i++){
+                    nodes[i].getElementsByTagName("img")[0].src = '/touchscreentoolkit/lib/images/unchecked.png';
+                }
+                items[j].getElementsByTagName("img")[0].src = '/touchscreentoolkit/lib/images/checked.png';
+                if (items[j].getAttribute("target") == "pre_eclampsia" && __$("pre_eclampsia").value == "Yes"){
+                    __$("pre_eclampsia").value = "";
+                    __$("2_2").style.display = "block";
+                    items[j].onmousedown.apply(items[j]);
+                }
+            }
+        }
+        
 
         if (n == "table")
             setTimeout(function(){
@@ -1757,7 +1778,7 @@ function addValidationInterval(){
             for (var i = 0; i < arr.length; i ++){
 
                 var node = __$(arr[i]);
-                if (node != undefined && node.value == ""){
+                if (node != undefined && (node.value == "" || node.value == undefined || node.value.length < 2)){
                     check = check + 1;
                 }
             }
