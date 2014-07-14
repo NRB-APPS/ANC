@@ -66,7 +66,8 @@ class UserController < GenericUserController
     @activities = current_user.activities.reject{|activity| 
       CoreService.get_global_property_value("disable_tasks").split(",").include?(activity)
     } rescue current_user.activities
-   
+
+       
     @activities = @activities.collect do |activity| 
       activity.gsub('Hiv','HIV').gsub('Tb','TB').gsub('Art','ART').gsub('hiv','HIV')      
     end                            
@@ -74,11 +75,12 @@ class UserController < GenericUserController
     @privileges = @privileges.collect do |privilege|
       privilege.gsub('Hiv','HIV').gsub('Tb','TB').gsub('Art','ART').gsub('hiv','HIV')
     end rescue []
-    #@privileges += ['Manage prescriptions','Manage appointments', 'Dispensation']  
-    @privileges.sort!
+
+    #sort HIV related privileges to the end of array, so on display too
+    @privileges = (@privileges.reject{|ac| ac.match(/HIV|ART/)}.sort + @privileges.sort).uniq rescue @privileges
+   
     @patient_id = params[:patient_id]
     
-    # raise @activities.to_yaml
   end  
   
 end
