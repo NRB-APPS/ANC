@@ -659,11 +659,12 @@ function loadInputWindow(){
                     
                     var c_node = jQ("[id^=" + id + "_" + n + "_detail_row_" + ni + "]");
                     var txt = "?";
+                   
                     if (c_node.length == 1)
                         txt = c_node[0].childNodes[1].childNodes[0].innerHTML;
-               
-                    if (i > fields.indexOf("Condition at birth") && !txt.match(/Alive/i)){
-                        
+             
+                    if (i > (ni + 1) && !txt.match(/Alive/i)){
+                       
                         if(!button.className.match("gray")){
                             button.className += " button_gray";
                             display.innerHTML = "?";
@@ -1069,8 +1070,8 @@ function loadInputWindow(){
                 for (var i in data){
                     if (data[i] != "list"){
                         var li = document.createElement("li");
-                        li.innerHTML = data[i]
-                        li.setAttribute("class", "select-li")
+                        li.innerHTML = data[i];
+                        li.setAttribute("class", "select-li");
 
                         if (value.trim() == li.innerHTML){
                             li.style.backgroundColor = "lightblue";
@@ -1112,12 +1113,12 @@ function loadInputWindow(){
                     var p = __$("popup").getAttribute("p-tuple");
                     var a = __$("popup").getAttribute("a-tuple");
                     var label = row.getElementsByClassName("detail-row-label")[0];
-                   
-                    if (value != undefined && value.length > 0 || ($[p][n] != undefined && $[p][n][label.innerHTML] != undefined)){
-                                              
+               
+                    if (__$("ok").className.match(/button\_blue/)){
+                      
                         if (row){
                             
-                            if(__$("ok").className.match(/button\_blue/) && !__$("ok").className.match(/nosave/)){
+                            if(!__$("ok").className.match(/nosave/)){
 
                                 var button = row.getElementsByClassName("input-button")[0];
                                 var display = row.getElementsByClassName("display-space")[0];
@@ -1126,56 +1127,56 @@ function loadInputWindow(){
                                 if(a != undefined && $$[a] != undefined){
 
                                     display.innerHTML = value;
-                                    //button.setAttribute("value", value);
                                     $$[a][label.innerHTML] = value;
                                   
                                 }else{
                                     display.innerHTML =  value;
-                                    //button.setAttribute("value", value);
+                                    
                                     if ($[p][n] == undefined){
                                         $[p][n] = {};
                                     }
                                     $[p][n][label.innerHTML] = value;
                                 
-                                    //Validate grayed input buttons
+                                  
                                     var ni = fields.indexOf("Condition at birth");
                                     var pi = __$("popup").getAttribute("row_id").trim().match(/\d+$/)[0];
-                                    /////
+                                  
                                     if (parseInt(ni) == parseInt(pi)){
 
                                         var leng = fields.length;
-                                        for( var m = (parseInt(pi) + 1); m < leng; m ++){
+                                        for( var m = (parseInt(pi) + 2); m < leng; m ++){
                                             
                                             var baby_rows = jQ("[id^=" + p + "_" + n + "]"); //matches only single baby rows
                                             
                                             var but = baby_rows[m].childNodes[2].childNodes[0];
-                                            var displaybut = baby_rows[m].childNodes[1].childNodes[0];
-                                      
-                                            if (display.innerHTML.match(/still birth/i)){
-                                                if(but.className.match(/gray/)){
-                                                   
-                                                    // but.className += " button_gray";
-                                                    // displaybut.innerHTML = "?";
-                                                    // but.removeAttribute("value");
-                                                    
-                                                    but.onclick = function(){
-                                                        if(this.parentNode.parentNode.innerHTML.match(/birth weigh/i)){
-                                                            this.className = this.className.replace(/button\_gray/, "").trim();
-                                                            enterData(this.parentNode.parentNode)
-                                                        }
-                                                        else{
-                                                            showMessage("Baby was born dead")
-                                                        }
-                                                    }
-                                                // $[p][n][but.parentNode.parentNode.childNodes[0].innerHTML.trim()] = but.innerHTML
-                                                }
-                                            }else if (display.innerHTML.match(/Alive/i)){
-                                                if(but.className.match(/gray/)){
-                                                    but.className = but.className.replace(/button\_gray/, "").trim();
-                                                    but.onclick = function(){
+                                            var inputdisplay = baby_rows[m].childNodes[1].childNodes[0];
 
-                                                        enterData(this.parentNode.parentNode)
-                                                    }
+                                            if  (but.parentNode.parentNode.innerHTML.match(/birth weight/i)){
+                                                
+                                                but.className = but.className.replace(/gray/, "blue").trim();
+                                                but.onclick = function(){
+                                                    enterData(this.parentNode.parentNode);
+                                                }
+                                            }
+
+                                            if (display.innerHTML.match(/Still birth/i)){
+
+                                                if (!but.className.match(/gray/))
+                                                    but.className += " button_gray";
+                                                $[p][n][label.innerHTML] = "?";
+                                                inputdisplay.innerHTML = "?"
+                                                but.onclick = function(){
+
+                                                    showMessage("Baby was born dead");
+                                                }
+                                            } else {
+                                              
+                                                if (but.className.match(/gray/))
+                                                    but.className = "input-button";
+                                           
+                                                but.onclick = function(){
+
+                                                    enterData(this.parentNode.parentNode);
                                                 }
                                             }
                                         }
@@ -1186,14 +1187,14 @@ function loadInputWindow(){
                             showMessage("Failed to update input");
                         }
                         jQ("#shield, #popup").css("display", "none");
-                          jQ('#backButton, #nextButton').attr("disabled", false);
+                        jQ('#backButton, #nextButton').attr("disabled", false);
                     }else{
                         showMessage("Please select a value");
                     }
                 }
 
                 __$("cancel").onclick = function(){
-                      jQ('#backButton, #nextButton').attr("disabled", false);
+                    jQ('#backButton, #nextButton').attr("disabled", false);
                     jQ("#shield, #popup").css("display", "none");
                 }
 
@@ -1519,7 +1520,7 @@ function buildParams(){
         __$("ever_had_still_births").value = "Yes";
     }else{
         __$("ever_had_still_births").value = "No";
-    }
+    }    
 }
 
 function loadSplitSelections(arr){
@@ -1640,38 +1641,47 @@ function handleCustomResult(aXMLHttpRequest, id, n, dom_id) {
         var data = result.split("|");
 
         var ul = document.createElement("ul");
+        ul.id = id + "_ul"
         ul.style.paddingLeft = "5px";
         ul.style.paddingRight = "5px";
 
         for(var i = 0; i < data.length; i ++){
 
-            var li = document.createElement("li")
+            var li = document.createElement("li");
             li.setAttribute("class", "cell-data");
             li.setAttribute("target", id);
             li.value = data[i];
             li.setAttribute("value", data[i]);
-            li.innerHTML = data[i];
+            li.innerHTML = "<img height=34 style='margin-right: 10px; margin-bottom: -5px;' src='/touchscreentoolkit/lib/images/unchecked.png' />" + data[i];
             li.onmousedown = function(){
-
+                
                 __$(this.getAttribute("target")).value = this.getAttribute("value");
 
                 if (this.getAttribute("target") == 'pre_eclampsia' && this.innerHTML.match(/Yes/i)){
 
                     __$("2_2").style.display = "table-cell";
-                    __$("2_2").style.opacity = 1
+                    __$("2_2").style.opacity = 1;
                     __$("1_2").style.borderBottom = "hidden";
                     __$("2_1").style.borderRight = "hidden";
                 } else if (this.getAttribute("target") == 'pre_eclampsia' && this.innerHTML.match(/No/i)){
 
-                    __$("eclampsia").value = ""
-
+                    __$("eclampsia").value = "";
                     __$("1_2").style.borderBottom = "1px solid";
                     __$("2_1").style.borderRight = "1px solid";
-
                     hideMsg("2_2");
                 }
 
                 updateTouchscreenInput(this);
+                
+                var target = this.getAttribute("target")
+                var nodes = jQuery("[target=" + target + "]");
+                
+                for (var i = 0; i< nodes.length; i++){
+
+                    nodes[i].getElementsByTagName("img")[0].src = '/touchscreentoolkit/lib/images/unchecked.png';
+                }
+                
+                this.getElementsByTagName("img")[0].src = '/touchscreentoolkit/lib/images/checked.png';
             }
 
             if(i % 2 == 0){
@@ -1694,7 +1704,6 @@ function handleCustomResult(aXMLHttpRequest, id, n, dom_id) {
             setTimeout(function(){
                 __$('holder').style.display = n;
             }, 150);
-
     }
 }
 
@@ -1723,6 +1732,7 @@ function fadeOut(div, opacity){
     }
 }
 function hideMsg(div){
+    addValidationInterval
     __$(div).style.display = "none"
 }
 
@@ -1733,32 +1743,33 @@ function showMsg(div){
 }
 
 function addValidationInterval(){
+   
+    __$("nextButton").onmousedown = function(){
+        if (this.innerHTML.match(/Finish/i)){
+            var arr = ["ever_had_symphysiotomy", "hemorrhage", "pre_eclampsia"];
+            try{
+                if (__$("2_2") != undefined && __$("2_2").style.display != "none"){
+                    arr.push("eclampsia");
+                }
+            }catch(x){}
 
-    var interval = setInterval(function(){
-        var arr = ["ever_had_symphysiotomy", "hemorrhage", "pre_eclampsia"];
+            var check = 0;
+            for (var i = 0; i < arr.length; i ++){
 
-        if (__$("2_2").style.display != "none"){
-            arr.push("eclampsia");
-        }
-
-        var check = 0
-        for (var i = 0; i < arr.length; i ++){
-
-            var node = __$(arr[i]);
-            if (node != undefined && node.value == ""){
-                check = check + 1;
+                var node = __$(arr[i]);
+                if (node != undefined && node.value == ""){
+                    check = check + 1;
+                }
             }
-        }
-
-        if (check > 0){
-            __$("nextButton").onmousedown = function(){
+       
+            if (check > 0){
                 showMessage("Select all fields to proceed");
-            }
-        }else{
-            __$("nextButton").onmousedown = function(){
+            }else{
                 gotoNextPage();
             }
+        }else{
+            gotoNextPage();
         }
-    }, 100);
-    return interval;
+    }
 }
+    

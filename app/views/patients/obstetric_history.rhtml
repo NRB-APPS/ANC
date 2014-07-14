@@ -214,8 +214,8 @@
         <%= touch_text_field_tag "", @patient, nil,
           {:id => "complications",
           :helptext => "Previous complications <span class='helper'>Obstetric History</span>",
-          :tt_onLoad => "loadSplitSelections(); validationInterval = addValidationInterval()",
-          :tt_onUnLoad => "clearInterval(validationInterval)",
+          :tt_onLoad => "loadSplitSelections();",
+          :tt_BeforeUnLoad => "addValidationInterval()",
           :condition => "__$('enter_gravida').value > 1 && #{(params['update'].to_s rescue nil) != 'true'}"
         } %>
 
