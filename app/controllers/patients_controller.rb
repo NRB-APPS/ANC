@@ -2,7 +2,8 @@ class PatientsController < ApplicationController
   before_filter :find_patient, :except => [:void]
   
   def show
-   
+
+    session_date = session[:datetime].to_date rescue Date.today
     next_destination = next_task(@patient) rescue nil
     session[:update] = false
     session[:home_url] = ""
@@ -10,7 +11,16 @@ class PatientsController < ApplicationController
     if (next_destination.match("check_abortion") rescue false)
       redirect_to next_destination and return
     end
-   
+
+    #check if to alert on missing hiv test result
+    @alert_for_hiv_test = false
+    last_known_hiv_test = Observation.find_last_by_concept_id(
+      ConceptName.find_by_name("HIV STATUS").concept_id)
+ 
+    @alert_for_hiv_test = true if ["unknown", "old_negative"].include?(
+      @patient.resent_hiv_status?(session_date)) && !last_known_hiv_test.blank? &&
+      last_known_hiv_test.obs_datetime.to_date < session_date
+
     @current_range = @anc_patient.active_range((session[:datetime] ? session[:datetime].to_date : Date.today)) 
 
     @encounters = @patient.encounters.find(:all, :conditions => ["encounter_datetime >= ? AND encounter_datetime <= ?",
@@ -1369,8 +1379,26 @@ class PatientsController < ApplicationController
   end
 
   def print_exam_label
-    print_and_redirect("/patients/exam_label/?patient_id=#{@patient.id}" + (params[:cango2art] ? "&cango2art=1" : ""), 
-      "/patients/print_visit_label/?patient_id=#{@patient.id}" + (params[:cango2art] ? "&cango2art=1" : ""))  
+
+    @lab_encounters = @patient.encounters.find(:all, :conditions => ["encounter_type IN (?)",
+        EncounterType.find_by_name("LAB RESULTS").id])
+    
+    available = false # some test was really done at last visit
+    ((@lab_encounters.last.observations rescue []) || []).each do |ob|
+
+      if !ob.answer_string.match(/not done/i) && ob.concept.name.name != "Workstation location"
+        available = true
+      end
+    end
+
+    if @lab_encounters.length > 1 and available
+      
+      print_and_redirect("/patients/exam_label/?patient_id=#{@patient.id}" + (params[:cango2art] ? "&cango2art=1" : ""),
+        "/patients/print_visit_label/?patient_id=#{@patient.id}" + (params[:cango2art] ? "&cango2art=1" : ""))
+    else      
+      
+      redirect_to("/patients/print_visit_label/?patient_id=#{@patient.id}" + (params[:cango2art] ? "&cango2art=1" : "")) and return
+    end
   end
 
   def exam_label

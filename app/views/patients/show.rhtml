@@ -33,6 +33,33 @@ next_task = task.encounter_type.gsub('_',' ') rescue nil
     __$("nextTask").innerHTML = "<b>Next Task:</b><br /><i><%= next_task %></i>";
   }
   
+  alerted = 0;
+  function createAlert(){
+
+    var msgDiv = document.createElement("div");
+    msgDiv.id = "msg-div";
+    msgDiv.innerHTML = "Patient needs an HIV test!";
+    document.body.appendChild(msgDiv);
+    hideMsg("msg-div")
+    alerted = 1;
+  }
+
+  function hideMsg(div){
+    
+    setTimeout(function(){fade(div, 1);}, 3500);
+  }
+
+  function fade(div, opacity){
+    __$(div).style.opacity = opacity;
+    if (opacity >= 0){    
+      opacity = opacity - 0.01;
+      setTimeout(function(){fade(div, opacity)}, 20)
+    }else{
+      __$(div).style.display = "none";
+      __$(div).parentNode.removeChild(__$(div));
+    }
+  }
+  
   function showTime(){
     if(!__$("timeCtrl")){
       var timeCtrl = document.createElement("timeCtrl");
@@ -66,13 +93,18 @@ next_task = task.encounter_type.gsub('_',' ') rescue nil
       
       __$("timeCtrl").innerHTML = duration;
     }
-    
+
+ 
     setTimeout("showTime()", 1000);
+<% if @alert_for_hiv_test %>
+      if(alerted == 0)
+        createAlert();
+<% end%>
   }
-  
+
   setTimeout("showTime()", 500);
 
-<% if !next_task.nil? %>
+<%  if !next_task.nil? %>
     setTimeout("showNexttask()", 500);
 <% end %>
   //-->
@@ -88,6 +120,23 @@ next_task = task.encounter_type.gsub('_',' ') rescue nil
 
   .cell {
     display: table-cell;
+  }
+
+  #msg-div{
+    position: absolute;
+    left: 47%;
+    top: 41.5%;
+    font-weight: bold;
+    background: red;
+    z-index: 100;
+    width: 20%;
+    padding: 10px;
+    padding-top: 5px;
+    font-size: 1.5em;
+    height: 8%;
+    text-align: center;
+    vertical-align: middle;
+    border-radius: 5px;
   }
 
   #timeCtrl {

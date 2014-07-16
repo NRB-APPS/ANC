@@ -74,10 +74,9 @@ class Patient < ActiveRecord::Base
         EncounterType.find_by_name("LAB RESULTS").id, ConceptName.find_by_name("Hiv Test Date").concept_id,
         checked_date.to_date]).value_datetime.to_date  rescue nil
 
-    status = nil
-    status = "negative" if (last_test_visit.to_date <= (today - 3.months) rescue false)
-    status = "unknown" if status.blank?
-    status
+    return "old_negative" if (last_test_visit.to_date <= (today - 3.months) rescue false)
+    return "negative" if !last_test_visit.blank?
+    return "unknown"    
   end
 
   def date_registered(start_date, end_date)

@@ -68,7 +68,7 @@
           <% if current_user.activities.include?("Lab Results") %>
             <button class="blue" onclick="<%= (@all_encounters.include?("LAB RESULTS") ?
                 "window.location = '/encounters/new/lab_results?patient_id=#{@patient.id}&update=true'" :
-                        "window.location = '/encounters/new/lab_results?patient_id=#{@patient.id}'") %> ">
+                        "window.location = '/encounters/new/lab_results?patient_id=#{@patient.id}&update=true'") %> ">
               <span><%= (@all_encounters.include?("LAB RESULTS") ? "Update Lab Results" : "Lab Results") %></span>
             </button>
           <% end %>
@@ -92,7 +92,7 @@
             </button>
           <% end %>
         </div>
-        <div style="display: table-cell">   
+        <div style="display: table-cell">
           <% if current_user.activities.include?("Update Outcome") %>
             <button class="<%= (@encounters.include?("UPDATE OUTCOME") ? "gray" : "blue") %>"
                     onclick="<%= (@encounters.include?("UPDATE OUTCOME") ? "" :
@@ -121,7 +121,7 @@
             <% end %>
           <% end %>
         </div>
-        <div style="display: table-cell"> 
+        <div style="display: table-cell">
           &nbsp;
         </div>
       </div>
@@ -135,7 +135,7 @@
       </span>
     </button>
     <% if current_user.activities.include?("Lab Results") %>
-      <button onclick="window.location = '/patients/print_exam_label/?patient_id=<%= @patient.id %>'"
+      <button onclick="window.location = '/patients/exam_label/?patient_id=<%= @patient.id %>'"
               style="float: right; margin: 10px; margin-right: 0px;">
         <span>Print Lab Results</span>
       </button>
