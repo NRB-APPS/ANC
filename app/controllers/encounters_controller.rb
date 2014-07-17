@@ -312,8 +312,8 @@ class EncountersController < ApplicationController
     params.each{|key, param|
       exceptions << param if key.match(/^v\d/)
     }
-    
-    diagnosis_concepts = ["Malaria", 
+    diagnosis_concepts = params[:include_none].present? ? ["None"] : []
+    diagnosis_concepts += ["Malaria",
       "Anaemia", 
       "Severe Anaemia", 
       "Pre-eclampsia", 

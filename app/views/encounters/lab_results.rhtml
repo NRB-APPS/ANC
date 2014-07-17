@@ -188,19 +188,19 @@
 
   <%= touch_select_tag "HIV status", @patient,
     options_for_select([["", ""], ["Negative", "Negative"], ["Positive", "Positive"], ["Not Done", "Not Done"]]),
-    {:id => "hiv_result",
+    {:id => "new_test_result_at_current_facility",
     :helptext => "HIV Test Result <span class='helper'> Lab Results</span>",
     :tt_BeforeUnload => "checkHIVTestUnknown()",
     :tt_onUnLoad => "parsedConceptName = '';",
-    :tt_onLoad => "parsedConceptName = 'HIV Status'; unknownToNotDone(); ",
+    :tt_onLoad => "parsedConceptName = 'HIV Status'; ",
     :condition => "getSelected().match(/HIV\sTest\sResult/)" } %>
 
   <%= touch_date_tag "HIV test date", @patient, nil,
-    {:id => "enter_date_hiv_result_given",
+    {:id => "enter_date_result_given",
     :helptext => "Date Result Done <span class='helper'> Lab Results</span>",
     :tt_onUnLoad => "parsedConceptName = '';",
     :tt_onLoad => " parsedConceptName = 'HIV Test date';initializeDate();",
-    :condition => "__$('hiv_result').value != 'Not Done' && getSelected().match(/HIV\sTest\sResult/)",
+    :condition => "__$('new_test_result_at_current_facility').value != 'Not Done' && getSelected().match(/HIV\sTest\sResult/)",
     :tt_BeforeUnload => "checkHIVTestDate()",
     :max => "#{session[:datetime].to_date rescue Date.today}"
   } %>
@@ -232,7 +232,7 @@
     {:id => "syphilis_result",
     :helptext => "Syphilis Test Result <span class='helper'> Lab Results</span>",
     :tt_onUnLoad => "parsedConceptName = '';",
-    :tt_onLoad => "parsedConceptName = 'Syphilis Test Result'; unknownToNotDone();",
+    :tt_onLoad => "parsedConceptName = 'Syphilis Test Result';",
     :condition => "getSelected().match(/Syphilis\sTest\sResult/)" } %>
 
   <%= touch_date_tag "Syphilis Test Result Date", @patient, nil,
@@ -266,7 +266,7 @@
     {:id => "malaria_test_result",
     :helptext => "Malaria Test Result <span class='helper'> Lab Results</span>",
     :tt_onUnLoad => "parsedConceptName = 'Malaria Test result';",
-    :tt_onLoad => "parsedConceptName = ' Status';unknownToNotDone(); ",
+    :tt_onLoad => "parsedConceptName = ' Status'",
     :condition => "getSelected().match(/Malaria\sTest\sResult/)" } %>
 
   <%#= touch_date_tag "Date of laboratory test", @patient, nil,

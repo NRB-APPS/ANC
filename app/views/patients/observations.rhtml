@@ -1,4 +1,3 @@
-# observations.rhtml
 
 <script type="text/javascript" language="javascript">
   <!--
@@ -35,14 +34,16 @@
   }
 
   function changeUnknownToNone(){
-    __$("Unknown").innerHTML = "<span>None</span>";
-    __$("Unknown").onmousedown = function(){
-      __$("touchscreenInput" + tstCurrentPage).value = "None";
+    if (__$("Unknown")){
+      __$("Unknown").innerHTML = "<span>None</span>";
+      __$("Unknown").onmousedown = function(){
+        __$("touchscreenInput" + tstCurrentPage).value = "None";
+      }
     }
   }
   
   
-  function readableMessage(){      
+  function readableMessage(){
     
     var conceptName = conceptHash[tstCurrentPage]
     try{
@@ -58,7 +59,7 @@
   function buildConceptsHash(){
     var count = 0;
     var inputArr = document.getElementsByTagName("input")
-     conceptHash = {};
+    conceptHash = {};
     for (var i = 0; i < inputArr.length; i ++){
       if (inputArr[i].name && inputArr[i].name.match("concept_name") && inputArr[i].name.match("observations")){
         conceptHash[count] = inputArr[i].value;
@@ -67,29 +68,39 @@
     }
   }
 
-  var check = 0;  
+  var check = 0;
  
-   function set_ajaxURL_for_suggestions(url, filter_value) {
+  function set_ajaxURL_for_suggestions(url, filter_value) {
     $('touchscreenInput'+tstCurrentPage).setAttribute('ajaxURL', url + filter_value + "&search_string=");
     listSuggestions(tstCurrentPage);
   }
   var breech = 0;
   function ajaxify(cat, selected){
+
+    if (selected == "Ball"){
+      
+      __$("frame2").style.display = "none";
+      __$("htext2").style.display = "none";
+    }else if (selected.length > 0){
+
+      __$("frame2").style.display = "block";
+      __$("htext2").style.display = "block";
+    }
     
     if (cat == "presentation"){
       
       if ((selected.toLowerCase() == 'breech') && ( __$('presentation').value.toLowerCase() == 'breech')){
         data = ["", "Right Sacro Anterior", "Left Sacro Anterior", "Unknown"].join('|')
-        handleResultData(cat, data)
+        handleResultData(cat, data, "breech_presentation")
       }
       else if (selected.toLowerCase() == 'cephalic'){
         data = ["", "Right Occipito Anterior", "Left Occipito Anterior", "Unknown"].join('|')
-      	handleResultData(cat, data);
+        handleResultData(cat, data, "cephalic_presentation");
       }
       else if (selected.toLowerCase() == 'ball') {
         
-        data = ["", "Vertex", "Oblique", "Transverse", "Breech"].join('|')
-      	handleResultData(cat, data);
+        data = "";
+        handleResultData(cat, data, "");
       }
       
     }else if (cat == "district"){
@@ -98,7 +109,7 @@
     }
   }
  
- function updateCustomTouchscreenInput(element){
+  function updateCustomTouchscreenInput(element){
     
     values_hash["district"] = element.innerHTML;
     var inputTarget = tstInputTarget;
@@ -112,85 +123,117 @@
     tt_update(inputTarget);
   }
  
-   function verifyFields(num){
+  function verifyFields(){
 
-    if (values_hash['district'] == ''){
-      values_hash["temp_region"] = values_hash["region"];
-      values_hash["region"] = "";
-      region_terminal = false;
-    }else{
-      values_hash["temp_region"] = "";
-      region_terminal = true;
-    }
-        
-    if (num == 1){
-       if (__$('presentation').value.toLowerCase() == "ball"){
-         __$("position").value = values_hash["district"];
-       }else{
-         __$(__$('presentation').value.toLowerCase()).value = values_hash["district"];
-       }
-        __$("presentation").value = values_hash["region"];
-    }else if (num == 2){
-
-      __$("state_province").value = values_hash["district"];
-      __$("filter_region").value = values_hash["region"];
-    }
-    tstInputTarget.value = values_hash["region"];
-    values_hash["region"] = values_hash["temp_region"];
-  }
- 
-  function handleResultData(cat, result) {
-      values_hash["region"] = tstInputTarget.value;
-      values_hash["district"] = '';
+    if (__$("viewport3")){
+      var handlers = ["viewport", "viewport2", "viewport3", "viewport4"];
+      var messages = {"viewport" : "Select presentation to proceed",
+        "viewport2" : "Select presentation type to proceed",
+        "viewport3" : "Select position to proceed",
+        "viewport4" : "Select position type to proceed"
+      }
       
-      if (cat == "presentation"){
-
-       
-        __$("sc2").innerHTML = ""
-
-        var data = result.split("|");
-
-        var ul = document.createElement("ul");
-
-        for(var i = 0; i < data.length; i ++){
-
-          var li = document.createElement("li")
-          li.setAttribute("class", "district");
-          li.value = data[i]
-          li.innerHTML = data[i]
-          li.onmousedown = function(){
-            updateCustomTouchscreenInput(this);
-          }
-
-          ul.appendChild(li);
-        }
-
-        __$("sc2").appendChild(ul);
-      }else if(cat == "district"){
-
-        var data = result.split("|");
-
-        var ul = document.createElement("ul");
-
-        for(var i = 0; i < data.length; i ++){
-
-          var li = document.createElement("li")
-          li.setAttribute("class", "ta");
-          li.value = data[i];
-          li.innerHTML = data[i];
-          li.onmousedown = function(){
-            updateCustomTouchscreenInput(this);
-          }
-
-          ul.appendChild(li);
-        }
-
+      var targets = {"viewport" : "presentation",
+        "viewport2" : "",
+        "viewport3" : "position",
+        "viewport4" : ""
       }
 
+      
+      var proceed = true;
+      for (var k = 0; k < handlers.length; k++){
+
+        var target = targets[handlers[k]]
+        var nodes = __$(handlers[k]).getElementsByTagName("li")
+
+        if (__$(handlers[k]).innerHTML != "" && nodes.length > 1 && __$(handlers[k]).parentNode.style.display != "none"){
+
+          var highlighted = false;
+          for (var i = 0; i < nodes.length; i ++){
+            if (nodes[i] && nodes[i].innerHTML.length > 1 && (nodes[i].style.background == "lightblue" || nodes[i].style.backgroundColor == "lightblue")){
+
+              highlighted = true;
+              if (target == "")
+                target = nodes[i].getAttribute("target");
+
+              if (__$(target)){
+                __$(target).value = nodes[i].innerHTML;
+              }
+            }
+          }
+         
+          if (!highlighted){
+          
+            showMessage(messages[handlers[k]], false, false);
+            proceed = false;
+            break;
+          }
+        }
+      }
+
+      if (proceed){
+        gotoPage(tstCurrentPage + 1)
+      }
+    }else{
+      gotoNextPage();
+    }
+  }
+ 
+  function handleResultData(cat, result, target) {
+    values_hash["region"] = tstInputTarget.value;
+    values_hash["district"] = '';
+      
+    if (cat == "presentation"){
+
+       
+      __$("sc2").innerHTML = ""
+
+      var data = result.split("|");
+
+      var ul = document.createElement("ul");
+
+      for(var i = 0; i < data.length; i ++){
+
+        var li = document.createElement("li")
+        li.setAttribute("class", "district");
+        li.setAttribute("target", target);
+        li.value = data[i]
+        li.innerHTML = data[i]
+        li.onmousedown = function(){
+         
+          updateCustomTouchscreenInput(this);
+        }
+
+        ul.appendChild(li);
+      }
+
+      __$("sc2").appendChild(ul);
+    }else if(cat == "district"){
+
+      var data = result.split("|");
+
+      var ul = document.createElement("ul");
+
+      for(var i = 0; i < data.length; i ++){
+
+        var li = document.createElement("li")
+        li.setAttribute("class", "ta");
+        li.value = data[i];
+        li.innerHTML = data[i];
+        li.onmousedown = function(){
+
+          updateCustomTouchscreenInput(this);
+        }
+
+        ul.appendChild(li);
+      }
+
+    }
+
   }
 
  
- function updateInputFields(){
+  function updateInputFields(){
     if (value != tstInputTarget.value){
       value = tstInputTarget.value;
       if (value.length > 0) {
@@ -204,23 +247,27 @@
       setTimeout("updateInputFields()", 100);
     }
   }
- function clearAll(){
+  function clearAll(){
     __$('presentation').value = "";
     __$('breech').value = "";
     __$('cephalic').value = "";
     __$('position').value = "";
- }
- function ajaxifyInput(){
+  }
+  function ajaxifyInput(){
     value = tstInputTarget.value
     region_terminal = false;
 
     //clear previous selections
     __$("clearButton").onmousedown.apply(__$("clearButton"));
     setTimeout("updateInputFields()", 100)
-    
-    __$("viewport").style.width = "48%";
+    __$("touchscreenInput" + tstCurrentPage).style.display = "none";
+    __$("inputFrame" + tstCurrentPage).style.maxHeight = (screen.height/3.1) + "px";
+   
+    __$("viewport").style.width = 0.47 * screen.width + "px";
     __$("viewport").style.borderStyle = "solid";
-    __$("viewport").style.borderWidth = "2px";
+
+    __$("viewport").style.maxHeight = __$("inputFrame" + tstCurrentPage).style.maxHeight;
+    __$("viewport").style.borderWidth = "1px";
     __$("viewport").style.borderTop = "hidden";
     __$("viewport").style.borderLeft = "hidden";
     __$("viewport").style.borderBottom = "hidden";
@@ -229,11 +276,12 @@
     view2.id = "viewport2"
     view2.setAttribute("class", "options");
     view2.style.position = "absolute";
-    view2.style.top = "15.35%";
-    view2.style.left = "50%";
-    view2.style.width = "48%";
+    view2.style.top = "9%";
+    view2.style.left =  0.5 * screen.width + "px";
+    view2.style.width =  0.46 * screen.width + "px";
+    view2.style.maxHeight = __$("inputFrame" + tstCurrentPage).style.maxHeight;
     view2.style.borderStyle = "solid";
-    view2.style.borderWidth = "2px";
+    view2.style.borderWidth = "1px";
     view2.style.borderTop = "hidden";
     view2.style.borderLeft = "hidden";
     view2.style.borderBottom = "hidden";
@@ -245,9 +293,158 @@
     sc2.id = "sc2";
     view2.appendChild(sc2);
     __$("inputFrame" + tstCurrentPage).appendChild(view2);
-  }
+    __$("inputFrame" + tstCurrentPage).style.marginBottom = "8px";
 
- 
+    var htext2 = document.createElement("label");
+    htext2.innerHTML = "Position";
+    htext2.id = "htext2";
+    htext2.style.display = "none";
+    htext2.setAttribute("class", "helpTextClass");
+    __$("page" + tstCurrentPage).appendChild(htext2);
+
+    var frame2 = document.createElement("div");
+    frame2.id = "frame2";
+    frame2.style.display = "none";
+    frame2.setAttribute("class", "inputFrameClass");
+    frame2.style.height = (screen.height/2.7) + "px";
+    frame2.style.maxHeight = (screen.height/2.7) + "px";
+
+    __$("page" + tstCurrentPage).appendChild(frame2);
+    var view3 = document.createElement("div");
+    view3.id = "viewport3";
+    view3.setAttribute("class", "options");
+    view3.style.position = "absolute";
+    view3.style.top =  ((screen.height/6.5) + (screen.height/3.4) + 20) + "px";
+    view3.style.left = "26px";
+    view3.style.width =   0.465 * screen.width + "px";
+    view3.style.marginLeft = 0.005 * screen.width + "px";
+    view3.style.maxHeight = (screen.height/2.6) + "px";
+    view3.style.borderStyle = "solid";
+    view3.style.borderWidth = "1px";
+    view3.style.borderTop = "hidden";
+    view3.style.borderLeft = "hidden";
+    view3.style.borderBottom = "hidden";
+    view3.style.borderLeft = "hidden";
+    frame2.appendChild(view3);
+    
+    var sc3 = document.createElement("div");
+    sc3.setAttribute("class", "scrollable");
+    sc3.setAttribute("referstotouchscreeninputid", tstCurrentPage + 1);
+    sc3.id = "sc3";
+    view3.appendChild(sc3);
+
+    var values = ["", "Vertex", "Oblique", "Transverse", "Breech", "Face", "Shoulder"]
+    var ul = document.createElement("ul");
+
+    for(var i = 0; i < values.length; i ++){
+
+      var li = document.createElement("li")
+      li.setAttribute("class", "ta");
+      li.value = values[i];
+      li.setAttribute("data", values[i]);
+      li.innerHTML = values[i];
+      
+      li.onmousedown = function(){
+      
+        __$("position").value = this.getAttribute("data");
+        __$("sc4").innerHTML = "";
+        var arr = [""];
+        var target = "";
+        target = __$("position").value.trim().toLowerCase();
+       
+        switch(__$("position").value.trim().toLowerCase()) {
+          
+          case "vertex":
+            arr = ["", "Left Occipito Anterior",
+              "Left Occipito Transverse",
+              "Left Occipito Posterior",
+              "Right Occipito Anterior",
+              "Right Occipito Transverse",
+              "Right Occipito Posterior",
+              "Unknown"];
+            break;
+
+          case "breech":
+            arr = ["", "Left Sacro Anterior",
+              "Left Sacro Transverse",
+              "Left Sacro Posterior",
+              "Right Sacro Anterior",
+              "Right Sacro Transverse",
+              "Right Sacro Posterior",
+              "Unknown"];
+            break;
+
+          case "face":
+            arr = ["", "Left Mento Anterior",
+              "Left Mento Transverse",
+              "Left Mento Posterior",
+              "Right Mento Anterior",
+              "Right Mento Transverse",
+              "Right Mento Posterior",
+              "Unknown"];
+            break;
+
+          case "shoulder":
+            arr = ["", "Left Acromion Dorsal Anterior",
+              "Left Acromion Dorsal Posterior",
+              "Right Acromion Dorsal Anterior",
+              "Right Acromion Dorsal Posterior",
+              "Unknown"];
+            break;
+            
+          default:
+            arr = [""];
+        }
+       
+        var ul = document.createElement("ul");
+
+        for(var j = 0; j < arr.length; j ++){
+
+          var li = document.createElement("li")
+          li.setAttribute("class", "ta");
+          li.value = arr[j];
+          li.innerHTML = arr[j];
+          li.setAttribute("target", target);
+          li.setAttribute("data", arr[j]);
+          
+          li.onmousedown = function(){
+                     
+            updateCustomTouchscreenInput(this);
+          }
+          ul.appendChild(li);
+        }
+       
+        __$("sc4").appendChild(ul);
+        updateCustomTouchscreenInput(this);
+      }
+
+      ul.appendChild(li);
+    }
+
+    sc3.appendChild(ul);
+
+    var view4 = document.createElement("div");
+    view4.id = "viewport4";
+    view4.setAttribute("class", "options");
+    view4.style.position = "absolute";
+    view4.style.top = ((screen.height/6.5) + (screen.height/3.4) + 20) + "px";
+    view4.style.left =  0.5 * screen.width + "px";
+    view4.style.width =  0.46 * screen.width + "px";
+    view4.style.maxHeight = (screen.height/2.5) + "px";
+    view4.style.borderStyle = "solid";
+    view4.style.borderWidth = "1px";
+    view4.style.borderTop = "hidden";
+    view4.style.borderLeft = "hidden";
+    view4.style.borderBottom = "hidden";
+    view4.style.borderRight = "hidden";
+    frame2.appendChild(view4);
+
+    var sc4 = document.createElement("div");
+    sc4.setAttribute("class", "scrollable");
+    sc4.setAttribute("referstotouchscreeninputid", tstCurrentPage + 1);
+    sc4.id = "sc4";
+    view4.appendChild(sc4);
+  }
   //-->
 </script>
 
@@ -281,35 +478,38 @@
   <%#= touch_hidden_tag "Cephalic", @patient, nil, {:id => "cephalic"}%>
   <%#= touch_hidden_tag "breech", @patient, nil, {:id => "breech"}%>
   <%#= touch_hidden_tag "Position", @patient, nil, {:id => "bed_net"}%>
-  
+
   <% @presentation = ["", "Cephalic", "Breech", "Ball"] %>
 
   <%= touch_select_tag "PRESENTATION", @patient, options_for_select(@presentation),
     {:id => "presentation",
     :helptext => "Presentation <span class='helper'> ANC Examination</span>",
-    :tt_onLoad => "ajaxifyInput();clearAll();",
-    :tt_BeforeUnLoad => "verifyFields(1)",
+    :tt_onLoad => "__$('nextButton').onmousedown = function(){verifyFields()}; ajaxifyInput();",
+    :tt_BeforeUnLoad => "",
+    :optional => true,
     :tt_pageStyleClass => "NoKeyboard" }, session_date %>
 
   <% @cephalic = ["", "Right Occipito Anterior", "Left Occipito Anterior", "Unknown"] %>
 
   <%= touch_select_tag "Cephalic", @patient, options_for_select(@cephalic),
-    {:id => "cephalic",
+    {:id => "cephalic_presentation",
     :helptext => "Cephalic Type <span class='helper'> ANC Examination</span>",
     :tt_onLoad => "",
+    :allowFreeText => true,
     :tt_pageStyleClass => "NoKeyboard",
     :condition => false }, session_date %>
 
   <% @breech = ["", "Right Sacro Anterior", "Left Sacro Anterior", "Unknown"] %>
 
   <%= touch_select_tag "Breech", @patient, options_for_select(@breech),
-    {:id => "breech",
+    {:id => "breech_presentation",
     :helptext => "Breech Type <span class='helper'> ANC Examination</span>",
     :tt_pageStyleClass => "NoKeyboard",
+    :allowFreeText => true,
     :tt_onLoad => "",
     :condition => false }, session_date %>
 
-  <% @position = ["", "Vertex", "Oblique", "Transverse", "Breech"] %>
+  <% @position = ["", "Vertex", "Oblique", "Transverse", "Breech", "Face", "Shoulder"] %>
 
   <%= touch_select_tag "POSITION", @patient, options_for_select(@position),
     {:id => "position",
@@ -334,7 +534,8 @@
     :helptext => "Vertex Position Type <span class='helper'> ANC Examination</span>",
     :field_type => "text",
     :tt_onLoad => "",
-    :condition => "$('position').value.trim().toUpperCase() == 'VERTEX';",
+    :allowFreeText => true,
+    :condition => false,
     :tt_pageStyleClass => "NoKeyboard" } %>
 
 
@@ -351,7 +552,8 @@
     :helptext => "Breech Position Type <span class='helper'> ANC Examination</span>",
     :field_type => "text",
     :tt_onLoad => "",
-    :condition => "$('position').value.trim().toUpperCase() == 'BREECH';",
+    :allowFreeText => true,
+    :condition => false,
     :tt_pageStyleClass => "NoKeyboard" } %>
 
 
@@ -368,7 +570,8 @@
     :helptext => "Face Position Type <span class='helper'> ANC Examination</span>",
     :field_type => "text",
     :tt_onLoad => "",
-    :condition => "$('position').value.trim().toUpperCase() == 'FACE';",
+    :condition => false,
+    :allowFreeText => true,
     :tt_pageStyleClass => "NoKeyboard" } %>
 
 
@@ -383,7 +586,8 @@
     :helptext => "Shoulder Position Type <span class='helper'> ANC Examination</span>",
     :field_type => "text",
     :tt_onLoad => "",
-    :condition => "$('position').value.trim().toUpperCase() == 'SHOULDER';",
+    :condition => false,
+    :allowFreeText => true,
     :tt_pageStyleClass => "NoKeyboard" } %>
 
   <%= touch_select_tag "FETAL HEART BEAT", @patient,
@@ -400,7 +604,7 @@
   <% options = {
     :helpText => "Signs/Symptoms <span class='helper'> ANC Examination</span>",
     :allowFreeText => 'true',
-    :ajaxURL => "/encounters/anc_diagnoses?search_string=",
+    :ajaxURL => "/encounters/anc_diagnoses?include_none=true&search_string=",
     :textCase => "upper",
     :tt_onLoad => "changeUnknownToNone();"
   } %>
@@ -427,7 +631,7 @@
   <% sup = ["", "st", "nd", "rd", "th", "th", "th"] %>
 
   <% 5.times do |counter| %>
-    <% options[:condition] = "check != 'none' && tstFormElements[#{counter + 3}].value != '' && tstFormElements[#{counter + 3}].value.toLowerCase().trim() != 'none'" if counter > 0 %>
+    <% options[:condition] = "check != '' && check != 'none' && tstFormElements[#{counter + 3}].value != '' && tstFormElements[#{counter + 3}].value.toLowerCase().trim() != 'none'" if counter > 0 %>
     <% options[:optional] = 'true' if counter > 0 %>
     <% counter += 1 %>
     <% options[:helpText] = (counter > 1 ? "#{counter}<sup>#{sup[counter]}</sup>  <span class='helper'> ANC Examination</span>" : " <span class='helper'> ANC Examination</span>") + "Danger Sign/Symptom" %>
@@ -457,3 +661,4 @@
 
   <%= submit_tag 'Finish' %>
 <% end %>
+
