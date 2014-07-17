@@ -1634,6 +1634,13 @@ class PatientsController < ApplicationController
 
     render :text => @html.to_s
   end
+
+  def surgical_history
+
+    @csections = Observation.find(:all,
+      :conditions => ["person_id = ? AND (concept_id = ? AND (value_coded = ? OR value_text = 'Yes'))", @patient.id,
+        ConceptName.find_by_name('Caesarean section').concept_id, ConceptName.find_by_name('Yes').concept_id]).length rescue nil
+  end
   
   def verify_route
     redirect_to next_task(@patient) and return

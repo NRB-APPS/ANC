@@ -16,9 +16,9 @@ class EncountersController < ApplicationController
     # Encounter handling
     #raise params[:encounter][:encounter_type_name].to_yaml
   
-	    encounter = Encounter.new(params[:encounter])
-	    encounter.encounter_datetime = session[:datetime] unless session[:datetime].blank?
-	    encounter.save    
+    encounter = Encounter.new(params[:encounter])
+    encounter.encounter_datetime = session[:datetime] unless session[:datetime].blank?
+    encounter.save
     
     # Observation handling
     (params[:observations] || []).each do |observation|
@@ -62,14 +62,14 @@ class EncountersController < ApplicationController
         concept = concept.split(':')
        
         if ! concept[0][1].blank?
-              obs = Observation.new(
-              :concept_name => concept[0][0],
-              :person_id => @patient.person.person_id,
-              :encounter_id => encounter.id,
-              :value_text => concept[0][1],
-              :obs_datetime => encounter.encounter_datetime)
+          obs = Observation.new(
+            :concept_name => concept[0][0],
+            :person_id => @patient.person.person_id,
+            :encounter_id => encounter.id,
+            :value_text => concept[0][1],
+            :obs_datetime => encounter.encounter_datetime)
 
-              obs.save
+          obs.save
         end
       }
     end
@@ -172,25 +172,25 @@ class EncountersController < ApplicationController
                     ORDER BY e.encounter_datetime DESC LIMIT 1").first.encounter_id rescue []
    
     if ! @last_vitals.blank?
-      	@first = "false"   
-	@vital = {} 
-	weight = ConceptName.find_by_name("WEIGHT (KG)").concept_id
-	height = ConceptName.find_by_name("HEIGHT (CM)").concept_id
-	bmi = ConceptName.find_by_name("BMI").concept_id
-	@vital["weight"] = Observation.find(:first, :conditions => ["concept_id = ? AND voided = 0", weight]).to_s.split(':')[1] rescue ""
-	@vital["height"] = Observation.find(:first, :conditions => ["concept_id = ? AND voided = 0", height]).to_s.split(':')[1] rescue ""
-	@vital["bmi"] = Observation.find(:first, :conditions => ["concept_id = ? AND voided = 0", bmi]).to_s.split(':')[1] rescue ""      
+      @first = "false"
+      @vital = {}
+      weight = ConceptName.find_by_name("WEIGHT (KG)").concept_id
+      height = ConceptName.find_by_name("HEIGHT (CM)").concept_id
+      bmi = ConceptName.find_by_name("BMI").concept_id
+      @vital["weight"] = Observation.find(:first, :conditions => ["concept_id = ? AND voided = 0", weight]).to_s.split(':')[1] rescue ""
+      @vital["height"] = Observation.find(:first, :conditions => ["concept_id = ? AND voided = 0", height]).to_s.split(':')[1] rescue ""
+      @vital["bmi"] = Observation.find(:first, :conditions => ["concept_id = ? AND voided = 0", bmi]).to_s.split(':')[1] rescue ""
     else
-	@first = "true"
+      @first = "true"
     end
     
     
-	@preg_encounters = @patient.encounters.find(:all, :conditions => ["voided = 0 AND encounter_datetime >= ? AND encounter_datetime <= ?",
-	@current_range[0]["START"], @current_range[0]["END"]]) rescue []
+    @preg_encounters = @patient.encounters.find(:all, :conditions => ["voided = 0 AND encounter_datetime >= ? AND encounter_datetime <= ?",
+        @current_range[0]["START"], @current_range[0]["END"]]) rescue []
 
-	@names = @preg_encounters.collect{|e|
-		e.name.upcase
-	}.uniq
+    @names = @preg_encounters.collect{|e|
+      e.name.upcase
+    }.uniq
     
     if next_task(@patient) == "/patients/current_pregnancy/?patient_id=#{@patient.id}" && @names.include?("CURRENT PREGNANCY")
       redirect_to "/patients/hiv_status/?patient_id=#{@patient.id}" and return
@@ -359,6 +359,8 @@ class EncountersController < ApplicationController
     end
 
     @procedure_done.delete_if{|procedure| !procedure.match(/#{params[:search_string]}/i)}
+    @procedure_done.delete_if{|procedure| params[:excludecs].present? and
+        procedure.match(/Caesarean section/i)}
     
     render :text => "<li>" + @procedure_done.join("</li><li>") + "</li>"
   end
