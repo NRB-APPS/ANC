@@ -1056,7 +1056,7 @@ function loadInputWindow(){
                 unit.id = "unit";
                 var options = ["Hours", "Days", "Weeks", "Months", "years"]
                 
-                unit.className = "button_blue units";
+                unit.className = "button_blue";
                 unit.innerHTML = "Months";
                 jQ(unit).css({
                     "position" : "absolute",

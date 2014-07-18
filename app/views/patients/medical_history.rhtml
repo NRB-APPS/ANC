@@ -7,14 +7,39 @@
   tt_cancel_destination = "/patients/show/<%= @patient.id %>";
   selectAll = false;
   //-->
+  function selectNone(){
+    
+    if (__$("chkSelectAll") && __$("lblSelectAll")){
 
+      __$("lblSelectAll").innerHTML = "None";
+
+      __$("chkSelectAll").onclick = function(){
+        if ( __$("chkSelectAll").src.replace(/unticked/))
+        __$("chkSelectAll").src = __$("chkSelectAll").src.replace(/unticked/, "ticked");
+        checkAll();
+        __$("touchscreenInput" + tstCurrentPage).setAttribute("optional", "true")
+        gotoNextPage();
+      }
+      __$("lblSelectAll").onclick = function(){
+
+        if ( __$("chkSelectAll").src.replace(/unticked/))
+          __$("chkSelectAll").src = __$("chkSelectAll").src.replace(/unticked/, "ticked");
+        checkAll();
+        __$("touchscreenInput" + tstCurrentPage).setAttribute("optional", "true");
+        gotoNextPage();
+      }
+    }
+
+    setTimeout("selectNone()", 100);
+  }
+ 
   function checkFields(){
 
     var nodes = __$("values").children;
 
     for (var i = 0; i < nodes.length; i ++){
 
-      if (nodes[i] && nodes[i].innerHTML != ""){
+      if (nodes[i].value != "none" && nodes[i] && nodes[i].innerHTML != ""){
       
         var id = nodes[i].value;
         
@@ -28,6 +53,8 @@
       }
     }
   }
+
+  setTimeout("selectNone()", 100);
 </script>
 
 <% form_tag :controller => "encounters", :action => "create" do %>
@@ -99,8 +126,8 @@
     {:id => "values",
     :tt_onLoad => "__$('nextButton').style.display='block';",
     :tt_pageStyleClass => "longSelectList",
-    :optional => 'true',
     :multiple => "multiple",
+    :selectAll => "selectAll",
     :tt_BeforeUnLoad => "checkFields()",
     :helptext => "Select past medical complications? <span class='helper'> Medical History</span>" } %>
 
