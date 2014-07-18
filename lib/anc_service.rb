@@ -277,20 +277,20 @@ module ANCService
       label.draw_text("Place",110,65,0,2,1,1,false)
       label.draw_text("Gest.",225,65,0,2,1,1,false)
       label.draw_text("months",223,85,0,2,1,1,false)
-      label.draw_text("Labour",305,65,0,2,1,1,false)
-      label.draw_text("durat.",305,85,0,2,1,1,false)
-      label.draw_text("(hrs)",310,105,0,2,1,1,false)
-      label.draw_text("Delivery",405,65,0,2,1,1,false)
-      label.draw_text("Method",410,85,0,2,1,1,false)
-      label.draw_text("Conditi.",518,65,0,2,1,1,false)
-      label.draw_text("at birth",518,85,0,2,1,1,false)
-      label.draw_text("Birt.",625,65,0,2,1,1,false)
-      label.draw_text("weigh.",620,85,0,2,1,1,false)
-      label.draw_text("(kg)",625,105,0,2,1,1,false)
-      label.draw_text("Aliv.",690,65,0,2,1,1,false)
-      label.draw_text("now?",690,85,0,2,1,1,false)
-      label.draw_text("Age at",745,65,0,2,1,1,false)
-      label.draw_text("death*",745,85,0,2,1,1,false)
+      #label.draw_text("Labour",305,65,0,2,1,1,false)
+      #label.draw_text("durat.",305,85,0,2,1,1,false)
+      #label.draw_text("(hrs)",310,105,0,2,1,1,false)
+      label.draw_text("Delivery",310,65,0,2,1,1,false)
+      label.draw_text("Method",310,85,0,2,1,1,false)
+      label.draw_text("Condition",430,65,0,2,1,1,false)
+      label.draw_text("at birth",430,85,0,2,1,1,false)
+      label.draw_text("Birth",552,65,0,2,1,1,false)
+      label.draw_text("weight",547,85,0,2,1,1,false)
+      label.draw_text("(kg)",550,105,0,2,1,1,false)
+      label.draw_text("Alive.",643,65,0,2,1,1,false)
+      label.draw_text("now?",645,85,0,2,1,1,false)
+      label.draw_text("Age at",715,65,0,2,1,1,false)
+      label.draw_text("death*",715,85,0,2,1,1,false)
       label.draw_text("(" + unit[0..2] + ".)", 745,105,0,2,1,1,false) if unit
 
 
@@ -305,11 +305,11 @@ module ANCService
       label.draw_line(105,60,2,245,0)
       label.draw_line(220,60,2,245,0)
       label.draw_line(295,60,2,245,0)
-      label.draw_line(380,60,2,245,0)
-      label.draw_line(510,60,2,245,0)
-      label.draw_line(615,60,2,245,0)
-      label.draw_line(683,60,2,245,0)
-      label.draw_line(740,60,2,245,0)
+      #label.draw_line(380,60,2,245,0)
+      label.draw_line(415,60,2,245,0)
+      label.draw_line(535,60,2,245,0)
+      label.draw_line(643,60,2,245,0)
+      label.draw_line(700,60,2,245,0)
     
       (1..(@obstetrics.length + 1)).each do |pos|
       
@@ -339,10 +339,11 @@ module ANCService
         
         @birt_weig = (@obstetrics[pos] ? (@obstetrics[pos]["BIRTH WEIGHT"] ? 
               @obstetrics[pos]["BIRTH WEIGHT"] : "") : "")
-      
-        @dea = (@obstetrics[pos] ? (@obstetrics[pos]["AGE AT DEATH"] ? 
-              (@obstetrics[pos]["AGE AT DEATH"].to_s.match(/\.[1-9]/) ? @obstetrics[pos]["AGE AT DEATH"] : 
-                @obstetrics[pos]["AGE AT DEATH"].to_i) : "") : "").to_s + 
+        @birt_weig = @birt_weig.match(/Small/i) ? "<2.5 kg" : (@birt_weig.match(/Big/i) ? ">4.5 kg" : @birt_weig)
+        
+          @dea = (@obstetrics[pos] ? (@obstetrics[pos]["AGE AT DEATH"] ?
+              (@obstetrics[pos]["AGE AT DEATH"].to_s.match(/\.[1-9]/) ? @obstetrics[pos]["AGE AT DEATH"].to_s :
+                @obstetrics[pos]["AGE AT DEATH"].to_s) : "") : "").to_s +
           (@obstetrics[pos] ? (@obstetrics[pos]["UNITS OF AGE OF CHILD"] ? 
               @obstetrics[pos]["UNITS OF AGE OF CHILD"] : "") : "")
       
@@ -366,48 +367,24 @@ module ANCService
           
           label.draw_text(@gest,225,(70 + (60 * pos)),0,2,1,1,false)
             
-          label.draw_text(@labor,300,(70 + (60 * pos)),0,2,1,1,false)
+          #label.draw_text(@labor,300,(70 + (60 * pos)),0,2,1,1,false)
              
-          if @delmode.length < 11
-            label.draw_text(@delmode,385,(70 + (60 * pos)),0,2,1,1,false)
-          else
-            @delmode = paragraphate(@delmode)
-        
-            (0..(@delmode.length)).each{|p|
-              label.draw_text(@delmode[p],385,(70 + (60 * pos) + (13 * p)),0,2,1,1,false)
-            }
-          end
-        
-          if @cond.length < 6
-            label.draw_text(@cond,515,(70 + (60 * pos)),0,2,1,1,false)
-          else
-            @cond = paragraphate(@cond, 6)
-        
-            (0..(@cond.length)).each{|p|
-              label.draw_text(@cond[p],515,(70 + (60 * pos) + (18 * p)),0,2,1,1,false)
-            }
-          end
-        
-          if @birt_weig.length < 6
-            label.draw_text(@birt_weig,620,(70 + (60 * pos)),0,2,1,1,false)
-          else
-            @birt_weig = paragraphate(@birt_weig, 4)
-        
-            (0..(@birt_weig.length)).each{|p|
-              label.draw_text(@birt_weig[p],620,(70 + (60 * pos) + (18 * p)),0,2,1,1,false)
-            }
-          end
-                        
+          label.draw_text(@delmode,300,(70 + (60 * pos)),0,2,1,1,false)
+                   
+          label.draw_text(@cond,420,(70 + (60 * pos)),0,2,1,1,false)
+
+          label.draw_text(@birt_weig,539,(70 + (60 * pos)),0,2,1,1,false)
+                                
           label.draw_text((@obstetrics[pos] ? (@obstetrics[pos]["ALIVE"] ? 
-                  @obstetrics[pos]["ALIVE"] : "") : ""),687,(70 + (60 * pos)),0,2,1,1,false)
+                  @obstetrics[pos]["ALIVE"] : "") : ""),647,(70 + (60 * pos)),0,2,1,1,false)
         
-          if @dea.length < 6
-            label.draw_text(@dea,745,(70 + (60 * pos)),0,2,1,1,false)
+          if @dea.length < 10
+            label.draw_text(@dea,708,(70 + (60 * pos)),0,2,1,1,false)
           else
             @dea = paragraphate(@dea, 4)
         
             (0..(@dea.length)).each{|p|
-              label.draw_text(@dea[p],745,(70 + (60 * pos) + (18 * p)),0,2,1,1,false)
+              label.draw_text(@dea[p],708,(70 + (60 * pos) + (18 * p)),0,2,1,1,false)
             }
           end
            
@@ -448,18 +425,10 @@ module ANCService
         
           label2.draw_text(@gest,225,((55 * (pos - 3)) - 13),0,2,1,1,false)
         
-          label2.draw_text(@labor,300,((55 * (pos - 3)) - 13),0,2,1,1,false)
-        
-          if @delmode.length < 11
-            label2.draw_text(@delmode,385,(55 * (pos - 3)),0,2,1,1,false)
-          else
-            @delmode = paragraphate(@delmode)
-        
-            (0..(@delmode.length)).each{|p|
-              label2.draw_text(@delmode[p],385,(55 * (pos - 3) + (18 * p))-17,0,2,1,1,false)
-            }
-          end
-        
+          label2.draw_text(@labor,300,((55 * (pos - 3)) - 13),0,2,1,1,false)        
+          
+          label2.draw_text(@delmode,385,(55 * (pos - 3)),0,2,1,1,false)
+                 
           if @cond.length < 6
             label2.draw_text(@cond,515,((55 * (pos - 3)) - 13),0,2,1,1,false)
           else
@@ -483,7 +452,7 @@ module ANCService
           label2.draw_text((@obstetrics[pos] ? (@obstetrics[pos]["ALIVE"] ? 
                   @obstetrics[pos]["ALIVE"] : "") : ""),687,((55 * (pos - 3)) - 13),0,2,1,1,false)
         
-          if @dea.length < 6
+          if @dea.length < 10
             label2.draw_text(@dea,745,((55 * (pos - 3)) - 13),0,2,1,1,false)
           else
             @dea = paragraphate(@dea, 4)
@@ -631,15 +600,13 @@ module ANCService
         :conditions => ["person_id = ? AND concept_id = ?", @patient.id,
           ConceptName.find_by_name('STILL BIRTH').concept_id]).answer_string.squish rescue nil
 
-      #Observation.find(:all, :conditions => ["person_id = ? AND encounter_id IN (?) AND value_coded = ?", 40, Encounter.active.find(:all, :conditions => ["patient_id = ?", 40]).collect{|e| e.encounter_id}, ConceptName.find_by_name('Caesarean section').concept_id])
-    
       @csections = Observation.find(:all,
         :conditions => ["person_id = ? AND (concept_id = ? AND value_coded = ?)", @patient.id,
           ConceptName.find_by_name('Caesarean section').concept_id, ConceptName.find_by_name('Yes').concept_id]).length rescue nil
 
       @csections = Observation.find(:all,
-        :conditions => ["person_id = ? AND (concept_id = ? AND (value_coded = ? OR value_text = ?) )", @patient.id,
-          ConceptName.find_by_name('Procedure Done').concept_id, ConceptName.find_by_name('Caesarean Section').concept_id, 'Caesarean Section']).length rescue nil if @csections.blank? || @csections.to_i == 0
+        :conditions => ["person_id = ? AND (value_coded = ? OR value_text REGEXP ?)", @patient.id,
+          ConceptName.find_by_name('Caesarean Section').concept_id, 'Caesarean section']).length rescue nil if ((!(@csections > 0)) rescue true)
 
       @vacuum = Observation.find(:all,
         :conditions => ["person_id = ? AND value_coded = ?", @patient.id,
@@ -741,8 +708,8 @@ module ANCService
         (!@vacuum.nil? ? (@vacuum > 0 ? true : false) : false))
       # label.draw_text("#{(!@symphosio.nil? ? (@symphosio.upcase == "NO" ? "NO" : "YES") : "")}",280,230,0,2,1,1,
       #   (!@symphosio.nil? ? (@symphosio.upcase == "NO" ? false : true) : false))
-      label.draw_text("#{(!@csections.nil? ? (@csections <= 0 ? "NO" : "YES") : "")}",280,230,0,2,1,1,
-        (!@csections.nil? ? (@csections <= 0 ? false : true) : false))
+      label.draw_text("#{(!@csections.blank? ? (@csections <= 0 ? "NO" : "YES") : "")}",280,230,0,2,1,1,
+        (!@csections.blank? ? (@csections <= 0 ? false : true) : false))
       label.draw_text("#{@haemorrhage}",280,260,0,2,1,1,(((@haemorrhage.upcase == "PPH") rescue false) ? true : false))
       label.draw_text("#{(!@preeclampsia.nil? ? (((@preeclampsia.upcase == "NO") rescue false) ? "NO" : "YES") : "")}",280,285,0,2,1,1,
         (!@preeclampsia.nil? ? (@preeclampsia.upcase == "NO" ? false : true) : false))
