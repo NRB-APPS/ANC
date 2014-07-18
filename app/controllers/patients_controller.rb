@@ -972,7 +972,7 @@ class PatientsController < ApplicationController
         baby = comment.match(/b\d+$/)
         abortion = comment.match(/a\d+$/)
         value = obs.answer_string.strip
-        value = value.to_i > 0  ? value.to_i : value
+        value = (value.to_i > 0 && value.to_s.strip.length ==  value.to_i.to_s.length)  ? value.to_i : value
         concept_name = obs.concept.name.name.strip
         concept_name = concept_name.sub(/Gestation|Pregnancy/i, 
           "Gestation (months)").sub(/Alive/i,  "Alive Now").gsub(/Year of birth/i, 
@@ -1012,7 +1012,7 @@ class PatientsController < ApplicationController
   end
 
   def obstetric_counts
- 
+
     if params[:with_visit_type] && params[:encounter]
 
       #create visit encounter
@@ -1060,6 +1060,7 @@ class PatientsController < ApplicationController
     @place = ["", "Health Facility", "Home", "TBA", "Other"]
     @delivery_modes = ["", "Spontaneous vaginal delivery", "Caesarean Section", "Vacuum Extraction Delivery", "Breech"]
     @data = JSON.parse(params[:data_obj]) rescue {}
+
     @abortions_data = JSON.parse(params[:abortion_obj]) rescue {}
     save    
     redirect_to next_task(@patient)
@@ -1693,7 +1694,7 @@ class PatientsController < ApplicationController
             )
 
             
-            if value.to_i > 0
+            if value.to_i > 0 && value.to_s.strip.length ==  value.to_i.to_s.length
               observation[:value_numeric] = value            
             else
               observation[:value_text] = value

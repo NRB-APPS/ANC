@@ -113,7 +113,7 @@ function loadSelections(){
     if (delivered_pregnancies > 0){
 
         var headerHolder = document.createElement("div");
-        headerHolder.style.height = "63px;";
+        headerHolder.style.height = "63px";
         headerHolder.style.width = "100%";
         headerHolder.style.borderRadius = "10px";
 
@@ -306,7 +306,8 @@ function stringfy(hash){
 
             vals += data[keys[i]]["count"] + ", ";
             cons += data[keys[i]]["condition"] + ", ";
-        } else {
+        }
+        else {
 
             vals += data[keys[i]]["count"] + "}";
             cons += data[keys[i]]["condition"] + "}";
@@ -341,12 +342,10 @@ function loadInputWindow(){
         function load(){
 
             jQ("#touchscreenInput" + tstCurrentPage + ", #keyboard").css("display", "none");
-
-            // __$("inputFrame" + tstCurrentPage).style.height = 0.741 * screen.height + "px";
+           
             __$("inputFrame" + tstCurrentPage).style.height = "80%"
             __$("inputFrame" + tstCurrentPage).style.marginTop = 0.05 * screen.height + "px";
             __$("inputFrame" + tstCurrentPage).style.background = "white";
-            // __$("inputFrame" + tstCurrentPage).style.width = 0.93 * screen.width + "px";
             __$("inputFrame" + tstCurrentPage).style.width = "98%"
 
             var headerHolder = document.createElement("div");
@@ -639,7 +638,7 @@ function loadInputWindow(){
                   
                     if ($[id][n] != undefined && $[id][n][fields[i]] != undefined){
                         
-                        label = $[id][n][fields[i]]
+                        label = $[id][n][fields[i]];
                     }
 
                     var td2 = document.createElement("div");
@@ -659,17 +658,17 @@ function loadInputWindow(){
                     
                     var c_node = jQ("[id^=" + id + "_" + n + "_detail_row_" + ni + "]");
                     var txt = "?";
-                   
+
                     if (c_node.length == 1)
                         txt = c_node[0].childNodes[1].childNodes[0].innerHTML;
-             
+            
                     if (i > (ni + 1) && !txt.match(/Alive/i)){
                        
                         if(!button.className.match("gray")){
                             button.className += " button_gray";
                             display.innerHTML = "?";
                         }
-                        
+                       
                         button.onclick = function(){
                             
                             var ni = fields.indexOf("Condition at birth");
@@ -769,7 +768,7 @@ function loadInputWindow(){
             __$("header").style.width = width;
         }
 
-        function showNumber(id, global_control, min, max){
+        function showNumber(id, global_control, min, max, type){
             jQ('#backButton, #nextButton').attr("disabled", true);
             cn = 9;
             global_control = ""
@@ -792,6 +791,7 @@ function loadInputWindow(){
                 jQ('#backButton, #nextButton').attr("disabled", false);
                 jQ("#shield, #popup").css("display", "none");
             }
+           
             jQ(cl).css({
                 "float" : "left",
                 "margin-top" : "170px",
@@ -962,15 +962,20 @@ function loadInputWindow(){
                         }
                     }
                     else if(this.innerHTML.match(/OK/)){
+                        var unit = ""
+                        if (__$("unit")){
+                            unit = __$("unit").value
+                        }
 
-                        
                         if (global_control != undefined && parseInt(global_control) > max || parseInt(global_control) < min){
 
                             showMessage("Value out of bound (" + min + " - " + max + ")", false, false);
                         }else if (global_control == ""){
                             showMessage("Please select a value!", false, false);
                         }else{
-                            
+
+                            global_control += " " + unit;
+                            global_control= global_control.trim();
                             var row = __$(__$("popup").getAttribute("row_id"));
 
                             if (row){
@@ -1036,7 +1041,6 @@ function loadInputWindow(){
                 "font-style" : "italic",
                 "float" : "left",
                 "height" : "50px",
-                overflow: "hide",
                 "padding-top" : "13%",
                 "padding-left" : "2%"
             })
@@ -1045,7 +1049,36 @@ function loadInputWindow(){
             __$("right").appendChild(tbl);
             __$("bcancel").appendChild(cl);
             __$("popup-header").innerHTML = current_popup;
-           
+
+            if (type && type == "age"){
+
+                var unit = document.createElement("select");
+                unit.id = "unit";
+                var options = ["Hours", "Days", "Weeks", "Months", "years"]
+                
+                unit.className = "button_blue units";
+                unit.innerHTML = "Months";
+                jQ(unit).css({
+                    "position" : "absolute",
+                    "font-style" : "italic",
+                    "font-size" : "24px",
+                    "height" : "50px",
+                    "width" : "133px",
+                    "top" : "21%",
+                    "left" : "14.3%",
+                    "padding-top" : "8px"                   
+                })
+                
+                __$("left").appendChild(unit);
+
+                for (var i in options){
+                    var option = document.createElement("option");
+                    option.value = options[i];
+                    option.innerHTML = options[i];
+                    unit.appendChild(option);
+                }
+            }
+            
             __$("input").style.minWidth = (parseInt(__$("popup").style.minWidth.replace("px", "")) - parseInt(__$("tblKeyboard").style.minWidth.replace("px", ""))) + "px";
             jQ("#shield, #popup").css("display", "block");
         }
@@ -1123,31 +1156,34 @@ function loadInputWindow(){
                                 var button = row.getElementsByClassName("input-button")[0];
                                 var display = row.getElementsByClassName("display-space")[0];
                                 var label = row.getElementsByClassName("detail-row-label")[0];
-                                
+                               
                                 if(a != undefined && $$[a] != undefined){
 
                                     display.innerHTML = value;
                                     $$[a][label.innerHTML] = value;
                                   
                                 }else{
+                                 
                                     display.innerHTML =  value;
                                     
                                     if ($[p][n] == undefined){
                                         $[p][n] = {};
                                     }
+
                                     $[p][n][label.innerHTML] = value;
                                 
                                   
                                     var ni = fields.indexOf("Condition at birth");
                                     var pi = __$("popup").getAttribute("row_id").trim().match(/\d+$/)[0];
-                                  
-                                    if (parseInt(ni) == parseInt(pi)){
 
-                                        var leng = fields.length;
+                                    var leng = fields.length;
+                                   
+                                    if (parseInt(ni) == parseInt(pi)){  
+                                         
                                         for( var m = (parseInt(pi) + 2); m < leng; m ++){
                                             
                                             var baby_rows = jQ("[id^=" + p + "_" + n + "]"); //matches only single baby rows
-                                            
+                                            var lbl = baby_rows[m].getElementsByClassName("detail-row-label")[0];                                           
                                             var but = baby_rows[m].childNodes[2].childNodes[0];
                                             var inputdisplay = baby_rows[m].childNodes[1].childNodes[0];
 
@@ -1163,24 +1199,59 @@ function loadInputWindow(){
 
                                                 if (!but.className.match(/gray/))
                                                     but.className += " button_gray";
-                                                $[p][n][label.innerHTML] = "?";
+                                                $[p][n][lbl.innerHTML] = "?";
                                                 inputdisplay.innerHTML = "?"
                                                 but.onclick = function(){
-
+                                                    
                                                     showMessage("Baby was born dead");
                                                 }
                                             } else {
-                                              
-                                                if (but.className.match(/gray/))
-                                                    but.className = "input-button";
-                                           
-                                                but.onclick = function(){
 
-                                                    enterData(this.parentNode.parentNode);
+                                                if (but.className.match(/gray/) && m < (fields.length - 1)){
+                                                    but.className = "input-button";
+                                                                                           
+                                                    but.onclick = function(){
+                                                
+                                                        enterData(this.parentNode.parentNode);
+                                                    }
+                                                }else{
+                                                    
+                                                    but.onclick = function(){
+                                                        showMessage("Select if baby is alive now");
+                                                    }
                                                 }
                                             }
                                         }
+                                       
                                     }
+
+
+                                    if (label.innerHTML == "Alive Now"){
+
+                                        var brows = jQ("[id^=" + p + "_" + n + "]"); //matches only single baby rows
+                                        var bbut = brows[fields.length - 1].childNodes[2].childNodes[0];
+                                        var blbl = brows[fields.length - 1].getElementsByClassName("detail-row-label")[0];
+                                        var binputdisplay = brows[fields.length - 1].childNodes[1].childNodes[0];
+
+                                        if ($[p][n][label.innerHTML].trim() == "No"){
+
+                                            bbut.className = "input-button";
+                                            bbut.onclick = function(){
+
+                                                enterData(this.parentNode.parentNode);
+                                            }
+                                        }else if ($[p][n][label.innerHTML].trim() == "Yes"){
+
+                                            bbut.className = "input-button button_gray";
+                                            binputdisplay.innerHTML = "?";
+                                            $[p][n][blbl.innerHTML] = "?";
+                                            bbut.onclick = function(){
+
+                                                showMessage("Baby is still alive");
+                                            }
+                                        }
+                                    }
+                                    
                                 }
                             }
                         }else{
@@ -1214,7 +1285,8 @@ function loadInputWindow(){
                     "Method of delivery" : ["list", "Spontaneous vaginal delivery", "Caesarean Section", "Vacuum Extraction Delivery", "Breech"],
                     "Condition at birth" : ["list", "Alive", "Still Birth"],
                     "Birth weight" : ["list", "Big Baby (Above 4kg)", "Average", "Small Baby (Less than 2.5kg)"],
-                    "Alive Now" : ["list", "Yes", "No"]
+                    "Alive Now" : ["list", "Yes", "No"],
+                    "Age at death" : ["age"]
                 };
 
                 var field_names = Object.keys(fields);
@@ -1241,6 +1313,8 @@ function loadInputWindow(){
                 }else if (type == "list"){
                     var listItems = fields[field_names[pos]];
                     showList("popup", listItems);
+                }else if (type == "age"){
+                    showNumber("popup", row.id, 1, 40, "age");
                 }
             }
         }
