@@ -341,7 +341,7 @@ module ANCService
               @obstetrics[pos]["BIRTH WEIGHT"] : "") : "")
         @birt_weig = @birt_weig.match(/Small/i) ? "<2.5 kg" : (@birt_weig.match(/Big/i) ? ">4.5 kg" : @birt_weig)
         
-          @dea = (@obstetrics[pos] ? (@obstetrics[pos]["AGE AT DEATH"] ?
+        @dea = (@obstetrics[pos] ? (@obstetrics[pos]["AGE AT DEATH"] ?
               (@obstetrics[pos]["AGE AT DEATH"].to_s.match(/\.[1-9]/) ? @obstetrics[pos]["AGE AT DEATH"].to_s :
                 @obstetrics[pos]["AGE AT DEATH"].to_s) : "") : "").to_s +
           (@obstetrics[pos] ? (@obstetrics[pos]["UNITS OF AGE OF CHILD"] ? 
@@ -886,7 +886,7 @@ module ANCService
 
       @drugs = {};
       @other_drugs = {};
-      main_drugs = ["TTV", "SP", "Fefol", "NVP", "Albendazole"]
+      main_drugs = ["TTV", "SP", "Fefol", "Albendazole"]
     
       @patient.encounters.find(:all, :order => "encounter_datetime DESC",
         :conditions => ["(encounter_type = ? OR encounter_type = ?) AND encounter_datetime >= ? AND encounter_datetime <= ?",
@@ -895,18 +895,19 @@ module ANCService
         @drugs[e.encounter_datetime.strftime("%d/%b/%Y")] = {} if !@drugs[e.encounter_datetime.strftime("%d/%b/%Y")];
         @other_drugs[e.encounter_datetime.strftime("%d/%b/%Y")] = {} if !@other_drugs[e.encounter_datetime.strftime("%d/%b/%Y")];
         e.orders.each{|o|
+
+          drug_name = o.drug_order.drug.name.match(/syrup|\d+\.*\d+mg|\d+\.*\d+\smg|\d+\.*\d+ml|\d+\.*\d+\sml/i) ?
+            (o.drug_order.drug.name[0, o.drug_order.drug.name.index(" ")] + " " +
+              o.drug_order.drug.name.match(/syrup|\d+\.*\d+mg|\d+\.*\d+\smg|\d+\.*\d+ml|\d+\.*\d+\sml/i)[0]) :
+            (o.drug_order.drug.name[0, o.drug_order.drug.name.index(" ")])
+            
           if main_drugs.include?(o.drug_order.drug.name[0, o.drug_order.drug.name.index(" ")])
-            if o.drug_order.drug.name[0, o.drug_order.drug.name.index(" ")] == "NVP"
-              if o.drug_order.drug.name.upcase.include?("ML")
-                @drugs[e.encounter_datetime.strftime("%d/%b/%Y")][o.drug_order.drug.name[0, o.drug_order.drug.name.index(" ")]] = o.drug_order.amount_needed
-              else
-                @other_drugs[e.encounter_datetime.strftime("%d/%b/%Y")][o.drug_order.drug.name[0, o.drug_order.drug.name.index(" ")]] = o.drug_order.amount_needed
-              end
-            else
-              @drugs[e.encounter_datetime.strftime("%d/%b/%Y")][o.drug_order.drug.name[0, o.drug_order.drug.name.index(" ")]] = o.drug_order.amount_needed
-            end
+
+            @drugs[e.encounter_datetime.strftime("%d/%b/%Y")][o.drug_order.drug.name[0,
+                o.drug_order.drug.name.index(" ")]] = o.drug_order.amount_needed
           else
-            @other_drugs[e.encounter_datetime.strftime("%d/%b/%Y")][o.drug_order.drug.name[0, o.drug_order.drug.name.index(" ")]] = o.drug_order.amount_needed
+            
+            @other_drugs[e.encounter_datetime.strftime("%d/%b/%Y")][drug_name] = o.drug_order.amount_needed
           end
         }
       }
@@ -1099,7 +1100,7 @@ module ANCService
 
       @drugs = {}; 
       @other_drugs = {}; 
-      main_drugs = ["TTV", "SP", "Fefol", "NVP", "Albendazole"]
+      main_drugs = ["TTV", "SP", "Fefol", "Albendazole"]
     
       @patient.encounters.find(:all, :order => "encounter_datetime DESC",
         :conditions => ["(encounter_type = ? OR encounter_type = ?) AND encounter_datetime >= ? AND encounter_datetime <= ?",
@@ -1108,18 +1109,19 @@ module ANCService
         @drugs[e.encounter_datetime.strftime("%d/%b/%Y")] = {} if !@drugs[e.encounter_datetime.strftime("%d/%b/%Y")];
         @other_drugs[e.encounter_datetime.strftime("%d/%b/%Y")] = {} if !@other_drugs[e.encounter_datetime.strftime("%d/%b/%Y")];
         e.orders.each{|o|
+          
+          drug_name = o.drug_order.drug.name.match(/syrup|\d+\.*\d+mg|\d+\.*\d+\smg|\d+\.*\d+ml|\d+\.*\d+\sml/i) ?
+            (o.drug_order.drug.name[0, o.drug_order.drug.name.index(" ")] + " " +
+              o.drug_order.drug.name.match(/syrup|\d+\.*\d+mg|\d+\.*\d+\smg|\d+\.*\d+ml|\d+\.*\d+\sml/i)[0]) :
+            (o.drug_order.drug.name[0, o.drug_order.drug.name.index(" ")])
+
           if main_drugs.include?(o.drug_order.drug.name[0, o.drug_order.drug.name.index(" ")])
-            if o.drug_order.drug.name[0, o.drug_order.drug.name.index(" ")] == "NVP"
-              if o.drug_order.drug.name.upcase.include?("ML")
-                @drugs[e.encounter_datetime.strftime("%d/%b/%Y")][o.drug_order.drug.name[0, o.drug_order.drug.name.index(" ")]] =  ((o.drug_order.amount_needed/25.0).ceil * 25) rescue 0
-              else
-                @other_drugs[e.encounter_datetime.strftime("%d/%b/%Y")][o.drug_order.drug.name[0, o.drug_order.drug.name.index(" ")]] = o.drug_order.amount_needed
-              end
-            else
-              @drugs[e.encounter_datetime.strftime("%d/%b/%Y")][o.drug_order.drug.name[0, o.drug_order.drug.name.index(" ")]] = o.drug_order.amount_needed
-            end
+
+            @drugs[e.encounter_datetime.strftime("%d/%b/%Y")][o.drug_order.drug.name[0,
+                o.drug_order.drug.name.index(" ")]] = o.drug_order.amount_needed
           else
-            @other_drugs[e.encounter_datetime.strftime("%d/%b/%Y")][o.drug_order.drug.name[0, o.drug_order.drug.name.index(" ")]] = o.drug_order.amount_needed
+
+            @other_drugs[e.encounter_datetime.strftime("%d/%b/%Y")][drug_name] = o.drug_order.amount_needed
           end
         }
       }
