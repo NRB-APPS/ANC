@@ -336,3 +336,9 @@
     font-size: 19px;
     width: 30%;
 }
+
+select {
+    -moz-appearance: none;
+    text-indent: 0.01px;
+    text-overflow: '';
+}

@@ -840,7 +840,7 @@ function loadInputWindow(){
                         }else if (global_control != undefined && parseInt(global_control) > max || parseInt(global_control) < min){
 
                             var str = global_control.length > cn ? (global_control.substring(0, cn - 2) + "..." + global_control.substring(global_control.length - 2, global_control.length)) : (global_control)
-                            __$("input").innerHTML =  str + "<div style='color: red; font-size: 24px; padding-top: 0px;'><br />" + " Out of range</div>";
+                            __$("input").innerHTML =  str + "<div style='color: red; font-size: 24px; padding-top: 0px;'><br />&nbsp<br />" + " Out of range</div>";
                         }
                     }
                 }
@@ -875,7 +875,7 @@ function loadInputWindow(){
                         }else if (global_control != undefined && parseInt(global_control) > max || parseInt(global_control) < min){
 
                             var str = global_control.length > cn ? (global_control.substring(0, cn - 2) + "..." + global_control.substring(global_control.length - 2, global_control.length)) : (global_control)
-                            __$("input").innerHTML =  str + "<div style='color: red; font-size: 24px; padding-top: 0px;'><br />" + " Out of range</div>";
+                            __$("input").innerHTML =  str + "<div style='color: red; font-size: 24px; padding-top: 0px;'><br />&nbsp<br />" + " Out of range</div>";
                         }
                     }
                 }
@@ -911,7 +911,7 @@ function loadInputWindow(){
                         }else if (global_control != undefined && parseInt(global_control) > max || parseInt(global_control) < min){
 
                             var str = global_control.length > cn ? (global_control.substring(0, cn - 2) + "..." + global_control.substring(global_control.length - 2, global_control.length)) : (global_control)
-                            __$("input").innerHTML =  str + "<div style='color: red; font-size: 24px; padding-top: 0px;'><br />" + " Out of range</div>";
+                            __$("input").innerHTML =  str + "<div style='color: red; font-size: 24px; padding-top: 0px;'><br />&nbsp<br />" + " Out of range</div>";
                         }
                     }
                 }
@@ -957,7 +957,7 @@ function loadInputWindow(){
                             }else if (global_control != undefined && parseInt(global_control) > max || parseInt(global_control) < min){
 
                                 var str = global_control.length > cn ? (global_control.substring(0, cn - 2) + "..." + global_control.substring(global_control.length - 2, global_control.length)) : (global_control)
-                                __$("input").innerHTML =  str + "<div style='color: red; font-size: 24px; padding-top: 0px;'><br />" + " Out of range</div>";
+                                __$("input").innerHTML =  str + "<div style='color: red; font-size: 24px; padding-top: 0px;'><br />&nbsp<br />" + " Out of range</div>";
                             }
                         }
                     }
@@ -1022,7 +1022,7 @@ function loadInputWindow(){
                         }else if (global_control != undefined && parseInt(global_control) > max || parseInt(global_control) < min){
 
                             var str = global_control.length > cn ? (global_control.substring(0, cn - 2) + "..." + global_control.substring(global_control.length - 2, global_control.length)) : (global_control)
-                            __$("input").innerHTML =  str + "<div style='color: red; font-size: 24px; padding-top: 0px;'><br />" + " Out of range</div>";
+                            __$("input").innerHTML =  str + "<div style='color: red; font-size: 24px; padding-top: 0px;'><br />&nbsp<br />" + " Out of range</div>";
                         }
                     }
                 }
@@ -1061,12 +1061,18 @@ function loadInputWindow(){
                 jQ(unit).css({
                     "position" : "absolute",
                     "font-style" : "italic",
-                    "font-size" : "24px",
-                    "height" : "50px",
-                    "width" : "133px",
-                    "top" : "21%",
-                    "left" : "14.3%",
-                    "padding-top" : "8px"                   
+                    "font-size" : "22px",
+                    "height" : "47px",
+                    "width" : "154px",
+                    "max-width" : "154px",
+                    "top" : "126px",
+                    "left" : "6px",
+                    "padding-top" : "8px",
+                    "-webkit-appearance": "none",
+                    "-moz-appearance": "none",
+                    "text-indent": "1px",
+                    "border" : "none",
+                    "text-overflow": ''
                 })
                 
                 __$("left").appendChild(unit);
