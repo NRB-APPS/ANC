@@ -206,6 +206,13 @@
     var sb = $("systolic_blood_pressure").value;
     var db = $("diastolic_blood_pressure").value;
 
+    if (sb == "Unknown" || db == "Unknown"){
+      $("systolic_blood_pressure").value = "Unknown";
+      $("diastolic_blood_pressure").value = "Unknown";
+      $("blood_pressure").value = ""
+      gotoPage(tstCurrentPage + 1);
+    }
+    
     var complication = (sb > 180) || (db > 110) ?
       "Emergency Care Needed" : ((sb >= 160 && sb <= 180) || (db >= 100 && db <= 110) ?
       "Hypertension Stage 2" : ((sb >= 140 && sb <= 159) || (db >= 90 && db <= 99)?
