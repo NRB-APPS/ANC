@@ -175,7 +175,7 @@
                                      ajaxCustomRequest(__$('obs'), 'list_observations?encounter_id=<%= @encounter_data[e][0] %>', 'encounter')"
                                  >
 
-                              <%= @encounter_data[e][1] %>
+                              <%= (@encounter_data[e][1] || "").gsub(/Dispensing/i, "TTV Status") %>
 
                               <span style="font-size: 0.7em; font-style: italic;">(<%= @encounter_data[e][2] %>)</span>
                             </div>
