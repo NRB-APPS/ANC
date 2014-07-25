@@ -19,14 +19,9 @@
     margin-right:10px;
   }
 
-  #sys {
+  #sys, #dia {
     position: absolute;
-    margin-left: 33%;
-  }
-
-  #dia {
-    position: absolute;
-    margin-left: 60%;
+    font-size: 22px;  
   }
 
   .lowWeightForHeight{color:black;background:red;}
@@ -349,9 +344,14 @@
     dia  = document.getElementById('dia')
     sys  = document.getElementById('sys')
 
-    dia.style.bottom = (__$("keyboard").offsetHeight - 73)+ "px"
-    sys.style.bottom = (__$("keyboard").offsetHeight - 73)+ "px";
-   
+	sys.style.bottom = (__$("keyboard").offsetHeight - 73)+ "px";	
+	sys.style.marginLeft = (0.33 * screen.width) + "px";
+	sys.style.maxWidth = "250px";
+	
+    dia.style.bottom = (__$("keyboard").offsetHeight - 73)+ "px";
+    dia.style.maxWidth = "250px"; 
+	dia.style.marginLeft = (0.33 * screen.width + 300) + "px"
+	
     dia.setAttribute('onmousedown', 'changeSelected("dia")')
     dia.setAttribute('class', 'green')
     sys.setAttribute('onmousedown', 'changeSelected("sys")')

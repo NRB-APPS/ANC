@@ -14,19 +14,19 @@
       __$("lblSelectAll").innerHTML = "None";
 
       __$("chkSelectAll").onclick = function(){
-        if ( __$("chkSelectAll").src.replace(/unticked/))
+        if ( __$("chkSelectAll").src.match(/unticked/))
         __$("chkSelectAll").src = __$("chkSelectAll").src.replace(/unticked/, "ticked");
         checkAll();
         __$("touchscreenInput" + tstCurrentPage).setAttribute("optional", "true")
-        gotoNextPage();
+        setTimeout("gotoNextPage()", 200);
       }
       __$("lblSelectAll").onclick = function(){
 
-        if ( __$("chkSelectAll").src.replace(/unticked/))
+        if ( __$("chkSelectAll").src.match(/unticked/))
           __$("chkSelectAll").src = __$("chkSelectAll").src.replace(/unticked/, "ticked");
         checkAll();
         __$("touchscreenInput" + tstCurrentPage).setAttribute("optional", "true");
-        gotoNextPage();
+        setTimeout("gotoNextPage()", 200);
       }
     }
 
