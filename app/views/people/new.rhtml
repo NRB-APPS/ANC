@@ -178,10 +178,10 @@
   }
   function ajaxify(cat, selected){
 
-    if (cat == "region"){
+    if (cat.trim() == "region" && selected != "Other" && !selected.match(/region/)){
       var url = "/people/districts_for?filter_value=" + selected + "&search_string=";
       ajaxCustomRequest(cat, url);
-    }else if (cat == "district"){
+    }else if (cat.trim() == "district"){
       var url = "/people/traditional_authority_for?filter_value=" + tstInputTarget.value + "&search_string=";
       ajaxCustomRequest(cat, url);
     }
@@ -212,8 +212,6 @@
 
       if (cat == "region"){
 
-        __$("sc2").innerHTML = ""
-
         var data = result.split("|");
 
         var ul = document.createElement("ul");
@@ -227,30 +225,11 @@
           li.onmousedown = function(){
             updateCustomTouchscreenInput(this);
           }
-
+		
           ul.appendChild(li);
         }
-
+		__$("sc2").innerHTML = ""
         __$("sc2").appendChild(ul);
-      }else if(cat == "district"){
-
-        var data = result.split("|");
-
-        var ul = document.createElement("ul");
-
-        for(var i = 0; i < data.length; i ++){
-
-          var li = document.createElement("li")
-          li.setAttribute("class", "ta");
-          li.value = data[i];
-          li.innerHTML = data[i];
-          li.onmousedown = function(){
-            updateCustomTouchscreenInput(this);
-          }
-
-          ul.appendChild(li);
-        }
-
       }
     }
   }
@@ -295,11 +274,11 @@
   }
 
   function updateInputFields(){
-    if (value != tstInputTarget.value){
+    if (value.trim() != tstInputTarget.value.trim()){
+    
       value = tstInputTarget.value;
-      if (value.length > 0) {
-
-        ajaxify("region", value);
+      if (value.length > 0 && value.match(/region/i)) {
+		ajaxify("region", value);
       }
     }
 
@@ -314,7 +293,7 @@
 
     //clear previous selections
     __$("clearButton").onmousedown.apply(__$("clearButton"));
-    setTimeout("updateInputFields()", 100)
+    setTimeout("updateInputFields()", 30)
     
     __$("viewport").style.width = "48%";
     __$("viewport").style.borderStyle = "solid";

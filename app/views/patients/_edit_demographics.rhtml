@@ -177,12 +177,13 @@
 
   }
 
-  function updateInputFields(){
-    if (value != tstInputTarget.value){
-      value = tstInputTarget.value;
-      if (value.length > 0) {
 
-        ajaxify("region", value);
+   function updateInputFields(){
+    if (value.trim() != tstInputTarget.value.trim()){
+    
+      value = tstInputTarget.value;
+      if (value.length > 0 && value.match(/region/i)) {
+		ajaxify("region", value);
       }
     }
 
