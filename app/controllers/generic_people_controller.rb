@@ -380,6 +380,8 @@ class GenericPeopleController < ApplicationController
   end
   
   def region
+
+    foreign = params[:foreign]
     region_conditions = ["name LIKE (?)", "%#{params[:value]}%"]
 
     regions = Region.find(:all,:conditions => region_conditions, :order => 'region_id')
@@ -388,6 +390,8 @@ class GenericPeopleController < ApplicationController
         "<li value='#{r.name}'>#{r.name}</li>"
       end
     end
+
+    regions << "<li value='Foreign'>Foreign</li>" if !foreign.blank?
     render :text => regions.join('')  and return
   end
 
@@ -404,13 +408,26 @@ class GenericPeopleController < ApplicationController
   end
 
   def districts_for
-    region_id = Region.find_by_name("#{params[:filter_value]}").id
+
+    region_id = Region.find_by_name("#{params[:filter_value]}").id rescue nil
     region_conditions = ["name LIKE (?) AND region_id = ? ", "%#{params[:search_string]}%", region_id]
 
-    districts = District.find(:all,:conditions => region_conditions, :order => 'name')
+    districts = District.find(:all,:conditions => region_conditions, :order => 'name') rescue []
     districts = districts.map do |d|
       d.name
     end
+
+    if region_id.blank?
+      nationalities = []
+      File.open(RAILS_ROOT + "/public/data/nationalities.txt", "r").each{ |nat|
+        nationalities << nat
+      }
+      if nationalities.length > 0
+        nationalities = (["Mozambican", "Zambian", "Tanzanian", "Zimbambean", "American", "Nigerian", "Namibian", "Chinese"] + nationalities).uniq
+      end
+      districts = nationalities
+    end
+
     render :text => (districts + ["Other"]).join('|')  and return
   end
 

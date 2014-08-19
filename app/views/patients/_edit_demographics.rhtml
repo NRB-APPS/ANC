@@ -182,7 +182,7 @@
     if (value.trim() != tstInputTarget.value.trim()){
     
       value = tstInputTarget.value;
-      if (value.length > 0 && value.match(/region/i)) {
+      if (value.length > 0 && value.match(/region|foreign/i)) {
 		ajaxify("region", value);
       }
     }
@@ -338,7 +338,7 @@
 
     <p><label for="filter_region">Current Address<span class='helper'> Demographics (Edit)</span></label></br>
       <%= text_field "filter" , 'region', :xhelpText => "Region<span class='helper'> Demographics (Edit)</span>",
-        :ajaxURL => '/people/region/Region?field=role&value=',
+        :ajaxURL => '/people/region/Region?field=role&foreign=true&value=',
         :tt_pageStyleClass => "NoKeyboard",
         :tt_BeforeUnLoad => "verifyFields(2)",
         :tt_onLoad => "showNext(); ajaxifyDistricts();" %></p>
