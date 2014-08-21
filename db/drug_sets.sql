@@ -1,5 +1,4 @@
 
-DROP TABLE IF EXISTS `dset`;
 CREATE TABLE `dset` (
   `set_id` int(11)  NOT NULL AUTO_INCREMENT,
   `name` text DEFAULT NULL,
@@ -11,7 +10,6 @@ CREATE TABLE `dset` (
    PRIMARY KEY (`set_id`)
 );
 
-DROP TABLE IF EXISTS `drug_set`;
 CREATE TABLE `drug_set` (
   `drug_set_id` int(11) NOT NULL AUTO_INCREMENT,
   `drug_inventory_id` int(11)  REFERENCES drug (drug_id),

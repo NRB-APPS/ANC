@@ -1,14 +1,57 @@
-To add a missing TA or village
+		APPLICATION SETUP INSTRUCTIONS
 
-In public/data/missing_ta
+A. New installation on new database
+	
+	1. Clone the application from github
 
-	1. Add a folder with a name corresponding to District name where TA is, if the folder already exists, do not add a duplicate one
-			(A wrong folder name will add a new district) 
-			
-	2. Within the folder, create a .txt file with a name that corresponds to the missing TA. If file exists, do not create a duplicate one, just use it
+	   	https://github.com/BaobabHealthTrust/ANC-2.git
 	
-	3. Within the .txt file, add villages that are missing
+	2. Copy the two files config/database.yml.example and config/application.yml.example
+	   to config/database.yml and config/application.yml respectively using the following commands
+	  
+	  	 cp config/database.yml.example config/database.yml.example
+	   	cp config/application.yml.example config/application.yml 
+
+	3. Edit the config/database.yml files by specifying your database name to be created and mysql password 
+           also under bart2, specify parameters for bart2 database, not forgetting host url under host: .
+
+	   Edit config/application.yml specifying anc_link and with link ANC app will be run and art_link with link 
+	   where BART2 is running, also edit all the other parameters as necessary
+
+	4. Initialize the database configured step A.3 above using the command above
+	   
+	   	script/initial_database_setup.sh ENVIRONMENT SITE_NAME
 	
-	Navigate to the application folder and run the following command
+	   replacing ENVIRONMENT with target environment and SITE_NAME with name of facility app is to be installed.
 	
-		script/runner  script/missing_ta.rb
+	   Run application INITIAL USERNAME : admin
+		           INITIAL PASSWORD : test
+
+
+B. Installation on existing database	
+	
+	1. Clone the application from github
+
+	   	https://github.com/BaobabHealthTrust/ANC-2.git
+	
+	2. Copy the two files config/database.yml.example and config/application.yml.example
+	   to config/database.yml and config/application.yml respectively using the following commands
+	  
+	  	 cp config/database.yml.example config/database.yml.example
+	   	cp config/application.yml.example config/application.yml 
+
+	3. Edit the config/database.yml files by specifying your database name and mysql password 
+           also under bart2, specify parameters for bart2 database, not forgetting host url under host: .
+
+	   Edit config/application.yml specifying anc_link and with link ANC app will be run and art_link with link 
+	   where BART2 is running, also edit all the other parameters as necessary
+
+	4. Load extra mysql tables for drug sets
+
+		mysql -u username -p database_name < db/drug_sets.sql
+
+	   If an error comes out showing a mysql table already exists, ignore it.
+	   
+	Run the application
+
+5
