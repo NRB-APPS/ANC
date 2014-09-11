@@ -129,7 +129,7 @@ class EncountersController < ApplicationController
     redirect_to "/patients/print_registration?patient_id=#{@patient.id}" and return if ((encounter.type.name.upcase rescue "") == 
         "REGISTRATION")
 
-    redirect_to "/patients/print_exam_label?patient_id=#{@patient.id}" and return if ((encounter.type.name.upcase rescue "") ==
+    redirect_to "/patients/auto_print_lab_results?patient_id=#{@patient.id}" and return if ((encounter.type.name.upcase rescue "") ==
         "LAB RESULTS")
 
     redirect_to "/patients/print_history/?patient_id=#{@patient.id}" and return if (encounter.type.name.upcase rescue "") == 
