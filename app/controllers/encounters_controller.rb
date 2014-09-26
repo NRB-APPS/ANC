@@ -142,6 +142,10 @@ class EncountersController < ApplicationController
       if available.to_s == "true"
 
         print_and_redirect("/patients/exam_label?patient_id=#{@patient.id}",
+                           "/patients/print_visit_label/?patient_id=#{@patient.id}" + (params[:cango2art] ? "&cango2art=1" : "")) and return
+      else
+
+        print_and_redirect("/patients/print_visit_label/?patient_id=#{@patient.id}" + (params[:cango2art] ? "&cango2art=1" : ""),
                            next_task(@patient)) and return
       end
     end
