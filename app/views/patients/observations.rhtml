@@ -152,6 +152,12 @@
             if (selectedNodes.length > 0 && jQuery(selectedNodes[0]).visible() == false) {
 
                 __$("position").value = "";
+
+                if(__$("presentation").value.toLowerCase().trim() == "ball"){
+
+                    __$("breech_presentation").value = "";
+                    __$("cephalic_presentation").value = "";
+                }
                 if (jQuery(selectedNodes[0]).attr("target") != "") {
 
                     for (var i in selectedNodes) {
@@ -161,7 +167,7 @@
                         }
                     }
                 }
-                jQuery("#viewport3 ul li, #viewport4 ul li").css("background-color", "#eee");
+                jQuery("#viewport3 ul li, #viewport2 ul li, #viewport4 ul li").css("background-color", "#eee");
             }
             //********* done clearing fields
 
@@ -372,6 +378,19 @@
             li.onmousedown = function () {
 
                 __$("position").value = this.getAttribute("data");
+
+                var targetCheckers = jQuery("#sc4 ul li").filter(function () {
+                    return this.style.backgroundColor == 'lightblue';
+                });
+
+                if (targetCheckers && targetCheckers.length == 1) {
+                    var target  = targetCheckers[0].getAttribute("target")
+                        if (target && target.length > 0){
+                            __$(target).value = "";
+                            console.log("Cleaned: " + target)
+                        }
+                }
+
                 __$("sc4").innerHTML = "";
                 var arr = [""];
                 var target = "";
@@ -576,7 +595,7 @@
                   "Right Sacro Posterior",
                   "Unknown"] %>
 
-    <%= touch_select_tag "BREECH", @patient, options_for_select(@breech),
+    <%= touch_select_tag "BREECH POSITION", @patient, options_for_select(@breech),
                          {:id => "breech",
                           :helptext => "Breech Position Type <span class='helper'> ANC Examination</span>",
                           :field_type => "text",

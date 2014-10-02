@@ -645,7 +645,7 @@ class PrescriptionsController < ApplicationController
       @set_names[set.set_id] = set.name
       @set_descriptions[set.set_id] = set.description
        
-      dsets = DrugSet.find_all_by_set_id(set.set_id)
+      dsets = DrugSet.find_all_by_set_id_and_voided(set.set_id, 0)
       dsets.each do |d_set|
 
         @drug_sets[set.set_id][d_set.drug_inventory_id] = {}
@@ -670,7 +670,7 @@ class PrescriptionsController < ApplicationController
   end
 
   def prescribe
-  
+
     @patient    = Patient.find(params["patient_id"]) rescue nil
     
     d = (session[:datetime].to_date rescue Date.today)
