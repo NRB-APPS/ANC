@@ -423,7 +423,7 @@ class GenericPeopleController < ApplicationController
         nationalities << nat
       }
       if nationalities.length > 0
-        nationalities = (["Mozambican", "Zambian", "Tanzanian", "Zimbambean", "Nigerian", "Namibian"] + nationalities).uniq
+        nationalities = (["Mozambican", "Zambian", "Tanzanian", "Zimbambean", "Nigerian", 'Burundian', "Namibian"] + nationalities).uniq
       end
       districts = nationalities
     end

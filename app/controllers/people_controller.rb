@@ -328,6 +328,10 @@ class PeopleController < GenericPeopleController
       nationalities << nat if nat.upcase.strip.match(search_string)
     }
 
+    if nationalities.length > 0
+      nationalities = (["Mozambican", "Zambian", "Tanzanian", "Zimbambean", "Nigerian", "Burundian", "Namibian"] + nationalities).uniq
+    end
+
     render :text => "<li></li><li " + nationalities.map{|nationality| "value=\"#{nationality}\">#{nationality}" }.join("</li><li ") + "</li>"
 
   end
