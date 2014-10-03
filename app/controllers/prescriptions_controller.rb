@@ -695,14 +695,33 @@ class PrescriptionsController < ApplicationController
 
     if (@patient)
 
+
       if !params[:auto_flow].blank? and params[:auto_flow].to_s == "false"
 
       else
-        print_and_redirect ("/patients/exam_label/?patient_id=#{@patient.id}",
-                            "/patients/print_visit_label/?patient_id=#{@patient.id}") and return
+
+        available = false
+        (@patient.encounters.find(:last,
+                                  :conditions => ["encounter_type IN (?) AND DATE(encounter_datetime) = ?",
+                                                  EncounterType.find_by_name("LAB RESULTS").id,
+                                                  (session[:datetime].to_date rescue Date.today)]).observations rescue []
+        ).each do |ob|
+
+          if !ob.answer_string.match(/not done/i) && ob.concept.name.name != "Workstation location"
+            available = true
+          end
+        end
       end
 
-      redirect_to next_task(@patient)  and return
+      if available
+        print_and_redirect("/patients/exam_label/?patient_id=#{@patient.id}",
+                           "/patients/print_visit_label/?patient_id=#{@patient.id}") and return
+      else
+        print_and_redirect("/patients/print_visit_label/?patient_id=#{@patient.id}",
+                           next_task(@patient)) and return
+      end
+
+      redirect_to next_task(@patient) and return
     else
       redirect_to "/patients/treatment_dashboard/#{params[:patient_id]}" and return
     end
