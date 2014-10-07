@@ -1516,6 +1516,7 @@ module ANCService
                         (SELECT c.name FROM concept_name c WHERE c.concept_id = o.concept_id LIMIT 1)) value FROM encounter e
                           INNER JOIN obs o ON o.encounter_id = e.encounter_id
                           WHERE e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE name = 'LAB RESULTS' LIMIT 1)
+                            AND e.voided = 0
                             AND o.concept_id = (SELECT concept_id FROM concept_name WHERE name = 'HIV STATUS')
                             AND e.patient_id = #{self.patient.patient_id} LIMIT 1
                   ").last.value.match(/Negative|Positive/i)[0] rescue "Unknown"
