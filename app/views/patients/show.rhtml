@@ -248,6 +248,8 @@ next_task = task.encounter_type.gsub('_',' ') rescue nil
             <option value='/patients/tab_visit_history?patient_id=<%= @patient.id  %>'>Current Pregnancy</option>
           <% end %>
 
+          <option value='/patients/tab_printouts?patient_id=<%= @patient.id  %>'>Printouts</option>
+
         </select>
         <select id="navigation_links">
           <!--option link="/encounter_types?patient_id=<%= @patient.id  %>" ttSize = "160px">Tasks</option-->

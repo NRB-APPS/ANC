@@ -1765,6 +1765,12 @@ class PatientsController < ApplicationController
     end
   end
 
+
+  def tab_printouts
+
+    render :layout => false
+  end
+
   private
 
 end
