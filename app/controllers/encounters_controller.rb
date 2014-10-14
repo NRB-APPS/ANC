@@ -17,7 +17,7 @@ class EncountersController < ApplicationController
     #raise params[:encounter][:encounter_type_name].to_yaml
   
     encounter = Encounter.new(params[:encounter])
-    encounter.encounter_datetime = session[:datetime] unless session[:datetime].blank?
+    encounter.encounter_datetime = session[:datetime].to_date unless session[:datetime].blank?
     encounter.save
     
     # Observation handling
@@ -35,7 +35,8 @@ class EncountersController < ApplicationController
       }.compact
 
       next if values.length == 0
-      
+
+      observation[:obs_datetime] =  encounter.encounter_datetime
       observation[:value_text] = observation[:value_text].join(", ") if observation[:value_text].present? && observation[:value_text].is_a?(Array)
       observation.delete(:value_text) unless observation[:value_coded_or_text].blank?
       

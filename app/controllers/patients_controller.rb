@@ -1653,7 +1653,7 @@ class PatientsController < ApplicationController
     encounter = Encounter.new(
       :patient_id => @patient.id,
       :encounter_type => EncounterType.find_by_name("OBSTETRIC HISTORY").id,
-      :encounter_datetime => (session[:datetime].to_date_time rescue DateTime.now),
+      :encounter_datetime => (session[:datetime].to_date rescue DateTime.now),
       :provider_id => (session[:user_id] || current_user.user_id)
     )
     encounter.save

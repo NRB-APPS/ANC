@@ -54,4 +54,6 @@ B. Installation on existing database
 	   
 	Run the application
 
-5
+To clean data anomalies
+
+script/runner script/auto_cleaner.rb
