@@ -1666,6 +1666,7 @@ class PatientsController < ApplicationController
 
       next if observation[:concept_name].blank?
       observation[:encounter_id] = encounter.id
+      observation[:obs_datetime] = encounter.encounter_datetime
       observation[:person_id] ||= encounter.patient_id
       observation.delete(:patient_id)
       observation.delete(:value_coded_or_text_multiple)
@@ -1688,7 +1689,7 @@ class PatientsController < ApplicationController
             observation = Observation.new(
               :person_id => encounter.patient_id,
               :encounter_id => encounter.encounter_id,
-              :obs_datetime =>  (session[:datetime].to_date_time rescue DateTime.now),
+              :obs_datetime =>  encounter.encounter_datetime,
               :concept_id => concept_id,
               :comments => "p#{preg}-b#{baby}",
               :creator => current_user.user_id
@@ -1709,7 +1710,7 @@ class PatientsController < ApplicationController
           observation = Observation.new(
             :person_id => encounter.patient_id,
             :encounter_id => encounter.encounter_id,
-            :obs_datetime =>  (session[:datetime].to_date_time rescue DateTime.now),
+            :obs_datetime =>  encounter.encounter_datetime,
             :concept_id => concept_id,
             :comments => "p#{preg}-b#{baby}",
             :creator => current_user.user_id
@@ -1733,7 +1734,7 @@ class PatientsController < ApplicationController
           observation = Observation.new(
             :person_id => encounter.patient_id,
             :encounter_id => encounter.encounter_id,
-            :obs_datetime =>  (session[:datetime].to_date_time rescue DateTime.now),
+            :obs_datetime => encounter.encounter_datetime,
             :concept_id => concept_id,
             :comments => "a#{key}",
             :creator => current_user.user_id
@@ -1753,7 +1754,7 @@ class PatientsController < ApplicationController
         observation = Observation.new(
           :person_id => encounter.patient_id,
           :encounter_id => encounter.encounter_id,
-          :obs_datetime =>  (session[:datetime].to_date_time rescue DateTime.now),
+          :obs_datetime => encounter.encounter_datetime,
           :concept_id => concept_id,
           :comments => "a#{key}",
           :creator => current_user.user_id

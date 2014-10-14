@@ -102,7 +102,9 @@ next_task = task.encounter_type.gsub('_',' ') rescue nil
 <% end%>
   }
 
+  <% if session[:datetime].blank? %>
   setTimeout("showTime()", 500);
+  <% end %>
 
 <%  if !next_task.nil? %>
     setTimeout("showNexttask()", 500);

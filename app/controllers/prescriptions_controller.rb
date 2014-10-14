@@ -670,14 +670,11 @@ class PrescriptionsController < ApplicationController
   end
 
   def prescribe
-
     @patient = Patient.find(params["patient_id"]) rescue nil
 
-    d = (session[:datetime].to_date rescue Date.today)
-    t = Time.now
-    session_date = DateTime.new(d.year, d.month, d.day, t.hour, t.min, t.sec)
+    session_date = (session[:datetime].to_date rescue Date.today)
 
-    encounter = MedicationService.current_treatment_encounter(@patient)
+    encounter = MedicationService.current_treatment_encounter(@patient, session_date)
     encounter.encounter_datetime = session_date
     encounter.save
 
