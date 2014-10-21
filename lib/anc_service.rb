@@ -1348,9 +1348,17 @@ module ANCService
           self.person.birthdate.strftime("??/???/%Y")
         elsif self.person.birthdate.day == 15
           self.person.birthdate.strftime("??/%b/%Y")
+        elsif self.person.birthdate.day == 1 and self.person.birthdate.month == 1
+          self.person.birthdate.strftime("??/???/%Y")
+        else
+          self.person.birthdate.strftime("%d/%b/%Y") unless self.person.birthdate.blank? rescue " "
         end
       else
-        self.person.birthdate.strftime("%d/%b/%Y")
+        if !self.person.birthdate.blank?
+          self.person.birthdate.strftime("%d/%b/%Y")
+        else
+          return '00/00/0000'
+        end
       end
     end
 

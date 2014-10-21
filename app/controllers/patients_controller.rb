@@ -524,7 +524,11 @@ class PatientsController < ApplicationController
 
     @external_encounters = []
 
-    @external_encounters = Bart2Connection::PatientIdentifier.search_by_identifier(@anc_patient.national_id).patient.encounters rescue [] if @anc_patient.hiv_status.downcase == "positive"
+    if !File.exists?("#{RAILS_ROOT}/config/dde_connection.yml")
+      @external_encounters = Bart2Connection::PatientIdentifier.search_by_identifier(@anc_patient.national_id).patient.encounters rescue [] if @anc_patient.hiv_status.downcase == "positive"
+    else
+      @external_encounters = Bart2Connection::PatientIdentifier.search_or_create(@anc_patient.national_id).patient.encounters rescue [] if @anc_patient.hiv_status.downcase == "positive"
+    end
 
     @encounter_data = @encounters.collect{|e|
       [
@@ -1462,7 +1466,12 @@ class PatientsController < ApplicationController
         same_database = (CoreService.get_global_property_value("same_database") == "true" ? true : false) rescue false
 
         if same_database == false
-          @external_id = Bart2Connection::PatientIdentifier.search_by_identifier(@anc_patient.national_id).person_id rescue nil
+
+          if !File.exists?("#{RAILS_ROOT}/config/dde_connection.yml")
+            @external_id = Bart2Connection::PatientIdentifier.search_by_identifier(@anc_patient.national_id).person_id rescue nil
+          else
+            @external_id = Bart2Connection::PatientIdentifier.search_or_create(@anc_patient.national_id).person_id rescue nil
+          end
 
           @external_user_id = Bart2Connection::User.find_by_username(current_user.username).id rescue nil
         else
