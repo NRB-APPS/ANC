@@ -219,7 +219,7 @@
                               <span style="font-size: 0.7em; font-style: italic;">(<%= @bart2_encounter_data[e][2] %>)</span>
                             </div>
 
-                            <% if (current_user.user_id == @bart2_encounter_data[e][3]) %>
+                            <% if (current_user.user_id == @bart2_encounter_data[e][3]) || current_user.admin?%>
                               <div onclick="confirmDeletion('Do you really want to delete this encounter?', '<%=  @bart2_encounter_data[e][0]%>', 'bart2_encounter')" class="void" style="display: table-cell; float:right; padding: 10px; background: white; cursor: pointer;">
                                 <img height="30" src="/images/cancel_flat_small_red.png" alt="X"/>
                               </div>
