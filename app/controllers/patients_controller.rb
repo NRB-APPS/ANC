@@ -516,11 +516,8 @@ class PatientsController < ApplicationController
   end
 
   def tab_visit_summary
-
-    @encounters = @patient.encounters.all(
-      :order => "encounter_datetime DESC",
-      :conditions => ["DATE(encounter_datetime) = ?",
-        (session[:datetime] ? session[:datetime].to_date : Date.today)]) rescue []
+    @data = []
+    @encounters = @patient.encounters.all(:order => "encounter_datetime DESC") rescue []
 
     @external_encounters = []
 
@@ -536,7 +533,8 @@ class PatientsController < ApplicationController
         e.type.name.titleize.gsub(/Hiv/i, "HIV").gsub(/Anc\s/i, "ANC ").gsub(/Ttv\s/i,
           "TTV ").gsub(/Art\s/i, "ART ").sub(/Observations/, "ANC Examinations"),
         e.encounter_datetime.strftime("%H:%M"),
-        e.creator
+        e.creator,
+        e.encounter_datetime.strftime("%d %b, %Y"),
       ]
     }
 
@@ -546,12 +544,17 @@ class PatientsController < ApplicationController
         e.type.name.titleize.gsub(/Hiv/i, "HIV").gsub(/Anc\s/i, "ANC ").gsub(/Ttv\s/i,
           "TTV ").gsub(/Art\s/i, "ART ").sub(/Observations/, "ANC Examinations"),
         e.encounter_datetime.strftime("%H:%M"),
-        e.creator
+        e.creator,
+        e.encounter_datetime.strftime("%d %b, %Y"),
       ]
     }
     @encounters = @encounters + @external_encounters
 
     @encounter_names = @encounters.map{|encounter| encounter.name}.uniq rescue []
+
+    @encounters.each do |enc|
+      @data << enc.encounter_datetime.to_date.strftime("%d %b, %Y") unless @data.include?(enc.encounter_datetime.to_date.strftime("%d %b, %Y"))
+    end
 
     role_encounter = {
       "Weight and Height" => "VITALS",
