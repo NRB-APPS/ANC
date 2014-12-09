@@ -85,4 +85,12 @@ class Patient < ActiveRecord::Base
         EncounterType.find_by_name("Current Pregnancy").id, start_date.to_date, end_date.to_date]).encounter_datetime rescue nil
   end
 
+  def in_bart?
+
+    available = Bart2Connection::PatientIdentifier.find_by_identifier_and_identifier_type(self.national_id,
+    Bart2Connection::PatientIdentifierType.find_by_name("National id").id)
+
+   !available.blank?
+  end
+
 end
