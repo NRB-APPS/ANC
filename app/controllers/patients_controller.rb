@@ -1446,6 +1446,10 @@ class PatientsController < ApplicationController
   end
 
   def next_url
+    art_link = CoreService.get_global_property_value("art_link") rescue nil
+    if (request.referrer.match(art_link) rescue false)
+      redirect_to "/patients/show?patient_id=#{@patient.id}" and return
+    end
     redirect_to next_task(@patient) and return
   end
 
@@ -1519,11 +1523,17 @@ class PatientsController < ApplicationController
 
       session["proceed_to_art"]["#{(session[:datetime] || Time.now()).to_date.strftime("%Y-%m-%d")}"][@patient.id] = true
 
+      if request.referrer.match(/confirm\//i)
+        return_ip = "http://#{anc_link}/patients/confirm?patient_id=#{@patient.id}"
+      else
+        return_ip = "http://#{anc_link}/patients/next_url?patient_id=#{@patient.id}"
+      end
+
       redirect_to "http://#{art_link}/single_sign_on/single_sign_in?location=#{
       (!location_id.nil? and !location_id.blank? ? location_id : "721")}&current_location=#{
       (!location_id.nil? and !location_id.blank? ? location_id : "721")}&" +
         (!session[:datetime].blank? ? "current_time=#{ (session[:datetime] || Time.now()).to_date.strftime("%Y-%m-%d")}&" : "") +
-        "return_uri=http://#{anc_link}/patients/next_url?patient_id=#{@patient.id}&destination_uri=http://#{art_link}" +
+        "return_uri=#{return_ip}&destination_uri=http://#{art_link}" +
         "/encounters/new/hiv_reception/#{session["patient_id_map"]["#{(session[:datetime] || Time.now()).to_date.strftime("%Y-%m-%d")}"][@patient.id]}?from_anc=true&auth_token=#{token}" and return
     else
 
@@ -1543,7 +1553,7 @@ class PatientsController < ApplicationController
     session_date = (session[:datetime].to_date rescue Date.today)
     @latest_lmp = @patient.lmp(session_date)
 
-    params[:url] += "&from_confirmation=true"
+    params[:url] = "/patients/current_pregnancy/?patient_id=#{@patient.id}&from_confirmation=true"
 
     @current_pregnancy = @patient.encounters.find(:last,
       :conditions => ["encounter_type = ? AND voided = 0 AND DATE(encounter_datetime) BETWEEN ? AND ?",

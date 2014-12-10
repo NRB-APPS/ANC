@@ -262,7 +262,13 @@
       <button onclick="window.location = '<%= params[:url] %>';" class="button navButton blue"
               id="backButton" style="margin-top: 10px;" ><span>New pregnancy</span>
       </button>
-    <%end%>
+    <%end
+
+       if (@patient.in_bart? && (@patient.hiv_positive? rescue false))%>
+        <button class="button navButton blue" style="margin-top: 10px;"
+                onclick="window.location = '/patients/proceed_to_pmtct?patient_id=<%= @patient.id  %>&to_art=yes'">
+          <span>ART</span></button>
+    <% end %>
   </div>
 
 </body>
