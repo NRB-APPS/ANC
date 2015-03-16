@@ -339,11 +339,11 @@ class Reports
 								(SELECT concept_id FROM concept_name WHERE name = 'HIV test date' LIMIT 1)
 							WHERE encounter_type = e.encounter_type AND patient_id = e.patient_id 
 								AND DATE(encounter.encounter_datetime) <= ?)
-						AND (DATE(e.encounter_datetime) BETWEEN ? AND ?)
+						AND (DATE(e.encounter_datetime) <= ?)
 					GROUP BY e.patient_id
 						HAVING DATE(date) > DATE(test_date)	 
 					",
-					 @cohortpatients, (@startdate.to_date + @preg_range), @startdate.to_date, (@startdate.to_date + @preg_range)
+					 @cohortpatients, (@startdate.to_date + @preg_range), (@startdate.to_date + @preg_range)
 				]).map(&:patient_id)    
 	
 	return select
@@ -370,11 +370,11 @@ class Reports
 								(SELECT concept_id FROM concept_name WHERE name = 'HIV test date' LIMIT 1)
 							WHERE encounter_type = e.encounter_type AND patient_id = e.patient_id 
 								AND DATE(encounter.encounter_datetime) <= ?)
-						AND (DATE(e.encounter_datetime) BETWEEN ? AND ?)
+						AND (DATE(e.encounter_datetime) <= ?)
 					GROUP BY e.patient_id
 						HAVING DATE(date) > DATE(test_date)	 
 					",
-					 @cohortpatients, (@startdate.to_date + @preg_range), @startdate.to_date, (@startdate.to_date + @preg_range)
+					 @cohortpatients, (@startdate.to_date + @preg_range), (@startdate.to_date + @preg_range)
 				]).map(&:patient_id)    
 	
 	return select
@@ -402,11 +402,11 @@ class Reports
 								(SELECT concept_id FROM concept_name WHERE name = 'HIV test date' LIMIT 1)
 							WHERE encounter_type = e.encounter_type AND patient_id = e.patient_id 
 								AND DATE(encounter.encounter_datetime) <= ?)
-						AND (DATE(e.encounter_datetime) BETWEEN ? AND ?)
+						AND (DATE(e.encounter_datetime) <= ?)
 					GROUP BY e.patient_id
 						HAVING DATE(date) = DATE(test_date)	 
 					",
-					 @cohortpatients, (@startdate.to_date + @preg_range), @startdate.to_date, (@startdate.to_date + @preg_range)
+					 @cohortpatients, (@startdate.to_date + @preg_range), (@startdate.to_date + @preg_range)
 				]).map(&:patient_id)    
 	
 	return select
@@ -434,11 +434,11 @@ class Reports
 								(SELECT concept_id FROM concept_name WHERE name = 'HIV test date' LIMIT 1)
 							WHERE encounter_type = e.encounter_type AND patient_id = e.patient_id 
 								AND DATE(encounter.encounter_datetime) <= ?)
-						AND (DATE(e.encounter_datetime) BETWEEN ? AND ?)
+						AND (DATE(e.encounter_datetime) <= ?)
 					GROUP BY e.patient_id
 						HAVING DATE(date) = DATE(test_date)	 
 					",
-					 @cohortpatients, (@startdate.to_date + @preg_range), @startdate.to_date, (@startdate.to_date + @preg_range)
+					 @cohortpatients, (@startdate.to_date + @preg_range), (@startdate.to_date + @preg_range)
 				]).map(&:patient_id)    
 	
 	return select
