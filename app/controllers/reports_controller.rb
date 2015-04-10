@@ -34,7 +34,7 @@ class ReportsController < ApplicationController
 			@start_date = params[:start_date]
 			@end_date = params[:end_date]
 		end
-
+    
 		report = Reports.new(@start_date, @end_date, @start_age, @end_age, @type)
 
 		@observations_1 = report.observations_1
@@ -109,7 +109,8 @@ class ReportsController < ApplicationController
   end
 
 	def report
-
+    
+    @parameters = params
     session_date = (session[:datetime].to_date rescue Date.today)
     @facility = Location.current_health_center.name rescue ''
 
@@ -118,13 +119,14 @@ class ReportsController < ApplicationController
 		@start_age = params[:startAge]
 		@end_age = params[:endAge]
 
+  
     if params[:selSelect].blank?  && params[:selMonth]
       params[:selSelect] = "month"
       params[:selType] = "cohort"
+    elsif params[:selType] == "cohort"
     else
       params[:selType] = "monthly"
     end
-
     @type = params[:selType]
 
 		case params[:selSelect]
@@ -155,6 +157,7 @@ class ReportsController < ApplicationController
     @start_date = params[:start_date] if !params[:start_date].blank?
     @end_date = params[:end_date] if !params[:end_date].blank?
 
+    #raise "#{@start_date} : #{@end_date}"
     if @type == "cohort"
       session[:report_start_date] = (@start_date.to_date - 6.months).beginning_of_month
       session[:report_end_date] = (@start_date.to_date - 6.months).end_of_month
@@ -163,6 +166,8 @@ class ReportsController < ApplicationController
       session[:report_end_date] = @end_date.to_date
     end
 
+
+    #raise "#{@start_date} #{@end_date} #{@start_age} #{@end_age} #{@type} #{session_date}"
 		report = Reports.new(@start_date, @end_date, @start_age, @end_age, @type, session_date)
 
     @new_women_registered = report.new_women_registered
@@ -228,9 +233,9 @@ class ReportsController < ApplicationController
 		@hiv_test_result_pos = report.hiv_test_result_pos.uniq
 
     #getting rid of overlaps
-    #@hiv_test_result_prev_neg -= (@hiv_test_result_pos + @hiv_test_result_neg + @hiv_test_result_pos)
-    #@hiv_test_result_neg -= (@hiv_test_result_prev_pos + @hiv_test_result_pos)
-    #@hiv_test_result_prev_pos -= (@hiv_test_result_pos)
+    @hiv_test_result_prev_neg -= (@hiv_test_result_pos + @hiv_test_result_neg + @hiv_test_result_pos)
+    @hiv_test_result_neg -= (@hiv_test_result_prev_pos + @hiv_test_result_pos)
+    @hiv_test_result_prev_pos -= (@hiv_test_result_pos)
 
     @hiv_test_result_unk = (@observations_total - (@hiv_test_result_prev_neg + @hiv_test_result_prev_pos +
           @hiv_test_result_neg + @hiv_test_result_pos).uniq).uniq
@@ -244,17 +249,18 @@ class ReportsController < ApplicationController
     @on_art_before.delete_if{|p| p.blank?}
 
 		@on_art_zero_to_27 = report.on_art_zero_to_27
+    
     @on_art_zero_to_27.delete_if{|p| p.blank?}
 
     @on_art_28_plus = report.on_art_28_plus
     @on_art_28_plus.delete_if{|p| p.blank?}
-
+    #raise (@on_art_before + @not_on_art + @on_art_zero_to_27 + @on_art_28_plus).uniq.length.to_yaml
 		@on_cpt__1 = report.on_cpt__1
     @no_cpt__1 = (@total_hiv_positive - @on_cpt__1)
 
     @nvp_baby__1 = report.nvp_baby__1
     @no_nvp_baby__1 = (@total_hiv_positive - @nvp_baby__1)
-
+    
     render :layout => false
 	end
 
@@ -305,7 +311,7 @@ class ReportsController < ApplicationController
   def print_report
 
     parameters =  params.delete_if{|k, v| k.match(/action|controller/)}.collect{|k, v| k + "=" + v}.join("&")
-
+  
     t1 = Thread.new{
       Kernel.system "wkhtmltopdf --zoom 0.85 -T 1mm  -B 0mm -s A4 http://" +
         request.env["HTTP_HOST"] + "\"/reports/report" +
@@ -322,7 +328,7 @@ class ReportsController < ApplicationController
   end
 
   def print(file_name, current_printer, start_time = Time.now)
-    sleep(3)
+    sleep(10)
     if (File.exists?(file_name))
 
       Kernel.system "lp -o sides=two-sided-long-edge -o fitplot #{(!current_printer.blank? ? '-d ' + current_printer.to_s : "")} #{file_name}"
