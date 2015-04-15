@@ -62,7 +62,6 @@ class Reports
     @bart_patients = on_art_in_bart
 
     @on_cpt = @bart_patients['on_cpt']
-    @on_nvp = @bart_patients['on_nvp']
     @no_art = @bart_patients['no_art']
     @on_art_before = @bart_patients['arv_before_visit_one']
 
@@ -225,11 +224,11 @@ class Reports
 
   def fansida__sp___number_of_tablets_given_0
 
-    select = Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
-                        :select => ["encounter.patient_id, count(*) encounter_id, drug.name instructions"],
-                        :group => [:patient_id], :conditions => ["drug.name = ? AND (DATE(encounter_datetime) >= ? " +
-                                                                     "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "SP (3 tablets)",
-                                                                 @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o| o.patient_id }
+select = Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
+:select => ["encounter.patient_id, count(*) encounter_id, drug.name instructions"],
+:group => [:patient_id], :conditions => ["drug.name = ? AND (DATE(encounter_datetime) >= ? " +
+"AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "SP (3 tablets)",
+@startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o| o.patient_id }
 
     @cohortpatients - select
 
@@ -238,12 +237,12 @@ class Reports
   def fansida__sp___number_of_tablets_given_1
 
     Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
-               :select => ["encounter.patient_id, count(*) encounter_id, drug.name instructions"],
-               :group => [:patient_id], :conditions => ["drug.name = ? AND (DATE(encounter_datetime) >= ? " +
-                                                            "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "SP (3 tablets)",
-                                                        @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o|
-      [o.patient_id, o.encounter_id]
-    }.delete_if { |x, y| y != 1 }.collect { |p, c| p }
+          :select => ["encounter.patient_id, count(*) encounter_id, drug.name instructions"],
+          :group => [:patient_id], :conditions => ["drug.name = ? AND (DATE(encounter_datetime) >= ? " +
+                                                      "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "SP (3 tablets)",
+                                                  @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o|
+          [o.patient_id, o.encounter_id]
+          }.delete_if { |x, y| y != 1 }.collect { |p, c| p }
 
   end
 
@@ -477,15 +476,14 @@ class Reports
   end
 
   def nvp_baby__1
-
+    
    nvp = Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
-               :select => ["encounter.patient_id, count(*) encounter_id, drug.name instructions, " +
-                               "SUM(DATEDIFF(auto_expire_date, start_date)) orderer"], :group => [:patient_id],
-               :conditions => ["(drug.name REGEXP ? OR drug.name REGEXP ?)  AND drug.name REGEXP ? AND (DATE(encounter_datetime) >= ? " +
-                                   "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "NVP", "Nevirapine", "ml",
-                               @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o| o.patient_id }
-   ids = @on_nvp.split(",").collect { |id| PatientIdentifier.find_by_identifier(id.gsub(/\-|\s+/, "")).patient_id }.uniq rescue []
-   return (nvp + ids).uniq rescue []
+                :select => ["encounter.patient_id, count(*) encounter_id, drug.name instructions, " +
+                "SUM(DATEDIFF(auto_expire_date, start_date)) orderer"], :group => [:patient_id],
+                :conditions => ["(drug.name REGEXP ? OR drug.name REGEXP ?)  AND drug.name REGEXP ? AND (DATE(encounter_datetime) >= ? " +
+                "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "NVP", "Nevirapine", "ml",
+                @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o| o.patient_id }
+    return nvp.uniq rescue []
   end
 
   def albendazole(qty = 1)
@@ -516,7 +514,7 @@ class Reports
                    :conditions => ["concept_id = ? AND (value_text = ?) AND ( DATE(encounter_datetime) >= ? " +
                                        "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)",
                                    ConceptName.find_by_name("Bed Net").concept_id, "Given Today",
-                                   @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |e| e.patient_id }
+                                   @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |e| e.patient_id }.uniq rescue []
 
   end
 
@@ -555,6 +553,7 @@ class Reports
     password = CoreService.get_global_property_value("remote_bart.password").split(/,/) rescue ""
 
     uri = "http://#{login}:#{password}@#{server}/encounters/export_on_art_patients"
+    
     patient_identifiers = JSON.parse(RestClient.post(uri, paramz))
     
     return patient_identifiers
