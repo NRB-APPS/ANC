@@ -238,7 +238,7 @@ select = Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
 
     Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
           :select => ["encounter.patient_id, count(*) encounter_id, drug.name instructions"],
-          :group => [:patient_id], :conditions => ["drug.name = ? AND (DATE(encounter_datetime) >= ? " +
+          :group => [:patient_id], :conditions => ["drug.name = ?  AND (DATE(encounter_datetime) >= ? " +
                                                       "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "SP (3 tablets)",
                                                   @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o|
           [o.patient_id, o.encounter_id]
@@ -517,7 +517,7 @@ select = Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
                                    @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |e| e.patient_id }.uniq rescue []
 
   end
-
+  
   def on_art_in_bart
 
     national_id = PatientIdentifierType.find_by_name("National id").id
