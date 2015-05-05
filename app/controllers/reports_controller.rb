@@ -224,7 +224,7 @@ class ReportsController < ApplicationController
 
     @syphilis_result_neg = report.syphilis_result_neg.uniq
 
-    @syphilis_result_po -= @syphilis_result_neg
+    @syphilis_result_neg = @syphilis_result_neg - @syphilis_result_pos
 
     @syphilis_result_unk = (@observations_total - (@syphilis_result_pos + @syphilis_result_neg).uniq).uniq
 
