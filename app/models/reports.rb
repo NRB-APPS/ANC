@@ -287,24 +287,34 @@ select = Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
 
 
   def syphilis_result_pos
-
-    Encounter.find(:all, :joins => [:observations], :select => ["DISTINCT patient_id"],
-                   :conditions => ["concept_id = ? AND (value_coded = ? OR value_text = ?) AND (DATE(encounter_datetime) >= ? " +
+    answer = ConceptName.find_by_name("Positive").concept_id
+    pos = []
+    Encounter.find(:all, :joins => [:observations], :select => ["patient_id, value_coded , value_text"],
+                   :conditions => ["concept_id = ?  AND (DATE(encounter_datetime) >= ? " +
                                        "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)",
                                    ConceptName.find_by_name("Syphilis Test Result").concept_id,
-                                   ConceptName.find_by_name("Positive").concept_id, "Positive",
-                                   @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |e| e.patient_id }
+                                   @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).each { |e|
+                                     if e.value_coded == answer or e.value_text.upcase == "POSITIVE"
+                                       pos << e.patient_id if ! pos.include?(e.patient_id)
+                                     end
+                                   }
+    return pos
   end
 
 
   def syphilis_result_neg
-
-    Encounter.find(:all, :joins => [:observations], :select => ["DISTINCT patient_id"],
-                   :conditions => ["concept_id = ? AND (value_coded = ? OR value_text = ?) AND (DATE(encounter_datetime) >= ? " +
+    answer = ConceptName.find_by_name("Negative").concept_id
+    neg = []
+    Encounter.find(:all, :joins => [:observations], :select => ["patient_id, value_coded , value_text"],
+                   :conditions => ["concept_id = ?  AND (DATE(encounter_datetime) >= ? " +
                                        "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)",
-                                   ConceptName.find_by_name("Syphilis Test Result").concept_id,
-                                   ConceptName.find_by_name("Negative").concept_id, "Negative",
-                                   @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |e| e.patient_id }
+                                ConceptName.find_by_name("Syphilis Test Result").concept_id,
+                                @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).each { |e|
+                                  if e.value_coded == answer or e.value_text.upcase == "NEGATIVE"
+                                    neg << e.patient_id if ! neg.include?(e.patient_id)
+                                  end
+                                  }
+    return neg
   end
 
 
@@ -386,7 +396,7 @@ select = Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
                                             ConceptName.find_by_name("HIV status").concept_id,
                                             ConceptName.find_by_name("Positive").concept_id, "Positive",
                                             @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |e| e.form_id }
-     
+
     Encounter.find(:all, :joins => [:observations], :group => ["patient_id"],
                    :conditions => ["concept_id = ? AND obs_id IN (?) AND encounter.patient_id IN (?) AND " +
                                        "DATE_FORMAT(encounter_datetime, '%Y-%m-%d') = DATE_FORMAT(value_datetime, '%Y-%m-%d')",
@@ -436,7 +446,7 @@ select = Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
         lmp = ob.value_datetime.to_date
         if  ((start_date >= lmp) && (start_date < (lmp + 28.weeks)))
           unless remote.include?(ob.person_id)
-            remote << ob.person_id 
+            remote << ob.person_id
           end
         end
       end
@@ -460,7 +470,7 @@ select = Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
         lmp = ob.value_datetime.to_date
         if  (start_date >= (lmp + 28.weeks))
           unless remote.include?(ob.person_id)
-            remote << ob.person_id 
+            remote << ob.person_id
           end
         end
       end
@@ -476,7 +486,7 @@ select = Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
   end
 
   def nvp_baby__1
-    
+
    nvp = Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
                 :select => ["encounter.patient_id, count(*) encounter_id, drug.name instructions, " +
                 "SUM(DATEDIFF(auto_expire_date, start_date)) orderer"], :group => [:patient_id],
@@ -517,7 +527,7 @@ select = Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
                                    @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |e| e.patient_id }.uniq rescue []
 
   end
-  
+
   def on_art_in_bart
 
     national_id = PatientIdentifierType.find_by_name("National id").id
@@ -546,16 +556,16 @@ select = Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
     paramz["start_date"] = @startdate.to_date
     paramz["end_date"] = @startdate.to_date + @preg_range
     paramz["id_visit_map"] = id_visit_map.join(",")
-    
+
     server = CoreService.get_global_property_value("art_link")
 
     login = CoreService.get_global_property_value("remote_bart.username").split(/,/) rescue ""
     password = CoreService.get_global_property_value("remote_bart.password").split(/,/) rescue ""
 
     uri = "http://#{login}:#{password}@#{server}/encounters/export_on_art_patients"
-    
+
     patient_identifiers = JSON.parse(RestClient.post(uri, paramz))
-    
+
     return patient_identifiers
   end
 end
