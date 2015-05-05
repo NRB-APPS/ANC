@@ -202,13 +202,13 @@ class ReportsController < ApplicationController
 
     #    @fansida__sp___number_of_tablets_given_0 = report.fansida__sp___number_of_tablets_given_0
 
-    @fansida__sp___number_of_tablets_given_0 = @observations_total - (@fansida__sp___number_of_tablets_given_1 + @fansida__sp___number_of_tablets_given_2)
-
     @fansida__sp___number_of_tablets_given_1 = report.fansida__sp___number_of_tablets_given_1
 
     @fansida__sp___number_of_tablets_given_2 = report.fansida__sp___number_of_tablets_given_2
 
     @fefo__number_of_tablets_given_2 = report.fefo__number_of_tablets_given_2
+
+    @fansida__sp___number_of_tablets_given_0 = @observations_total - (@fansida__sp___number_of_tablets_given_1 + @fansida__sp___number_of_tablets_given_2)
 
     @fefo__number_of_tablets_given_1 = @observations_total - @fefo__number_of_tablets_given_2 #report.fefo__number_of_tablets_given_1
 
@@ -346,4 +346,3 @@ class ReportsController < ApplicationController
       end
 
     end
-    
