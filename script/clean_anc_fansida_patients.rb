@@ -2,10 +2,13 @@ def start
   new_concept = Drug.find_by_name("SP (3 tablets)")
 
   old_concept = Drug.find_by_sql("SELECT * FROM drug
-                                  WHERE name LIKE '%Sulphadoxine and Pyrimenthane%'")
+                                  WHERE name LIKE '%Sulphadoxine and Pyrimenthane%'
+                                  OR name LIKE '%Sulphadoxine%' OR name LIKE '%Pyrimenthane%'")
 
   old_fefol =  Drug.find_by_sql("SELECT * FROM drug
-                                  WHERE name LIKE '%Ferrous sulphate + folic acid%'")
+                                  WHERE name LIKE '%Ferrous sulphate + folic acid%'
+                                  OR name LIKE '%Ferrous sulphate%' 
+                                  OR name LIKE '%folic acid%'")
 
   new_fefol = Drug.find_by_name("Fefol (1 tablet)")
 
@@ -72,7 +75,7 @@ def start
   }
 
   puts "Replacement complete"
-  
+
 end
 
 start
