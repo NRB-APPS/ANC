@@ -242,7 +242,7 @@ class Reports
                                                       "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "SP (3 tablets)",
                                                   @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o|
           [o.patient_id, o.encounter_id]
-          }.delete_if { |x, y| y != 1 }.collect { |p, c| p }
+        }.delete_if { |x, y| y.to_i != 1 }.collect { |p, c| p }
 
   end
 
@@ -255,7 +255,19 @@ class Reports
                                                             "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "SP (3 tablets)",
                                                         @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o|
       [o.patient_id, o.encounter_id]
-    }.delete_if { |x, y| y != 2 }.collect { |p, c| p }
+    }.delete_if { |x, y| y.to_i != 2 }.collect { |p, c| p }
+
+  end
+
+  def fansida__sp___number_of_tablets_given_more_than_2
+
+    Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
+    :select => ["encounter.patient_id, count(distinct(DATE(encounter_datetime))) encounter_id, drug.name instructions"],
+    :group => [:patient_id], :conditions => ["drug.name = ?  AND (DATE(encounter_datetime) >= ? " +
+      "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "SP (3 tablets)",
+      @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o|
+        [o.patient_id, o.encounter_id]
+      }.delete_if { |x, y| y.to_i < 3 }.collect { |p, c| p }
 
   end
 
