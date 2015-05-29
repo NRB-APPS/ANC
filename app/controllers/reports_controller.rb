@@ -200,17 +200,17 @@ class ReportsController < ApplicationController
 
     @ttv__total_previous_doses_2 = report.ttv__total_previous_doses_2
 
-    #   @fansida__sp___number_of_tablets_given_0 = report.fansida__sp___number_of_tablets_given_0
+    @fansida__sp___number_of_tablets_given_0 = report.fansida__sp___number_of_tablets_given_0
 
-    @fansida__sp___number_of_tablets_given_1 = report.fansida__sp___number_of_tablets_given_1
+    @fansida__sp___number_of_tablets_given_1, @fansida__sp___number_of_tablets_given_2, @fansida__sp___number_of_tablets_given_more_than_2 = report.fansida__sp
 
-    @fansida__sp___number_of_tablets_given_2 = report.fansida__sp___number_of_tablets_given_2
+    #@fansida__sp___number_of_tablets_given_2 = report.fansida__sp___number_of_tablets_given_2
 
     @fefo__number_of_tablets_given_2 = report.fefo__number_of_tablets_given_2
 
-    @fansida__sp___number_of_tablets_given_more_than_2 = report.fansida__sp___number_of_tablets_given_more_than_2
+    #@fansida__sp___number_of_tablets_given_more_than_2 = report.fansida__sp___number_of_tablets_given_more_than_2
 
-    @fansida__sp___number_of_tablets_given_0 = @observations_total - (@fansida__sp___number_of_tablets_given_more_than_2 + @fansida__sp___number_of_tablets_given_1 + @fansida__sp___number_of_tablets_given_2)
+    #@fansida__sp___number_of_tablets_given_more_than_2 = @observations_total - (@fansida__sp___number_of_tablets_given_0 + @fansida__sp___number_of_tablets_given_1 + @fansida__sp___number_of_tablets_given_2)
 
     @fefo__number_of_tablets_given_1 = @observations_total - @fefo__number_of_tablets_given_2 #report.fefo__number_of_tablets_given_1
 
@@ -266,7 +266,7 @@ class ReportsController < ApplicationController
 
     @nvp_baby__1 = report.nvp_baby__1
     @no_nvp_baby__1 = (@total_hiv_positive - @nvp_baby__1)
-
+    #raise @fansida__sp___number_of_tablets_given_more_than_2.to_yaml
     render :layout => false
   end
 
@@ -279,7 +279,7 @@ class ReportsController < ApplicationController
     @facility = Location.current_health_center.name rescue ''
 
     @data = []
-
+    
     if params[:patients]
       new_women = params[:patients].split(",")
       new_women = [-1] if new_women.blank?

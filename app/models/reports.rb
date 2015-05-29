@@ -229,7 +229,7 @@ class Reports
           :group => [:patient_id], :conditions => ["drug.name = ? AND (DATE(encounter_datetime) >= ? " +
                "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "SP (3 tablets)",
                @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o| o.patient_id }
-
+               #raise @cohortpatients.length.to_yaml
     @cohortpatients - select
 
   end
@@ -237,7 +237,7 @@ class Reports
   def fansida__sp___number_of_tablets_given_1
 
     Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
-          :select => ["encounter.patient_id, count(distinct(DATE(encounter_datetime))) encounter_id, drug.name instructions"],
+          :select => ["encounter.patient_id, encounter_datetime, drug.name instructions"],
           :group => [:patient_id], :conditions => ["drug.name = ?  AND (DATE(encounter_datetime) >= ? " +
                                                       "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "SP (3 tablets)",
                                                   @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o|
@@ -246,6 +246,32 @@ class Reports
 
   end
 
+  def fansida__sp
+    fansida = {}
+    single = []
+    twice = []
+    plus_3 = []
+    Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
+    :select => ["encounter.patient_id, DATE(encounter_datetime) datetime, drug.name instructions"],
+    :conditions => ["drug.name = ?  AND (DATE(encounter_datetime) >= ? " +
+      "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "SP (3 tablets)",
+      @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).each { |o|
+        fansida[o.patient_id] = [] if fansida[o.patient_id].blank?
+        fansida[o.patient_id] << o.datetime if ! fansida[o.patient_id].include?(o.datetime)
+      }
+      fansida.each{|k, v|
+
+        if v.length == 1
+          single << k
+        elsif v.length == 2
+          twice << k
+        else
+          plus_3 << k
+        end
+      }
+      
+      return single, twice, plus_3
+  end
 
   def fansida__sp___number_of_tablets_given_2
 
