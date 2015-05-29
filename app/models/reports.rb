@@ -538,8 +538,8 @@ return select
    nvp = Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
                 :select => ["encounter.patient_id, count(*) encounter_id, drug.name instructions, " +
                 "SUM(DATEDIFF(auto_expire_date, start_date)) orderer"], :group => [:patient_id],
-                :conditions => ["(drug.name REGEXP ? OR drug.name REGEXP ?  OR drug.name REGEXP ?) AND (DATE(encounter_datetime) >= ? " +
-                "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "NVP", "Nevirapine", "ml",
+                :conditions => ["(drug.name REGEXP ? OR drug.name REGEXP ?) AND (DATE(encounter_datetime) >= ? " +
+                "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "NVP", "Nevirapine syrup",
                 @startdate.to_date, (@startdate.to_date + @preg_range), @positive_patients]).collect { |o| o.patient_id }
     return nvp.uniq rescue []
   end
