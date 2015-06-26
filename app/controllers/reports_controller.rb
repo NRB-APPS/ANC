@@ -1,5 +1,7 @@
 # app/controllers/reports_controller.rb
 
+require 'fileutils'
+
 class ReportsController < ApplicationController
 
   def index
@@ -279,7 +281,7 @@ class ReportsController < ApplicationController
     @facility = Location.current_health_center.name rescue ''
 
     @data = []
-    
+
     if params[:patients]
       new_women = params[:patients].split(",")
       new_women = [-1] if new_women.blank?
@@ -323,9 +325,20 @@ class ReportsController < ApplicationController
           request.env["HTTP_HOST"] + "\"/reports/report" +
           "?#{parameters}&from_print=true" + "\" /tmp/report" + ".pdf \n"
         }
+        name = "ANC_cohort_#{params[:selType]}_#{params[:end_date].to_date.strftime("%Y")}_#{params[:end_date].to_date.strftime("%B")}".to_s
 
         file = "/tmp/report" + ".pdf"
+
+        directory_name = "Reports"
+        Dir.mkdir(directory_name) unless File.exists?(directory_name)
+        a = File.dirname(__FILE__) + "/../../" + directory_name
+
         t2 = Thread.new{
+          FileUtils.mv(file, File.dirname(__FILE__) + "/../../" + directory_name + "/" + name + ".pdf")
+        }
+
+        t3 = Thread.new{
+
           print(file, "", Time.now)
         }
 
