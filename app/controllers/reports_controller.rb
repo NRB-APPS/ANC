@@ -325,17 +325,19 @@ class ReportsController < ApplicationController
           request.env["HTTP_HOST"] + "\"/reports/report" +
           "?#{parameters}&from_print=true" + "\" /tmp/report" + ".pdf \n"
         }
-        name = "ANC_cohort_#{params[:selType]}_#{params[:end_date].to_date.strftime("%Y")}_#{params[:end_date].to_date.strftime("%B")}".to_s
+        alternate = params[:selYear] + "-" + params[:selMonth] + "-01" if params[:selMonth]
+        name = "ANC_cohort_#{params[:selType]}_#{(params[:end_date].to_date rescue alternate.to_date).strftime("%Y")}_#{(params[:end_date].to_date rescue alternate.to_date).strftime("%B")}".to_s
 
         file = "/tmp/report" + ".pdf"
 
         directory_name = "Reports"
         Dir.mkdir(directory_name) unless File.exists?(directory_name)
-        a = File.dirname(__FILE__) + "/../../" + directory_name
 
         t2 = Thread.new{
           FileUtils.mv(file, File.dirname(__FILE__) + "/../../" + directory_name + "/" + name + ".pdf")
         }
+
+        #send_file(File.dirname(__FILE__) + "/../../" + directory_name + "/" + name + ".pdf", :type=>"application/pdf")
 
         t3 = Thread.new{
 
