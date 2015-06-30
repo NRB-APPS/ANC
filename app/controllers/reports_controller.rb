@@ -1,6 +1,7 @@
 # app/controllers/reports_controller.rb
 
 require 'fileutils'
+require 'open-uri'
 
 class ReportsController < ApplicationController
 
@@ -208,8 +209,9 @@ class ReportsController < ApplicationController
 
     #@fansida__sp___number_of_tablets_given_2 = report.fansida__sp___number_of_tablets_given_2
 
-    @fefo__number_of_tablets_given_2 = report.fefo__number_of_tablets_given_2
+    #@fefo__number_of_tablets_given_2 = report.fefo__number_of_tablets_given_2
 
+    @fefo__number_of_tablets_given_1, @fefo__number_of_tablets_given_2 = report.fefo
     #@fansida__sp___number_of_tablets_given_more_than_2 = report.fansida__sp___number_of_tablets_given_more_than_2
 
     #@fansida__sp___number_of_tablets_given_more_than_2 = @observations_total - (@fansida__sp___number_of_tablets_given_0 + @fansida__sp___number_of_tablets_given_1 + @fansida__sp___number_of_tablets_given_2)
@@ -337,11 +339,13 @@ class ReportsController < ApplicationController
           FileUtils.mv(file, File.dirname(__FILE__) + "/../../" + directory_name + "/" + name + ".pdf")
         }
 
-        #send_file(File.dirname(__FILE__) + "/../../" + directory_name + "/" + name + ".pdf", :type=>"application/pdf")
+        #data = open(File.dirname(__FILE__) + "/../../" + directory_name + "/" + name + ".pdf")
+
+        #send_file data
 
         t3 = Thread.new{
 
-          print(file, "", Time.now)
+          #print(file, "", Time.now)
         }
 
         redirect_to "/reports/report?#{parameters}"
