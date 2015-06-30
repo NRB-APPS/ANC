@@ -242,13 +242,15 @@ class ReportsController < ApplicationController
 
     @hiv_test_result_pos = report.hiv_test_result_pos.uniq
 
+    @hiv_test_result_inc  = report.hiv_test_result_inc.uniq
+
     #getting rid of overlaps
     @hiv_test_result_prev_neg -= (@hiv_test_result_pos + @hiv_test_result_neg + @hiv_test_result_pos)
     @hiv_test_result_neg -= (@hiv_test_result_prev_pos + @hiv_test_result_pos)
     @hiv_test_result_prev_pos -= (@hiv_test_result_pos)
 
     @hiv_test_result_unk = (@observations_total - (@hiv_test_result_prev_neg + @hiv_test_result_prev_pos +
-    @hiv_test_result_neg + @hiv_test_result_pos).uniq).uniq
+    @hiv_test_result_neg + @hiv_test_result_pos + @hiv_test_result_inc).uniq).uniq
 
     @total_hiv_positive = (@hiv_test_result_prev_pos + @hiv_test_result_pos).delete_if{|p| p.blank?}
 

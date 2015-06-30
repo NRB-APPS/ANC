@@ -782,6 +782,23 @@
                             </tr>
                             <tr>
                               <td>
+                                &nbsp;
+                              </td>
+                              <td style="border-left: 1px solid #999;">
+                                <form id="hiv_test_result_inc" method="post" action="decompose">
+                                  <input type="hidden" value="<%= @hiv_test_result_inc.join(",") %>" name="patients" />
+                                  Inconclusive
+                                </form>
+                              </td>
+                              <td style="border-left: 1px solid #999;
+                              border-bottom: 1px solid #999; border-right: 1px solid #999;">
+                              <a href="javascript:document.getElementById('hiv_test_result_inc').submit()">
+                                <%= @hiv_test_result_inc.length  %>
+                              </a>
+                            </td>
+                          </tr>
+                            <tr>
+                              <td>
                                 22
                               </td>
                               <td style="border-left: 1px solid #999; border-bottom: 1px solid #999;">

@@ -187,7 +187,7 @@
   <%end%>
 
   <%= touch_select_tag "HIV status", @patient,
-    options_for_select([["", ""], ["Negative", "Negative"], ["Positive", "Positive"], ["Not Done", "Not Done"]]),
+    options_for_select([["", ""], ["Negative", "Negative"], ["Positive", "Positive"],["Inconclusive", "Inconclusive"],["Not Done", "Not Done"]]),
     {:id => "new_test_result_at_current_facility",
     :helptext => "HIV Test Result <span class='helper'> Lab Results</span>",
     :tt_BeforeUnload => "checkHIVTestUnknown()",
