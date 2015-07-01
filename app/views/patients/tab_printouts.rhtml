@@ -47,9 +47,8 @@
 
             <tr>
               <td><a href="/patients/national_id_label?patient_id=<%= @patient.id%>">National ID (Print)</a></td>
-              <td>&nbsp</td>
-              <td>&nbsp</td>
-              <td>&nbsp</td>
+              <td><a href="/patients/current_visit_label?patient_id=<%= @patient.id%>">Visit Summary</a></td>
+              <td><a href="/patients/obstetric_medical_examination_label?patient_id=<%= @patient.id%>">Patient History</a></td>
             </tr>
   </table>
 </div>

@@ -906,7 +906,7 @@ class PatientsController < ApplicationController
       e.name.upcase
     }
 
-    # raise @encounters.to_yaml        
+    # raise @encounters.to_yaml
 
     @lmp = nil
     @planned_place = nil
