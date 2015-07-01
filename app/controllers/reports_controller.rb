@@ -341,16 +341,12 @@ class ReportsController < ApplicationController
           FileUtils.mv(file, File.dirname(__FILE__) + "/../../" + directory_name + "/" + name + ".pdf")
         }
 
-        #data = open(File.dirname(__FILE__) + "/../../" + directory_name + "/" + name + ".pdf")
-
-        #send_file data
-
         t3 = Thread.new{
 
-          #print(file, "", Time.now)
+          print(file, "", Time.now)
         }
-
-        redirect_to "/reports/report?#{parameters}"
+        send_file(File.dirname(__FILE__) + "/../../" + directory_name + "/" + name + ".pdf",:type=>"application/pdf; charset=utf-8", :stream=> false, :filename=> File.basename(File.dirname(__FILE__) + "/../../" + directory_name + "/" + name + ".pdf"))
+        #redirect_to "/reports/report?#{parameters}"
 
       end
 
