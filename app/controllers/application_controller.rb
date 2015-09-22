@@ -111,7 +111,7 @@ class ApplicationController < GenericApplicationController
     same_database = (CoreService.get_global_property_value("same_database") == "true" ? true : false) rescue false
 
     # Get patient id mapping
-    if @anc_patient.hiv_status.downcase == "positive" && 
+    if @anc_patient.patient.hiv_positive? && 
         session["patient_id_map"]["#{(session[:datetime] || Time.now()).to_date.strftime("%Y-%m-%d")}"][@patient.id].nil?
 
       session["proceed_to_art"] = {} if session["proceed_to_art"].nil?
