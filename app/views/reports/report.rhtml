@@ -72,7 +72,7 @@
                   <td style="width: 25%;">
                     ANC Site Name
                   </td>
-                  <td colspan="3" style="border-left: 1px solid #999; 
+                  <td colspan="3" style="border-left: 1px solid #999;
                       border-bottom: 1px solid #999; font-style: italic;">
                     <%= @facility %>&nbsp;
                   </td>
@@ -82,14 +82,14 @@
                   <td style="width: 25%;">
                     Reporting Year
                   </td>
-                  <td style="border-left: 1px solid #999; border-bottom: 1px solid #999; 
+                  <td style="border-left: 1px solid #999; border-bottom: 1px solid #999;
                       font-style: italic;">
                     <%= @end_date.to_date.strftime("%Y") rescue "" %>&nbsp;
                   </td>
                   <td style="width: 25%; border-left: 1px solid #999; border-bottom: 1px solid #999;" align="right">
                     Reporting Month
                   </td>
-                  <td style="border-left: 1px solid #999; border-bottom: 1px solid #999; 
+                  <td style="border-left: 1px solid #999; border-bottom: 1px solid #999;
                       font-style: italic;">
                     <%= @end_date.to_date.strftime("%B") rescue "" %>&nbsp;
                   </td>
@@ -463,19 +463,35 @@
                               <td>
                                 11
                               </td>
-                              <td style="border-left: 1px solid #999; border-bottom: 1px solid #999;">
+                              <td style="border-left: 1px solid #999;">
                                 <form id="fansida__sp___number_of_tablets_given_2" method="post" action="decompose">
                                   <input type="hidden" value="<%= @fansida__sp___number_of_tablets_given_2.join(",") %>" name="patients" />
                                   Tot. received 2 x 3 tabs
                                 </form>
                               </td>
-                              <td style="border-left: 1px solid #999; border-top: 1px solid #999;
-                                  border-bottom: 1px solid #999; border-right: 1px solid #999;">
+                              <td style="border-right: 1px solid #999; border-left: 1px solid #999; border-top: 1px solid #999;">
                                 <a href="javascript:document.getElementById('fansida__sp___number_of_tablets_given_2').submit()">
                                   <%= @fansida__sp___number_of_tablets_given_2.length %>
                                 </a>
                               </td>
                             </tr>
+                            <tr>
+                              <td>
+                                &nbsp;
+                              </td>
+                              <td style="border-left: 1px solid #999; border-bottom: 1px solid #999;">
+                                <form id="fansida__sp___number_of_tablets_given_more_than_2" method="post" action="decompose">
+                                  <input type="hidden" value="<%= @fansida__sp___number_of_tablets_given_more_than_2.join(",") %>" name="patients" />
+                                  Tot. received 3+ x 3 tabs
+                                </form>
+                              </td>
+                              <td style="border-left: 1px solid #999; border-top: 1px solid #999;
+                              border-bottom: 1px solid #999; border-right: 1px solid #999;">
+                              <a href="javascript:document.getElementById('fansida__sp___number_of_tablets_given_more_than_2').submit()">
+                                <%= @fansida__sp___number_of_tablets_given_more_than_2.length %>
+                              </a>
+                            </td>
+                          </tr>
                             <tr>
                               <td>
                                 &nbsp;
@@ -764,6 +780,23 @@
                                 </a>
                               </td>
                             </tr>
+                            <tr>
+                              <td>
+                                &nbsp;
+                              </td>
+                              <td style="border-left: 1px solid #999;">
+                                <form id="hiv_test_result_inc" method="post" action="decompose">
+                                  <input type="hidden" value="<%= @hiv_test_result_inc.join(",") %>" name="patients" />
+                                  Inconclusive
+                                </form>
+                              </td>
+                              <td style="border-left: 1px solid #999;
+                              border-bottom: 1px solid #999; border-right: 1px solid #999;">
+                              <a href="javascript:document.getElementById('hiv_test_result_inc').submit()">
+                                <%= @hiv_test_result_inc.length  %>
+                              </a>
+                            </td>
+                          </tr>
                             <tr>
                               <td>
                                 22

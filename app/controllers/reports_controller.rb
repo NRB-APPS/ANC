@@ -1,5 +1,8 @@
 # app/controllers/reports_controller.rb
 
+require 'fileutils'
+require 'open-uri'
+
 class ReportsController < ApplicationController
 
   def index
@@ -200,15 +203,18 @@ class ReportsController < ApplicationController
 
     @ttv__total_previous_doses_2 = report.ttv__total_previous_doses_2
 
-    #   @fansida__sp___number_of_tablets_given_0 = report.fansida__sp___number_of_tablets_given_0
+    @fansida__sp___number_of_tablets_given_0 = report.fansida__sp___number_of_tablets_given_0
 
-    @fansida__sp___number_of_tablets_given_1 = report.fansida__sp___number_of_tablets_given_1
+    @fansida__sp___number_of_tablets_given_1, @fansida__sp___number_of_tablets_given_2, @fansida__sp___number_of_tablets_given_more_than_2 = report.fansida__sp
 
-    @fansida__sp___number_of_tablets_given_2 = report.fansida__sp___number_of_tablets_given_2
+    #@fansida__sp___number_of_tablets_given_2 = report.fansida__sp___number_of_tablets_given_2
 
-    @fefo__number_of_tablets_given_2 = report.fefo__number_of_tablets_given_2
+    #@fefo__number_of_tablets_given_2 = report.fefo__number_of_tablets_given_2
 
-    @fansida__sp___number_of_tablets_given_0 = @observations_total - (@fansida__sp___number_of_tablets_given_1 + @fansida__sp___number_of_tablets_given_2)
+    @fefo__number_of_tablets_given_1, @fefo__number_of_tablets_given_2 = report.fefo
+    #@fansida__sp___number_of_tablets_given_more_than_2 = report.fansida__sp___number_of_tablets_given_more_than_2
+
+    #@fansida__sp___number_of_tablets_given_more_than_2 = @observations_total - (@fansida__sp___number_of_tablets_given_0 + @fansida__sp___number_of_tablets_given_1 + @fansida__sp___number_of_tablets_given_2)
 
     @fefo__number_of_tablets_given_1 = @observations_total - @fefo__number_of_tablets_given_2 #report.fefo__number_of_tablets_given_1
 
@@ -236,13 +242,15 @@ class ReportsController < ApplicationController
 
     @hiv_test_result_pos = report.hiv_test_result_pos.uniq
 
+    @hiv_test_result_inc  = report.hiv_test_result_inc.uniq
+
     #getting rid of overlaps
     @hiv_test_result_prev_neg -= (@hiv_test_result_pos + @hiv_test_result_neg + @hiv_test_result_pos)
     @hiv_test_result_neg -= (@hiv_test_result_prev_pos + @hiv_test_result_pos)
     @hiv_test_result_prev_pos -= (@hiv_test_result_pos)
 
     @hiv_test_result_unk = (@observations_total - (@hiv_test_result_prev_neg + @hiv_test_result_prev_pos +
-    @hiv_test_result_neg + @hiv_test_result_pos).uniq).uniq
+    @hiv_test_result_neg + @hiv_test_result_pos + @hiv_test_result_inc).uniq).uniq
 
     @total_hiv_positive = (@hiv_test_result_prev_pos + @hiv_test_result_pos).delete_if{|p| p.blank?}
 
@@ -264,7 +272,7 @@ class ReportsController < ApplicationController
 
     @nvp_baby__1 = report.nvp_baby__1
     @no_nvp_baby__1 = (@total_hiv_positive - @nvp_baby__1)
-
+    #raise @fansida__sp___number_of_tablets_given_more_than_2.to_yaml
     render :layout => false
   end
 
@@ -315,22 +323,45 @@ class ReportsController < ApplicationController
       def print_report
 
         parameters =  params.delete_if{|k, v| k.match(/action|controller/)}.collect{|k, v| k + "=" + v}.join("&")
+        alternate = params[:selYear] + "-" + params[:selMonth] + "-01" if params[:selMonth]
+        name = "ANC_cohort_#{params[:selType]}_#{(params[:end_date].to_date rescue alternate.to_date).strftime("%Y")}_#{(params[:end_date].to_date rescue alternate.to_date).strftime("%B")}".to_s
 
         t1 = Thread.new{
           Kernel.system "wkhtmltopdf --zoom 0.85 -T 1mm  -B 0mm -s A4 http://" +
           request.env["HTTP_HOST"] + "\"/reports/report" +
-          "?#{parameters}&from_print=true" + "\" /tmp/report" + ".pdf \n"
+          "?#{parameters}&from_print=true" + "\" /tmp/#{name}" + ".pdf \n"
+        }
+        
+        file = "/tmp/#{name}" + ".pdf"
+
+        directory_name = "Reports"
+        Dir.mkdir(directory_name) unless File.exists?(directory_name)
+
+        src = file
+        destination = Rails.root.to_s + '/Reports'
+        t2 = Thread.new{
+          #FileUtils.mv(file, File.dirname(__FILE__) + "/../../" + directory_name + "/" + name + ".pdf")
+          #sleep(10)
         }
 
-        file = "/tmp/report" + ".pdf"
-        t2 = Thread.new{
+        loop do
+          if File.exists?(file)
+            sleep(3)
+          end
+          FileUtils.cp_r(src, destination) if File.exists?(file)
+          break if File.exists?(destination.to_s + "/#{name}.pdf")
+        end
+          
+        t3 = Thread.new{
+
           print(file, "", Time.now)
         }
 
-        redirect_to "/reports/report?#{parameters}"
+        send_file(File.dirname(__FILE__) + "/../../" + directory_name + "/" + name + ".pdf",:type=>"application/pdf; charset=utf-8", :stream=> false, :filename=> File.basename(File.dirname(__FILE__) + "/../../" + directory_name + "/" + name + ".pdf"))
+        #redirect_to "/reports/report?#{parameters}"
 
       end
-
+      
       def print(file_name, current_printer, start_time = Time.now)
         sleep(10)
         if (File.exists?(file_name))
