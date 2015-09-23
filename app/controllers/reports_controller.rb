@@ -276,6 +276,170 @@ class ReportsController < ApplicationController
     render :layout => false
   end
 
+  def report_pdf
+    @parameters = params
+    session_date = (session[:datetime].to_date rescue Date.today)
+    @facility = Location.current_health_center.name rescue ''
+
+    @start_date = nil
+    @end_date = nil
+    @start_age = params[:startAge]
+    @end_age = params[:endAge]
+
+
+    if params[:selSelect].blank?  && params[:selMonth]
+      params[:selSelect] = "month"
+      params[:selType] = "cohort"
+    elsif params[:selType] == "cohort"
+    else
+      params[:selType] = "monthly"
+    end
+    @type = params[:selType]
+
+    case params[:selSelect]
+    when "day"
+      @start_date = params[:day]
+      @end_date = params[:day]
+    when "week"
+      @start_date = (("#{params[:selYear]}-01-01".to_date) + (params[:selWeek].to_i * 7)) -
+      ("#{params[:selYear]}-01-01".to_date.strftime("%w").to_i)
+      @end_date = (("#{params[:selYear]}-01-01".to_date) + (params[:selWeek].to_i * 7)) +
+      6 - ("#{params[:selYear]}-01-01".to_date.strftime("%w").to_i)
+    when "month"
+      @start_date = ("#{params[:selYear]}-#{params[:selMonth]}-01").to_date.strftime("%Y-%m-%d")
+      @end_date = ("#{params[:selYear]}-#{params[:selMonth]}-#{ (params[:selMonth].to_i != 12 ?
+      ("#{params[:selYear]}-#{params[:selMonth].to_i + 1}-01".to_date - 1).strftime("%d") : "31") }").to_date.strftime("%Y-%m-%d")
+    when "year"
+      @start_date = ("#{params[:selYear]}-01-01").to_date.strftime("%Y-%m-%d")
+      @end_date = ("#{params[:selYear]}-12-31").to_date.strftime("%Y-%m-%d")
+    when "quarter"
+      day = params[:selQtr].to_s.match(/^min=(.+)&max=(.+)$/)
+      @start_date = (day ? day[1] : Date.today.strftime("%Y-%m-%d"))
+      @end_date = (day ? day[2] : Date.today.strftime("%Y-%m-%d"))
+    when "range"
+      @start_date = params[:start_date]
+      @end_date = params[:end_date]
+    end
+
+    @start_date = params[:start_date] if !params[:start_date].blank?
+    @end_date = params[:end_date] if !params[:end_date].blank?
+
+    #raise "#{@start_date} : #{@end_date}"
+    if @type == "cohort"
+      session[:report_start_date] = (@start_date.to_date - 6.months).beginning_of_month
+      session[:report_end_date] = (@start_date.to_date - 6.months).end_of_month
+    else
+      session[:report_start_date] = @start_date.to_date
+      session[:report_end_date] = @end_date.to_date
+    end
+
+
+    #raise "#{@start_date} #{@end_date} #{@start_age} #{@end_age} #{@type} #{session_date}"
+    report = Reports.new(@start_date, @end_date, @start_age, @end_age, @type, session_date)
+
+    @new_women_registered = report.new_women_registered
+
+    @observations_total = report.observations_total
+
+    @observations_1 = report.observations_1
+
+    @observations_2 = report.observations_2
+
+    @observations_3 = report.observations_3
+
+    @observations_4 = report.observations_4
+
+    @observations_5 = report.observations_5
+
+    @week_of_first_visit_1 = report.week_of_first_visit_1
+
+    @week_of_first_visit_2 = report.week_of_first_visit_2
+
+    @week_of_first_visit_unknown = @observations_total - (@week_of_first_visit_1 + @week_of_first_visit_2)
+
+    @pre_eclampsia_1 = report.pre_eclampsia_1
+
+    @pre_eclampsia_no = @observations_total - @pre_eclampsia_1
+
+    #@pre_eclampsia_2 = report.pre_eclampsia_2
+
+    @ttv__total_previous_doses_1 = report.ttv__total_previous_doses_2(1)
+
+    @ttv__total_previous_doses_2 = report.ttv__total_previous_doses_2
+
+    @fansida__sp___number_of_tablets_given_0 = report.fansida__sp___number_of_tablets_given_0
+
+    @fansida__sp___number_of_tablets_given_1, @fansida__sp___number_of_tablets_given_2, @fansida__sp___number_of_tablets_given_more_than_2 = report.fansida__sp
+
+    #@fansida__sp___number_of_tablets_given_2 = report.fansida__sp___number_of_tablets_given_2
+
+    #@fefo__number_of_tablets_given_2 = report.fefo__number_of_tablets_given_2
+
+    @fefo__number_of_tablets_given_1, @fefo__number_of_tablets_given_2 = report.fefo
+    #@fansida__sp___number_of_tablets_given_more_than_2 = report.fansida__sp___number_of_tablets_given_more_than_2
+
+    #@fansida__sp___number_of_tablets_given_more_than_2 = @observations_total - (@fansida__sp___number_of_tablets_given_0 + @fansida__sp___number_of_tablets_given_1 + @fansida__sp___number_of_tablets_given_2)
+
+    @fefo__number_of_tablets_given_1 = @observations_total - @fefo__number_of_tablets_given_2 #report.fefo__number_of_tablets_given_1
+
+    @albendazole = report.albendazole(1)
+
+    @albendazole_more_than_1 = report.albendazole(">1")
+    @albendazole_none = @observations_total - (@albendazole + @albendazole_more_than_1)
+
+    @bed_net = report.bed_net
+    @no_bed_net = @observations_total - report.bed_net
+
+    @syphilis_result_pos = report.syphilis_result_pos.uniq
+
+    @syphilis_result_neg = report.syphilis_result_neg.uniq
+
+    @syphilis_result_neg = @syphilis_result_neg - @syphilis_result_pos
+
+    @syphilis_result_unk = (@observations_total - (@syphilis_result_pos + @syphilis_result_neg).uniq).uniq
+
+    @hiv_test_result_prev_neg = report.hiv_test_result_prev_neg.uniq
+
+    @hiv_test_result_prev_pos = report.hiv_test_result_prev_pos.uniq
+
+    @hiv_test_result_neg = report.hiv_test_result_neg.uniq
+
+    @hiv_test_result_pos = report.hiv_test_result_pos.uniq
+
+    @hiv_test_result_inc  = report.hiv_test_result_inc.uniq
+
+    #getting rid of overlaps
+    @hiv_test_result_prev_neg -= (@hiv_test_result_pos + @hiv_test_result_neg + @hiv_test_result_pos)
+    @hiv_test_result_neg -= (@hiv_test_result_prev_pos + @hiv_test_result_pos)
+    @hiv_test_result_prev_pos -= (@hiv_test_result_pos)
+
+    @hiv_test_result_unk = (@observations_total - (@hiv_test_result_prev_neg + @hiv_test_result_prev_pos +
+    @hiv_test_result_neg + @hiv_test_result_pos + @hiv_test_result_inc).uniq).uniq
+
+    @total_hiv_positive = (@hiv_test_result_prev_pos + @hiv_test_result_pos).delete_if{|p| p.blank?}
+
+    @not_on_art = report.not_on_art
+    @not_on_art.delete_if{|p| p.blank?}
+
+    @on_art_before = report.on_art_before
+    @on_art_before.delete_if{|p| p.blank?}
+
+    @on_art_zero_to_27 = report.on_art_zero_to_27
+
+    @on_art_zero_to_27.delete_if{|p| p.blank?}
+
+    @on_art_28_plus = report.on_art_28_plus
+    @on_art_28_plus.delete_if{|p| p.blank?}
+    #raise (@on_art_before + @not_on_art + @on_art_zero_to_27 + @on_art_28_plus).uniq.length.to_yaml
+    @on_cpt__1 = report.on_cpt__1
+    @no_cpt__1 = (@total_hiv_positive - @on_cpt__1)
+
+    @nvp_baby__1 = report.nvp_baby__1
+    @no_nvp_baby__1 = (@total_hiv_positive - @nvp_baby__1)
+    #raise @fansida__sp___number_of_tablets_given_more_than_2.to_yaml
+    render :layout => false
+  end
+  
   def select
     render :layout => "application"
   end
@@ -328,7 +492,7 @@ class ReportsController < ApplicationController
 
         t1 = Thread.new{
           Kernel.system "wkhtmltopdf --zoom 0.85 -T 1mm  -B 0mm -s A4 http://" +
-          request.env["HTTP_HOST"] + "\"/reports/report" +
+          request.env["HTTP_HOST"] + "\"/reports/report_pdf" +
           "?#{parameters}&from_print=true" + "\" /tmp/#{name}" + ".pdf \n"
         }
         
@@ -346,7 +510,7 @@ class ReportsController < ApplicationController
 
         loop do
           if File.exists?(file)
-            sleep(3)
+            sleep(10)
           end
           FileUtils.cp_r(src, destination) if File.exists?(file)
           break if File.exists?(destination.to_s + "/#{name}.pdf")
