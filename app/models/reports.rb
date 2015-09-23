@@ -378,7 +378,6 @@ class Reports
                                    ConceptName.find_by_name("Syphilis Test Result").concept_id,
                                    ConceptName.find_by_name("Not Done").concept_id, "Not Done",
                                  (@startdate.to_date + @preg_range), @cohortpatients]).collect { |e| e.patient_id }
-
   end
 
   def hiv_test_result_prev_neg
@@ -529,7 +528,7 @@ return select
             ",
             @cohortpatients, (@startdate.to_date + @preg_range), (@startdate.to_date + @preg_range)
             ]).map(&:patient_id)
-            
+
             return select
 
   end
@@ -651,9 +650,9 @@ return select
   def bed_net
 
     Encounter.find(:all, :joins => [:observations],
-                   :conditions => ["concept_id = ? AND (value_text = ?) AND ( DATE(encounter_datetime) >= #{@lmp} " +
+                   :conditions => ["concept_id = ? AND (value_text IN ('Given Today', 'Given during previous ANC visit for current pregnancy')) AND ( DATE(encounter_datetime) >= #{@lmp} " +
                                        "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)",
-                                   ConceptName.find_by_name("Bed Net").concept_id, "Given Today",
+                                   ConceptName.find_by_name("Bed Net").concept_id,
                                    (@startdate.to_date + @preg_range), @cohortpatients]).collect { |e| e.patient_id }.uniq rescue []
 
   end
