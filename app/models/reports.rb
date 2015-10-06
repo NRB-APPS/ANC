@@ -58,7 +58,7 @@ class Reports
                                       ]).collect { |e| [e.patient_id, e.form_id] }
 
     @positive_patients = (hiv_test_result_pos.uniq + hiv_test_result_prev_pos.uniq).delete_if { |p| p.blank? }
-
+    @first_visit_positive_patients = (first_visit_hiv_test_result_prev_positive.uniq + first_visit_new_positive.uniq).delete_if { |p| p.blank? }
     @bart_patients = on_art_in_bart
 
     @on_cpt = @bart_patients['on_cpt']
@@ -69,6 +69,18 @@ class Reports
     @bart_patients.delete("arv_before_visit_one")
     @bart_patients.delete("no_art")
     @bart_patient_identifiers = @bart_patients.keys
+
+    @bart_patients_first_visit = on_art_in_bart_first_visit
+
+    @first_visit_on_cpt = @bart_patients_first_visit['on_cpt']
+    @first_visit_no_art = @bart_patients_first_visit['no_art']
+    @first_visit_on_art_before = @bart_patients_first_visit['arv_before_visit_one']
+    
+    @bart_patients_first_visit.delete("on_cpt")
+    @bart_patients_first_visit.delete("arv_before_visit_one")
+    @bart_patients_first_visit.delete("no_art")
+    @bart_patients_first_visit_identifiers = @bart_patients_first_visit.keys
+
   end
 
   def registrations(start_dt, end_dt)
@@ -440,6 +452,145 @@ return select
 
   end
 
+  def first_visit_hiv_test_result_prev_negative
+    first_visit_patient_ids = @anc_visits.reject { |x, y| y != 1 }.collect { |x, y| x }.uniq
+    first_visit_patient_ids = [0] if first_visit_patient_ids.blank?
+    
+    select = Encounter.find_by_sql([
+                "SELECT
+                e.patient_id,
+                e.encounter_datetime AS date,
+                (SELECT value_datetime FROM obs
+                WHERE encounter_id = e.encounter_id AND obs.concept_id =
+                (SELECT concept_id FROM concept_name WHERE name = 'HIV test date' LIMIT 1)) AS test_date
+                FROM encounter e
+                INNER JOIN obs o ON o.encounter_id = e.encounter_id AND e.voided = 0
+                WHERE o.concept_id = (SELECT concept_id FROM concept_name WHERE name = 'HIV status' LIMIT 1)
+                AND ((o.value_coded = (SELECT concept_id FROM concept_name WHERE name = 'Negative' LIMIT 1))
+                OR (o.value_text = 'Negative'))
+                AND e.patient_id IN (?)
+                AND e.encounter_id = (SELECT MAX(encounter.encounter_id) FROM encounter
+                INNER JOIN obs ON obs.encounter_id = encounter.encounter_id AND obs.concept_id =
+                (SELECT concept_id FROM concept_name WHERE name = 'HIV test date' LIMIT 1)
+                WHERE encounter_type = e.encounter_type AND patient_id = e.patient_id
+                AND DATE(encounter.encounter_datetime) <= ?)
+                AND (DATE(e.encounter_datetime) <= ?)
+                GROUP BY e.patient_id
+                HAVING DATE(date) > DATE(test_date)
+                ",
+                first_visit_patient_ids, (@startdate.to_date + @preg_range), (@startdate.to_date + @preg_range)
+                ]).map(&:patient_id)
+    return select
+  end
+
+  def first_visit_hiv_test_result_prev_positive
+    first_visit_patient_ids = @anc_visits.reject { |x, y| y != 1 }.collect { |x, y| x }.uniq
+    first_visit_patient_ids = [0] if first_visit_patient_ids.blank?
+
+    select = Encounter.find_by_sql([
+                "SELECT
+                e.patient_id,
+                e.encounter_datetime AS date,
+                (SELECT value_datetime FROM obs
+                WHERE encounter_id = e.encounter_id AND obs.concept_id =
+                (SELECT concept_id FROM concept_name WHERE name = 'HIV test date' LIMIT 1)) AS test_date
+                FROM encounter e
+                INNER JOIN obs o ON o.encounter_id = e.encounter_id AND e.voided = 0
+                WHERE o.concept_id = (SELECT concept_id FROM concept_name WHERE name = 'HIV status' LIMIT 1)
+                AND ((o.value_coded = (SELECT concept_id FROM concept_name WHERE name = 'Positive' LIMIT 1))
+                OR (o.value_text = 'Positive'))
+                AND e.patient_id IN (?)
+                AND e.encounter_id = (SELECT MAX(encounter.encounter_id) FROM encounter
+                INNER JOIN obs ON obs.encounter_id = encounter.encounter_id AND obs.concept_id =
+                (SELECT concept_id FROM concept_name WHERE name = 'HIV test date' LIMIT 1)
+                WHERE encounter_type = e.encounter_type AND patient_id = e.patient_id
+                AND DATE(encounter.encounter_datetime) <= ?)
+                AND (DATE(e.encounter_datetime) <= ?)
+                GROUP BY e.patient_id
+                HAVING DATE(date) > DATE(test_date)
+                ",
+                first_visit_patient_ids, (@startdate.to_date + @preg_range), (@startdate.to_date + @preg_range)
+                ]).map(&:patient_id)
+    return select
+  end
+
+  def first_visit_new_negative
+    first_visit_patient_ids = @anc_visits.reject { |x, y| y != 1 }.collect { |x, y| x }.uniq
+    first_visit_patient_ids = [0] if first_visit_patient_ids.blank?
+    
+    select = Encounter.find_by_sql([
+                "SELECT
+                e.patient_id,
+                e.encounter_datetime AS date,
+                (SELECT value_datetime FROM obs
+                WHERE encounter_id = e.encounter_id AND obs.concept_id =
+                (SELECT concept_id FROM concept_name WHERE name = 'HIV test date' LIMIT 1)) AS test_date
+                FROM encounter e
+                INNER JOIN obs o ON o.encounter_id = e.encounter_id AND e.voided = 0
+                WHERE o.concept_id = (SELECT concept_id FROM concept_name WHERE name = 'HIV status' LIMIT 1)
+                AND ((o.value_coded = (SELECT concept_id FROM concept_name WHERE name = 'Negative' LIMIT 1))
+                OR (o.value_text = 'Negative'))
+                AND e.patient_id IN (?)
+                AND e.encounter_id = (SELECT MAX(encounter.encounter_id) FROM encounter
+                INNER JOIN obs ON obs.encounter_id = encounter.encounter_id AND obs.concept_id =
+                (SELECT concept_id FROM concept_name WHERE name = 'HIV test date' LIMIT 1)
+                WHERE encounter_type = e.encounter_type AND patient_id = e.patient_id
+                AND DATE(encounter.encounter_datetime) <= ?)
+                AND (DATE(e.encounter_datetime) <= ?)
+                GROUP BY e.patient_id
+                HAVING DATE(date) = DATE(test_date)
+                ",
+                first_visit_patient_ids, (@startdate.to_date + @preg_range), (@startdate.to_date + @preg_range)
+                ]).map(&:patient_id)
+    return select
+  end
+
+  def first_visit_new_positive
+    first_visit_patient_ids = @anc_visits.reject { |x, y| y != 1 }.collect { |x, y| x }.uniq
+    first_visit_patient_ids = [0] if first_visit_patient_ids.blank?
+
+    select = Encounter.find_by_sql([
+                "SELECT
+                e.patient_id,
+                e.encounter_datetime AS date,
+                (SELECT value_datetime FROM obs
+                WHERE encounter_id = e.encounter_id AND obs.concept_id =
+                (SELECT concept_id FROM concept_name WHERE name = 'HIV test date' LIMIT 1)) AS test_date
+                FROM encounter e
+                INNER JOIN obs o ON o.encounter_id = e.encounter_id AND e.voided = 0
+                WHERE o.concept_id = (SELECT concept_id FROM concept_name WHERE name = 'HIV status' LIMIT 1)
+                AND ((o.value_coded = (SELECT concept_id FROM concept_name WHERE name = 'Positive' LIMIT 1))
+                OR (o.value_text = 'Positive'))
+                AND e.patient_id IN (?)
+                AND e.encounter_id = (SELECT MAX(encounter.encounter_id) FROM encounter
+                INNER JOIN obs ON obs.encounter_id = encounter.encounter_id AND obs.concept_id =
+                (SELECT concept_id FROM concept_name WHERE name = 'HIV test date' LIMIT 1)
+                WHERE encounter_type = e.encounter_type AND patient_id = e.patient_id
+                AND DATE(encounter.encounter_datetime) <= ?)
+                AND (DATE(e.encounter_datetime) <= ?)
+                GROUP BY e.patient_id
+                HAVING DATE(date) = DATE(test_date)
+                ",
+                first_visit_patient_ids, (@startdate.to_date + @preg_range), (@startdate.to_date + @preg_range)
+                ]).map(&:patient_id)
+    return select
+  end
+
+  def first_visit_hiv_not_done
+    first_visit_patient_ids = @anc_visits.reject { |x, y| y != 1 }.collect { |x, y| x }.uniq
+    first_visit_patient_ids = [0] if first_visit_patient_ids.blank?
+
+    select = Encounter.find(:all, :joins => [:observations], :group => ["patient_id"],
+                            :select => ["patient_id, MAX(encounter_datetime) encounter_datetime, (obs_id + 1) form_id"],
+                            :conditions => ["concept_id = ? AND (value_coded = ? OR value_text = ?) AND (DATE(encounter_datetime) >= #{@lmp} " +
+                                                "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)",
+                                            ConceptName.find_by_name("HIV status").concept_id,
+                                            ConceptName.find_by_name("Not done").concept_id, "Not Done",
+                                             (@startdate.to_date + @preg_range), first_visit_patient_ids]).collect { |e| e.patient_id }
+
+    return select
+    
+  end
 
   def hiv_test_result_neg
 
@@ -552,13 +703,24 @@ return select
     return no_art
   end
 
+  def first_visit_not_on_art
+    first_visit_no_art =  @first_visit_no_art.split(",").collect { |id|
+      PatientIdentifier.find_by_identifier(id).patient_id }.uniq rescue []
+    return first_visit_no_art
+  end
+  
   def on_art_before
-
     ids =  @on_art_before.split(",").collect { |id|
       PatientIdentifier.find_by_identifier(id).patient_id }.uniq rescue []
     return ids
   end
 
+  def first_visit_on_art_before
+    first_visit_on_art = @first_visit_on_art_before.split(",").collect { |id|
+      PatientIdentifier.find_by_identifier(id).patient_id }.uniq rescue []
+    return first_visit_on_art
+  end
+  
   def on_art_zero_to_27
 
     remote = []
@@ -585,6 +747,30 @@ return select
 
   end
 
+  def first_visit_on_art_zero_to_27
+    remote = []
+    Observation.find_by_sql(["SELECT p.identifier, o.value_datetime, o.person_id FROM obs o
+			JOIN patient_identifier p ON p.patient_id = o.person_id
+      JOIN encounter ON o.encounter_id = encounter.encounter_id
+			WHERE o.concept_id = (SELECT concept_id FROM concept_name WHERE name = 'LAST MENSTRUAL PERIOD')
+			AND p.patient_id IN (?) AND DATE(o.obs_datetime) BETWEEN #{@lmp} AND ?",
+                                      @first_visit_positive_patients,  (@startdate.to_date + @preg_range)]).collect { |ob|
+      ident = ob.identifier
+      if (!ob.value_datetime.blank? && @bart_patients_first_visit["#{ident}"])
+        start_date = @bart_patients_first_visit["#{ident}"].to_date
+        lmp = ob.value_datetime.to_date
+        if  ((start_date >= lmp) && (start_date < (lmp + 28.weeks)))
+          unless remote.include?(ob.person_id)
+            remote << ob.person_id
+          end
+        end
+      end
+    }# rescue []
+
+    remote = [] if remote.to_s.blank?
+    return remote
+  end
+  
   def on_art_28_plus
     remote = []
      Observation.find_by_sql(["SELECT p.identifier, o.value_datetime, o.person_id FROM obs o
@@ -607,6 +793,31 @@ return select
 
     remote = [] if remote.to_s.blank?
     return remote
+  end
+
+  def first_visit_on_art_28_plus
+    remote = []
+     Observation.find_by_sql(["SELECT p.identifier, o.value_datetime, o.person_id FROM obs o
+			JOIN patient_identifier p ON p.patient_id = o.person_id
+      JOIN encounter ON o.encounter_id = encounter.encounter_id
+			WHERE o.concept_id = (SELECT concept_id FROM concept_name WHERE name = 'LAST MENSTRUAL PERIOD')
+			AND p.patient_id IN (?) AND DATE(o.obs_datetime) BETWEEN #{@lmp} AND ?",
+                                        @first_visit_positive_patients, (@startdate.to_date + @preg_range)]).each { |ob|
+      ident = ob.identifier
+      if (!ob.value_datetime.blank? && @bart_patients_first_visit["#{ident}"])
+        start_date = @bart_patients_first_visit["#{ident}"].to_date
+        lmp = ob.value_datetime.to_date
+        if  (start_date >= (lmp + 28.weeks))
+          unless remote.include?(ob.person_id)
+            remote << ob.person_id
+          end
+        end
+      end
+    } rescue []
+
+    remote = [] if remote.to_s.blank?
+    return remote
+
   end
 
   def on_cpt__1
@@ -699,4 +910,47 @@ return select
 
     return patient_identifiers
   end
+
+  def on_art_in_bart_first_visit
+      national_id = PatientIdentifierType.find_by_name("National id").id
+    patient_ids = PatientIdentifier.find(:all, :select => ['identifier, identifier_type'],
+                                         :conditions => ["identifier_type = ? AND patient_id IN (?)", national_id,
+                                                         @first_visit_positive_patients]).collect { |ident|
+      ident.identifier }.join(",")
+    id_visit_map = []
+    patient_ids.split(",").each do |id|
+      next if id.nil?
+      patient_id = PatientIdentifier.find_by_identifier(id).patient_id
+      if patient_id
+        date = Observation.find_by_sql(["SELECT value_datetime FROM obs
+                                        JOIN encounter ON obs.encounter_id = encounter.encounter_id
+                                        WHERE person_id = ?
+                                        AND DATE(obs_datetime) BETWEEN #{@lmp} AND ? AND concept_id = ?",
+                                       patient_id,  (@startdate.to_date + @preg_range),
+                                       ConceptName.find_by_name("DATE OF LAST MENSTRUAL PERIOD").concept_id]).first.value_datetime.strftime("%Y-%m-%d") rescue nil
+
+        value = "" + id + "|" + date if !date.nil?
+        id_visit_map << value if !date.nil?
+      end
+
+    end
+
+    paramz = Hash.new
+    paramz["ids"] = patient_ids
+    paramz["start_date"] = @startdate.to_date
+    paramz["end_date"] = @startdate.to_date + @preg_range
+    paramz["id_visit_map"] = id_visit_map.join(",")
+
+    server = CoreService.get_global_property_value("art_link")
+
+    login = CoreService.get_global_property_value("remote_bart.username").split(/,/) rescue ""
+    password = CoreService.get_global_property_value("remote_bart.password").split(/,/) rescue ""
+
+    uri = "http://#{login}:#{password}@#{server}/encounters/export_on_art_patients"
+
+    patient_identifiers = JSON.parse(RestClient.post(uri, paramz))
+
+    return patient_identifiers
+  end
+  
 end
