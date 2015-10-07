@@ -110,6 +110,7 @@
                       </tr>
                     </table>
                   </td>
+                </tr>
               </table>
 
             </td>
@@ -710,7 +711,7 @@
                                 &nbsp;
                               </td>
                               <td colspan="2" style="font-weight: bold;">
-                                HIV test result <sup style="font-weight: normal;">1</sup>
+                                HIV status first visit<sup style="font-weight: normal;">1</sup>
                               </td>
                             </tr>
                             <tr>
@@ -719,13 +720,13 @@
                               </td>
                               <td style="border-top: 1px solid #999; border-left: 1px solid #999; width: 60%;">
                                 <form id="hiv_test_result_prev_neg" method="post" action="decompose">
-                                  <input type="hidden" value="<%= @hiv_test_result_prev_neg.join(",") %>" name="patients" />
+                                  <input type="hidden" value="<%= @first_visit_hiv_test_result_prev_negative.join(",") %>" name="patients" />
                                   Previous Negative
                                 </form>
                               </td>
                               <td style="border: 1px solid #999;">
                                 <a href="javascript:document.getElementById('hiv_test_result_prev_neg').submit()">
-                                  <%= @hiv_test_result_prev_neg.length %>
+                                  <%= @first_visit_hiv_test_result_prev_negative.length %>
                                 </a>
                               </td>
                             </tr>
@@ -735,14 +736,14 @@
                               </td>
                               <td style="border-left: 1px solid #999;">
                                 <form id="hiv_test_result_prev_pos" method="post" action="decompose">
-                                  <input type="hidden" value="<%= @hiv_test_result_prev_pos.join(",") %>" name="patients" />
+                                  <input type="hidden" value="<%= @first_visit_hiv_test_result_prev_positive.join(",") %>" name="patients" />
                                   Previous Positive
                                 </form>
                               </td>
                               <td style="border-left: 1px solid #999;
                                   border-bottom: 1px solid #999; border-right: 1px solid #999;">
                                 <a href="javascript:document.getElementById('hiv_test_result_prev_pos').submit()">
-                                  <%= @hiv_test_result_prev_pos.length %>
+                                  <%= @first_visit_hiv_test_result_prev_positive.length %>
                                 </a>
                               </td>
                             </tr>
@@ -752,14 +753,14 @@
                               </td>
                               <td style="border-left: 1px solid #999; width: 60%;">
                                 <form id="hiv_test_result_neg" method="post" action="decompose">
-                                  <input type="hidden" value="<%= @hiv_test_result_neg.join(",") %>" name="patients" />
+                                  <input type="hidden" value="<%= @first_visit_new_negative.join(",") %>" name="patients" />
                                   New Negative
                                 </form>
                               </td>
                               <td style="border-left: 1px solid #999;
                                   border-bottom: 1px solid #999; border-right: 1px solid #999;">
                                 <a href="javascript:document.getElementById('hiv_test_result_neg').submit()">
-                                  <%= @hiv_test_result_neg.length %>
+                                  <%= @first_visit_new_negative.length %>
                                 </a>
                               </td>
                             </tr>
@@ -769,18 +770,18 @@
                               </td>
                               <td style="border-left: 1px solid #999;">
                                 <form id="hiv_test_result_pos" method="post" action="decompose">
-                                  <input type="hidden" value="<%= @hiv_test_result_pos.join(",") %>" name="patients" />
+                                  <input type="hidden" value="<%= @first_visit_new_positive.join(",") %>" name="patients" />
                                   New Positive
                                 </form>
                               </td>
                               <td style="border-left: 1px solid #999;
                                   border-bottom: 1px solid #999; border-right: 1px solid #999;">
                                 <a href="javascript:document.getElementById('hiv_test_result_pos').submit()">
-                                  <%= @hiv_test_result_pos.length %>
+                                  <%= @first_visit_new_positive.length %>
                                 </a>
                               </td>
                             </tr>
-                            <tr>
+                            <!--<tr>
                               <td>
                                 &nbsp;
                               </td>
@@ -796,35 +797,35 @@
                                 <%= @hiv_test_result_inc.length  %>
                               </a>
                             </td>
-                          </tr>
+                          </tr>-->
                             <tr>
                               <td>
                                 22
                               </td>
                               <td style="border-left: 1px solid #999; border-bottom: 1px solid #999;">
                                 <form id="hiv_test_result_unk" method="post" action="decompose">
-                                  <input type="hidden" value="<%= @hiv_test_result_unk.join(",") %>" name="patients" />
+                                  <input type="hidden" value="<%= @first_visit_hiv_not_done.join(",") %>" name="patients" />
                                   Not Done
                                 </form>
                               </td>
                               <td style="border-left: 1px solid #999;
                                   border-bottom: 1px solid #999; border-right: 1px solid #999;">
                                 <a href="javascript:document.getElementById('hiv_test_result_unk').submit()">
-                                  <%= @hiv_test_result_unk.length %>
+                                  <%= @first_visit_hiv_not_done.length %>
                                 </a>
                               </td>
                             </tr>
                             <tr>
                               <td style="font-style:italic;" colspan="2">
                                 <form id="total_hiv_positive" method="post" action="decompose">
-                                  <input type="hidden" value="<%= @total_hiv_positive.join(",") %>" name="patients" />
+                                  <input type="hidden" value="<%= @total_first_visit_hiv_positive.join(",") %>" name="patients" />
                                   Tot. women HIV+ (19+21)
                                 </form>
                               </td>
                               <td style="border-left: 1px solid #999;
                                   border-bottom: 1px solid #999; border-right: 1px solid #999;">
                                 <a href="javascript:document.getElementById('total_hiv_positive').submit()">
-                                  <%= @total_hiv_positive.length %>
+                                  <%= @total_first_visit_hiv_positive.length %>
                                 </a>
                               </td>
                             </tr>
@@ -921,7 +922,7 @@
                                 &nbsp;
                               </td>
                               <td colspan="2" style="font-weight: bold; padding-top: 12px;">
-                                Final ART status mother <sup style="font-weight: normal;">2</sup>
+                                ART status first visit <span style="font-weight: normal; text-align: right;">out of HIV+</span>
                               </td>
                             </tr>
                             <tr>
@@ -930,13 +931,13 @@
                               </td>
                               <td style="border-top: 1px solid #999; border-left: 1px solid #999; width: 60%;">
                                 <form id="not_on_art" method="post" action="decompose">
-                                  <input type="hidden" value="<%= @not_on_art.join(",") %>" name="patients" />
+                                  <input type="hidden" value="<%= @first_visit_not_on_art.join(",") %>" name="patients" />
                                   Tot. not on ART
                                 </form>
                               </td>
                               <td style="border: 1px solid #999;">
                                 <a href="javascript:document.getElementById('not_on_art').submit()">
-                                  <%= @not_on_art.length%>
+                                  <%= @first_visit_not_on_art.length%>
                                 </a>
                               </td>
                             </tr>
@@ -946,14 +947,14 @@
                               </td>
                               <td style="border-left: 1px solid #999;">
                                 <form id="on_art_before" method="post" action="decompose">
-                                  <input type="hidden" value="<%= @on_art_before.join(",") %>" name="patients" />
-                                  Tot. already on ART
+                                  <input type="hidden" value="<%= @first_visit_on_art_before.join(",") %>" name="patients" />
+                                  On ART before ANC
                                 </form>
                               </td>
                               <td style="border-left: 1px solid #999;
                                   border-bottom: 1px solid #999; border-right: 1px solid #999;">
                                 <a href="javascript:document.getElementById('on_art_before').submit()">
-                                  <%= @on_art_before.length rescue 0 %>
+                                  <%= @first_visit_on_art_before.length rescue 0 %>
                                 </a>
                               </td>
                             </tr>
@@ -963,14 +964,14 @@
                               </td>
                               <td style="border-left: 1px solid #999;">
                                 <form id="on_art_zero_to_27" method="post" action="decompose">
-                                  <input type="hidden" value="<%= @on_art_zero_to_27.join(",") %>" name="patients" />
-                                  Tot. started ART at 0-27 weeks of preg.
+                                  <input type="hidden" value="<%= @first_visit_on_art_zero_to_27.join(",") %>" name="patients" />
+                                  Start ART 0-27 weeks
                                 </form>
                               </td>
                               <td style="border-left: 1px solid #999;
                                   border-bottom: 1px solid #999; border-right: 1px solid #999;">
                                 <a href="javascript:document.getElementById('on_art_zero_to_27').submit()">
-                                  <%= @on_art_zero_to_27.length rescue 0 %>
+                                  <%= @first_visit_on_art_zero_to_27.length rescue 0 %>
                                 </a>
                               </td>
                             </tr>
@@ -980,14 +981,14 @@
                               </td>
                               <td style="border-left: 1px solid #999; border-bottom: 1px solid #999;">
                                 <form id="on_art_28_plus" method="post" action="decompose">
-                                  <input type="hidden" value="<%= @on_art_28_plus.join(",") rescue  @on_art_28_plus %>" name="patients" />
-                                  Tot. started ART at 28+ weeks of preg.
+                                  <input type="hidden" value="<%= @first_visit_on_art_28_plus.join(",") rescue  @first_visit_on_art_28_plus %>" name="patients" />
+                                  Start ART 28+ weeks
                                 </form>
                               </td>
                               <td style="border-left: 1px solid #999;
                                   border-bottom: 1px solid #999; border-right: 1px solid #999;">
                                 <a href="javascript:document.getElementById('on_art_28_plus').submit()">
-                                  <%= @on_art_28_plus.length rescue 0 %>
+                                  <%= @first_visit_on_art_28_plus.length rescue 0 %>
                                 </a>
                               </td>
                             </tr>

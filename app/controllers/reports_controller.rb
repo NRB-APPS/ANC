@@ -280,6 +280,8 @@ class ReportsController < ApplicationController
       @first_visit_new_positive = report.first_visit_new_positive
       @first_visit_hiv_not_done = report.first_visit_hiv_not_done
 
+      @total_first_visit_hiv_positive = (@first_visit_hiv_test_result_prev_positive + @first_visit_new_positive).delete_if{|p| p.blank?}
+
       @first_visit_not_on_art = report.first_visit_not_on_art
       @first_visit_on_art_zero_to_27 = report.first_visit_on_art_zero_to_27
       @first_visit_on_art_28_plus = report.first_visit_on_art_28_plus
