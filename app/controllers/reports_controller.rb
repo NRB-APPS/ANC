@@ -271,6 +271,21 @@ class ReportsController < ApplicationController
     @no_cpt__1 = (@total_hiv_positive - @on_cpt__1)
 
     @nvp_baby__1 = report.nvp_baby__1
+
+    #>>>>>>>>>>>>>>>>>>>>>>>>NEW ADDITIONS START<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      @first_visit_hiv_test_result_prev_negative = report.first_visit_hiv_test_result_prev_negative
+      @first_visit_hiv_test_result_prev_positive = report.first_visit_hiv_test_result_prev_positive
+
+      @first_visit_new_negative = report.first_visit_new_negative
+      @first_visit_new_positive = report.first_visit_new_positive
+      @first_visit_hiv_not_done = report.first_visit_hiv_not_done
+
+      @first_visit_not_on_art = report.first_visit_not_on_art
+      @first_visit_on_art_zero_to_27 = report.first_visit_on_art_zero_to_27
+      @first_visit_on_art_28_plus = report.first_visit_on_art_28_plus
+      @first_visit_on_art_before = report.first_visit_on_art_before
+
+    #>>>>>>>>>>>>>>>>>>>>>>>>NEW ADDITIONS END<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     @no_nvp_baby__1 = (@total_hiv_positive - @nvp_baby__1)
     #raise @fansida__sp___number_of_tablets_given_more_than_2.to_yaml
     render :layout => false
