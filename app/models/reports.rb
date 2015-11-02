@@ -75,7 +75,7 @@ class Reports
     @first_visit_on_cpt = @bart_patients_first_visit['on_cpt']
     @first_visit_no_art = @bart_patients_first_visit['no_art']
     @first_visit_on_art_before = @bart_patients_first_visit['arv_before_visit_one']
-    
+
     @bart_patients_first_visit.delete("on_cpt")
     @bart_patients_first_visit.delete("arv_before_visit_one")
     @bart_patients_first_visit.delete("no_art")
@@ -238,9 +238,9 @@ class Reports
 
     select = Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
           :select => ["encounter.patient_id, count(distinct(DATE(encounter_datetime))) encounter_id, drug.name instructions"],
-          :group => [:patient_id], :conditions => ["drug.name = ? AND (DATE(encounter_datetime) >= ? " +
-               "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "SP (3 tablets)",
-               @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o| o.patient_id }
+          :group => [:patient_id], :conditions => ["drug.name = ? " +
+               "AND DATE(encounter_datetime) <= ? AND encounter.patient_id IN (?)", "SP (3 tablets)",
+                (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o| o.patient_id }
                #raise @cohortpatients.length.to_yaml
     @cohortpatients - select
 
@@ -250,9 +250,9 @@ class Reports
 
     Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
           :select => ["encounter.patient_id, encounter_datetime, drug.name instructions"],
-          :group => [:patient_id], :conditions => ["drug.name = ?  AND (DATE(encounter_datetime) >= ? " +
-                                                      "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "SP (3 tablets)",
-                                                  @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o|
+          :group => [:patient_id], :conditions => ["drug.name = ?  " +
+                                                      "AND DATE(encounter_datetime) <= ? AND encounter.patient_id IN (?)", "SP (3 tablets)",
+                                                   (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o|
           [o.patient_id, o.encounter_id]
         }.delete_if { |x, y| y.to_i != 1 }.collect { |p, c| p }
 
@@ -289,9 +289,9 @@ class Reports
 
     Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
                :select => ["encounter.patient_id, count(distinct(DATE(encounter_datetime))) encounter_id, drug.name instructions"],
-               :group => [:patient_id], :conditions => ["drug.name = ? AND (DATE(encounter_datetime) >= ? " +
-                                                            "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "SP (3 tablets)",
-                                                        @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o|
+               :group => [:patient_id], :conditions => ["drug.name = ? " +
+                                                            "AND DATE(encounter_datetime) <= ? AND encounter.patient_id IN (?)", "SP (3 tablets)",
+                                                         (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o|
       [o.patient_id, o.encounter_id]
     }.delete_if { |x, y| y.to_i != 2 }.collect { |p, c| p }
 
@@ -301,9 +301,9 @@ class Reports
 
     Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
     :select => ["encounter.patient_id, count(distinct(DATE(encounter_datetime))) encounter_id, drug.name instructions"],
-    :group => [:patient_id], :conditions => ["drug.name = ?  AND (DATE(encounter_datetime) >= ? " +
-      "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "SP (3 tablets)",
-      @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o|
+    :group => [:patient_id], :conditions => ["drug.name = ?  " +
+      "AND DATE(encounter_datetime) <= ? AND encounter.patient_id IN (?)", "SP (3 tablets)",
+       (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o|
         [o.patient_id, o.encounter_id]
       }.delete_if { |x, y| y.to_i < 3 }.collect { |p, c| p }
 
@@ -455,7 +455,7 @@ return select
   def first_visit_hiv_test_result_prev_negative
     first_visit_patient_ids = @anc_visits.reject { |x, y| y != 1 }.collect { |x, y| x }.uniq
     first_visit_patient_ids = [0] if first_visit_patient_ids.blank?
-    
+
     select = Encounter.find_by_sql([
                 "SELECT
                 e.patient_id,
@@ -517,7 +517,7 @@ return select
   def first_visit_new_negative
     first_visit_patient_ids = @anc_visits.reject { |x, y| y != 1 }.collect { |x, y| x }.uniq
     first_visit_patient_ids = [0] if first_visit_patient_ids.blank?
-    
+
     select = Encounter.find_by_sql([
                 "SELECT
                 e.patient_id,
@@ -589,7 +589,7 @@ return select
                                              (@startdate.to_date + @preg_range), first_visit_patient_ids]).collect { |e| e.patient_id }
 
     return select
-    
+
   end
 
   def hiv_test_result_neg
@@ -708,7 +708,7 @@ return select
       PatientIdentifier.find_by_identifier(id).patient_id }.uniq rescue []
     return first_visit_no_art
   end
-  
+
   def on_art_before
     ids =  @on_art_before.split(",").collect { |id|
       PatientIdentifier.find_by_identifier(id).patient_id }.uniq rescue []
@@ -720,7 +720,7 @@ return select
       PatientIdentifier.find_by_identifier(id).patient_id }.uniq rescue []
     return first_visit_on_art
   end
-  
+
   def on_art_zero_to_27
 
     remote = []
@@ -770,7 +770,7 @@ return select
     remote = [] if remote.to_s.blank?
     return remote
   end
-  
+
   def on_art_28_plus
     remote = []
      Observation.find_by_sql(["SELECT p.identifier, o.value_datetime, o.person_id FROM obs o
@@ -952,5 +952,5 @@ return select
 
     return patient_identifiers
   end
-  
+
 end
