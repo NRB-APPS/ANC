@@ -267,10 +267,10 @@ class ReportsController < ApplicationController
     @on_art_28_plus = report.on_art_28_plus
     @on_art_28_plus.delete_if{|p| p.blank?}
     #raise (@on_art_before + @not_on_art + @on_art_zero_to_27 + @on_art_28_plus).uniq.length.to_yaml
-    @on_cpt__1 = report.on_cpt__1
-    @no_cpt__1 = (@total_hiv_positive - @on_cpt__1)
+    #@on_cpt__1 = report.on_cpt__1
+    #@no_cpt__1 = (@total_hiv_positive - @on_cpt__1)
 
-    @nvp_baby__1 = report.nvp_baby__1
+    #@nvp_baby__1 = report.nvp_baby__1
 
     #>>>>>>>>>>>>>>>>>>>>>>>>NEW ADDITIONS START<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
       @first_visit_hiv_test_result_prev_negative = report.first_visit_hiv_test_result_prev_negative
@@ -288,7 +288,12 @@ class ReportsController < ApplicationController
       @first_visit_on_art_before = report.first_visit_on_art_before
 
     #>>>>>>>>>>>>>>>>>>>>>>>>NEW ADDITIONS END<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    @no_nvp_baby__1 = (@total_hiv_positive - @nvp_baby__1)
+    @nvp_baby__1 = report.nvp_baby__1
+    @no_nvp_baby__1 = (@total_first_visit_hiv_positive - @nvp_baby__1)
+    @on_cpt__1 = report.on_cpt__1
+    @no_cpt__1 = (@total_first_visit_hiv_positive - @on_cpt__1)
+
+
     #raise @fansida__sp___number_of_tablets_given_more_than_2.to_yaml
     render :layout => false
   end
@@ -447,16 +452,36 @@ class ReportsController < ApplicationController
 
     @on_art_28_plus = report.on_art_28_plus
     @on_art_28_plus.delete_if{|p| p.blank?}
-    #raise (@on_art_before + @not_on_art + @on_art_zero_to_27 + @on_art_28_plus).uniq.length.to_yaml
-    @on_cpt__1 = report.on_cpt__1
-    @no_cpt__1 = (@total_hiv_positive - @on_cpt__1)
+        #raise (@on_art_before + @not_on_art + @on_art_zero_to_27 + @on_art_28_plus).uniq.length.to_yaml
+    #@on_cpt__1 = report.on_cpt__1
+    #@no_cpt__1 = (@total_hiv_positive - @on_cpt__1)
 
+    #@nvp_baby__1 = report.nvp_baby__1
+
+    #>>>>>>>>>>>>>>>>>>>>>>>>NEW ADDITIONS START<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      @first_visit_hiv_test_result_prev_negative = report.first_visit_hiv_test_result_prev_negative
+      @first_visit_hiv_test_result_prev_positive = report.first_visit_hiv_test_result_prev_positive
+
+      @first_visit_new_negative = report.first_visit_new_negative
+      @first_visit_new_positive = report.first_visit_new_positive
+      @first_visit_hiv_not_done = report.first_visit_hiv_not_done
+
+      @total_first_visit_hiv_positive = (@first_visit_hiv_test_result_prev_positive + @first_visit_new_positive).delete_if{|p| p.blank?}
+
+      @first_visit_not_on_art = report.first_visit_not_on_art
+      @first_visit_on_art_zero_to_27 = report.first_visit_on_art_zero_to_27
+      @first_visit_on_art_28_plus = report.first_visit_on_art_28_plus
+      @first_visit_on_art_before = report.first_visit_on_art_before
+
+    #>>>>>>>>>>>>>>>>>>>>>>>>NEW ADDITIONS END<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     @nvp_baby__1 = report.nvp_baby__1
-    @no_nvp_baby__1 = (@total_hiv_positive - @nvp_baby__1)
+    @no_nvp_baby__1 = (@total_first_visit_hiv_positive - @nvp_baby__1)
+    @on_cpt__1 = report.on_cpt__1
+    @no_cpt__1 = (@total_first_visit_hiv_positive - @on_cpt__1)
     #raise @fansida__sp___number_of_tablets_given_more_than_2.to_yaml
     render :layout => false
   end
-  
+
   def select
     render :layout => "application"
   end
@@ -512,7 +537,7 @@ class ReportsController < ApplicationController
           request.env["HTTP_HOST"] + "\"/reports/report_pdf" +
           "?#{parameters}&from_print=true" + "\" /tmp/#{name}" + ".pdf \n"
         }
-        
+
         file = "/tmp/#{name}" + ".pdf"
 
         directory_name = "Reports"
@@ -532,7 +557,7 @@ class ReportsController < ApplicationController
           FileUtils.cp_r(src, destination) if File.exists?(file)
           break if File.exists?(destination.to_s + "/#{name}.pdf")
         end
-          
+
         t3 = Thread.new{
 
           print(file, "", Time.now)
@@ -542,7 +567,7 @@ class ReportsController < ApplicationController
         #redirect_to "/reports/report?#{parameters}"
 
       end
-      
+
       def print(file_name, current_printer, start_time = Time.now)
         sleep(10)
         if (File.exists?(file_name))

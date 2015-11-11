@@ -453,7 +453,8 @@ return select
   end
 
   def first_visit_hiv_test_result_prev_negative
-    first_visit_patient_ids = @anc_visits.reject { |x, y| y != 1 }.collect { |x, y| x }.uniq
+
+    first_visit_patient_ids = @anc_visits.reject { |x, y| y <= 1 }.collect { |x, y| x }.uniq
     first_visit_patient_ids = [0] if first_visit_patient_ids.blank?
 
     select = Encounter.find_by_sql([
@@ -484,7 +485,7 @@ return select
   end
 
   def first_visit_hiv_test_result_prev_positive
-    first_visit_patient_ids = @anc_visits.reject { |x, y| y != 1 }.collect { |x, y| x }.uniq
+    first_visit_patient_ids = @anc_visits.reject { |x, y| y <= 1 }.collect { |x, y| x }.uniq
     first_visit_patient_ids = [0] if first_visit_patient_ids.blank?
 
     select = Encounter.find_by_sql([
@@ -515,7 +516,7 @@ return select
   end
 
   def first_visit_new_negative
-    first_visit_patient_ids = @anc_visits.reject { |x, y| y != 1 }.collect { |x, y| x }.uniq
+    first_visit_patient_ids = @anc_visits.reject { |x, y| y <= 1 }.collect { |x, y| x }.uniq
     first_visit_patient_ids = [0] if first_visit_patient_ids.blank?
 
     select = Encounter.find_by_sql([
@@ -542,11 +543,12 @@ return select
                 ",
                 first_visit_patient_ids, (@startdate.to_date + @preg_range), (@startdate.to_date + @preg_range)
                 ]).map(&:patient_id)
+
     return select
   end
 
   def first_visit_new_positive
-    first_visit_patient_ids = @anc_visits.reject { |x, y| y != 1 }.collect { |x, y| x }.uniq
+    first_visit_patient_ids = @anc_visits.reject { |x, y| y <= 1 }.collect { |x, y| x }.uniq
     first_visit_patient_ids = [0] if first_visit_patient_ids.blank?
 
     select = Encounter.find_by_sql([
@@ -573,11 +575,12 @@ return select
                 ",
                 first_visit_patient_ids, (@startdate.to_date + @preg_range), (@startdate.to_date + @preg_range)
                 ]).map(&:patient_id)
+
     return select
   end
 
   def first_visit_hiv_not_done
-    first_visit_patient_ids = @anc_visits.reject { |x, y| y != 1 }.collect { |x, y| x }.uniq
+    first_visit_patient_ids = @anc_visits.reject { |x, y| y <= 1 }.collect { |x, y| x }.uniq
     first_visit_patient_ids = [0] if first_visit_patient_ids.blank?
 
     select = Encounter.find(:all, :joins => [:observations], :group => ["patient_id"],
@@ -822,6 +825,7 @@ return select
 
   def on_cpt__1
     ids = @on_cpt.split(",").collect { |id| PatientIdentifier.find_by_identifier(id.gsub(/\-|\s+/, "")).patient_id }.uniq rescue []
+
     return ids
   end
 
@@ -832,7 +836,7 @@ return select
                 "SUM(DATEDIFF(auto_expire_date, start_date)) orderer"], :group => [:patient_id],
                 :conditions => ["(drug.name REGEXP ? OR drug.name REGEXP ?) AND (DATE(encounter_datetime) >= #{@lmp} " +
                 "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "NVP", "Nevirapine syrup",
-                 (@startdate.to_date + @preg_range), @positive_patients]).collect { |o| o.patient_id }
+                 (@startdate.to_date + @preg_range), @first_visit_positive_patients]).collect { |o| o.patient_id }
     return nvp.uniq rescue []
   end
 
@@ -873,7 +877,7 @@ return select
     national_id = PatientIdentifierType.find_by_name("National id").id
     patient_ids = PatientIdentifier.find(:all, :select => ['identifier, identifier_type'],
                                          :conditions => ["identifier_type = ? AND patient_id IN (?)", national_id,
-                                                         @positive_patients]).collect { |ident|
+                                                         @first_visit_positive_patients]).collect { |ident|
       ident.identifier }.join(",")
     id_visit_map = []
     patient_ids.split(",").each do |id|
