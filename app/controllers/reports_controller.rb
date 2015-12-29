@@ -255,6 +255,23 @@ class ReportsController < ApplicationController
     @nvp_baby__1 = report.nvp_baby__1
     @no_nvp_baby__1 = (@total_hiv_positive - @nvp_baby__1)
 
+    #filter for cohort validation rules
+    vars = ValidationRule.rules_xy
+
+    if vars.collect{|v| eval("@#{v}") }.flatten.uniq.include?(nil) #nils are for failed eval executions
+      raise "One of the cohort validation rules is using an unknown variable".to_s
+    end
+
+    @failures = []
+    rules = ValidationRule.find_all_by_type_id(1)
+    rules.each do |rule|
+
+      exr =  rule.expr.gsub(/\{/, '@').gsub(/\}/, '.count')
+      if !eval(exr)
+        @failures << "Failed: #{rule.desc}"
+      end
+    end
+
     render :layout => false
 	end
 
