@@ -521,6 +521,23 @@
                             </tr>
                             <tr>
                               <td>
+
+                              </td>
+                              <td style="border-left: 1px solid #999; border-bottom: 1px solid #999;">
+                                <form id="fansida__sp___number_of_tablets_given_3" method="post" action="decompose">
+                                  <input type="hidden" value="<%= @fansida__sp___number_of_tablets_given_3.join(",") %>" name="patients" />
+                                  Tot. received 3 x 3 tabs
+                                </form>
+                              </td>
+                              <td style="border-left: 1px solid #999; border-top: 1px solid #999;
+                                      border-bottom: 1px solid #999; border-right: 1px solid #999;">
+                                <a href="javascript:document.getElementById('fansida__sp___number_of_tablets_given_3').submit()">
+                                  <%= @fansida__sp___number_of_tablets_given_3.length %>
+                                </a>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
                                 &nbsp;
                               </td>
                               <td colspan="2" style="font-weight: bold;">

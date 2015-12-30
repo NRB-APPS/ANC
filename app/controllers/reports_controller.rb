@@ -201,6 +201,8 @@ class ReportsController < ApplicationController
 
 		@fansida__sp___number_of_tablets_given_2 = report.fansida__sp___number_of_tablets_given_2
 
+    @fansida__sp___number_of_tablets_given_3 = report.fansida__sp___number_of_tablets_given_3
+
     @fefo__number_of_tablets_given_2 = report.fefo__number_of_tablets_given_2
 
 		@fefo__number_of_tablets_given_1 = @observations_total - @fefo__number_of_tablets_given_2 #report.fefo__number_of_tablets_given_1
@@ -237,22 +239,22 @@ class ReportsController < ApplicationController
 
     @total_hiv_positive = (@hiv_test_result_prev_pos + @hiv_test_result_pos).delete_if{|p| p.blank?}
 
-    @not_on_art = report.not_on_art
+    @not_on_art = report.not_on_art.uniq
     @not_on_art.delete_if{|p| p.blank?}
 
-		@on_art_before = report.on_art_before
+		@on_art_before = report.on_art_before.uniq
     @on_art_before.delete_if{|p| p.blank?}
 
-		@on_art_zero_to_27 = report.on_art_zero_to_27
+		@on_art_zero_to_27 = report.on_art_zero_to_27.uniq
     @on_art_zero_to_27.delete_if{|p| p.blank?}
 
-    @on_art_28_plus = report.on_art_28_plus
+    @on_art_28_plus = report.on_art_28_plus.uniq
     @on_art_28_plus.delete_if{|p| p.blank?}
 
-		@on_cpt__1 = report.on_cpt__1
+		@on_cpt__1 = report.on_cpt__1.uniq
     @no_cpt__1 = (@total_hiv_positive - @on_cpt__1)
 
-    @nvp_baby__1 = report.nvp_baby__1
+    @nvp_baby__1 = report.nvp_baby__1.uniq
     @no_nvp_baby__1 = (@total_hiv_positive - @nvp_baby__1)
 
     #filter for cohort validation rules

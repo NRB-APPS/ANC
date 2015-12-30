@@ -259,6 +259,17 @@ class Reports
 
   end
 
+  def fansida__sp___number_of_tablets_given_3
+
+    Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
+               :select => ["encounter.patient_id, count(*) encounter_id, drug.name instructions"],
+               :group => [:patient_id], :conditions => ["drug.name = ? AND (DATE(encounter_datetime) >= ? " +
+                                                            "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "SP (3 tablets)",
+                                                        @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o|
+      [o.patient_id, o.encounter_id]
+    }.delete_if { |x, y| y != 3 }.collect { |p, c| p }
+
+  end
 
   def fefo__number_of_tablets_given_1
 
