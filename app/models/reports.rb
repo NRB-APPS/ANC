@@ -230,7 +230,7 @@ class Reports
                                                                      "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "SP (3 tablets)",
                                                                  @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o| o.patient_id }
 
-    @cohortpatients - select
+    (@cohortpatients - select).uniq
 
   end
 
@@ -242,7 +242,7 @@ class Reports
                                                             "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "SP (3 tablets)",
                                                         @startdate.to_date, (@startdate.to_date + @preg_range), @cohortpatients]).collect { |o|
       [o.patient_id, o.encounter_id]
-    }.delete_if { |x, y| y != 1 }.collect { |p, c| p }
+    }.delete_if { |x, y| y != 1 }.collect { |p, c| p }.uniq
 
   end
 

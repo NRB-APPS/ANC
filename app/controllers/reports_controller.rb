@@ -195,13 +195,15 @@ class ReportsController < ApplicationController
 
 		@ttv__total_previous_doses_2 = report.ttv__total_previous_doses_2
 
-    @fansida__sp___number_of_tablets_given_0 = report.fansida__sp___number_of_tablets_given_0
+    #@fansida__sp___number_of_tablets_given_0 = report.fansida__sp___number_of_tablets_given_0.uniq
 
-		@fansida__sp___number_of_tablets_given_1 = report.fansida__sp___number_of_tablets_given_1
+		@fansida__sp___number_of_tablets_given_1 = report.fansida__sp___number_of_tablets_given_1.uniq
 
-		@fansida__sp___number_of_tablets_given_2 = report.fansida__sp___number_of_tablets_given_2
+		@fansida__sp___number_of_tablets_given_2 = report.fansida__sp___number_of_tablets_given_2.uniq
 
-    @fansida__sp___number_of_tablets_given_3 = report.fansida__sp___number_of_tablets_given_3
+    @fansida__sp___number_of_tablets_given_3 = report.fansida__sp___number_of_tablets_given_3.uniq
+
+    @fansida__sp___number_of_tablets_given_0 = @observations_total - (@fansida__sp___number_of_tablets_given_1 + @fansida__sp___number_of_tablets_given_2 + @fansida__sp___number_of_tablets_given_3)
 
     @fefo__number_of_tablets_given_2 = report.fefo__number_of_tablets_given_2
 
