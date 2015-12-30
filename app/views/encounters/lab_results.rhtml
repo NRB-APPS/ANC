@@ -168,6 +168,23 @@
       :max => "#{session[:datetime].to_date rescue Date.today}"
     } %>
 
+    <%= touch_select_tag "On ART", @patient,
+                         options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
+       {:id => "on_art",
+        :helptext => "Is Patient On ART? <span class='helper'> Lab Results</span>",
+        :tt_onUnLoad => "parsedConceptName = '';",
+        :tt_onLoad => " parsedConceptName = 'On ART';",
+        :condition => "__$('new_test_result_at_current_facility').value == 'Positive'"
+       } %>
+
+    <%= touch_text_field_tag "ARV Number", @patient, nil,
+       {:id => "arv_number",
+        :optional => true,
+        :helptext => "ARV Number <span class='helper'> Lab Results</span>",
+        :tt_onUnLoad => "parsedConceptName = '';",
+        :condition => "__$('on_art').value == 'Yes'"
+       } %>
+
     <%= select_tag("choice", options_for_select(["", "HB Test Result",
           "Syphilis Test Result", "Urine Protein", "Malaria Test Result"]),
       {

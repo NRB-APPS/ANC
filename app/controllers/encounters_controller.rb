@@ -25,6 +25,26 @@ class EncountersController < ApplicationController
 
       next if observation[:concept_name].blank?
 
+      if  observation[:concept_name].upcase == "ARV NUMBER"
+        next if observation[:value_text].blank?
+        #cant be saved. ARV Number is saved as patient identifier
+        arvnumber = @patient.patient_identifiers.find_by_identifier_type(
+            PatientIdentifierType.find_by_name("ARV Number").id
+        )
+
+        if arvnumber.blank?
+          PatientIdentifier.create(
+              :identifier_type => PatientIdentifierType.find_by_name("ARV Number").id,
+              :identifier => observation[:value_text],
+              :patient_id => @patient.id
+          )
+        else
+          arvnumber.update_attributes(:identifier => observation[:value_text])
+        end
+
+        next
+      end
+
       if encounter.type.name == 'OBSTETRIC HISTORY' && observation[:concept_name] == "PARITY" && params[:parity].present?
         observation[:value_numeric] = params[:parity]
       end
