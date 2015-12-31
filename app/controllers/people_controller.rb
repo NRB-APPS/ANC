@@ -144,9 +144,9 @@ class PeopleController < GenericPeopleController
 				# TODO - figure out how to write a test for this
 				# This is sloppy - creating something as the result of a GET
 				if create_from_remote        
-					found_person_data = ANCService.search_by_identifier(params[:identifier]).first rescue nil
+					found_person_ = ANCService.search_by_identifier(params[:identifier]).first rescue nil
 
-					found_person = ANCService.create_from_form(found_person_data['person']) unless found_person_data.nil?
+					#found_person = ANCService.create_from_form(found_person_data['person']) unless found_person_data.nil?
 				end 
 			end
 
