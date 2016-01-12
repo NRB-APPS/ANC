@@ -18,6 +18,22 @@
     .even td, .odd td{
         padding: 5px;
     }
+
+    .even td{
+        background-color: white;
+    }
+
+    .odd td{
+        background-color: #EEEEE7;
+    }
+   th{
+       background-color: #4A7B6F;
+       border-radius: 1px;
+       color: white;
+   }
+   td{
+       color: #242E35;
+   }
 </style>
 
 <div style="width: 100%; overflow:auto;font-size: 1.2em;">
@@ -26,7 +42,7 @@
             <td style="width:60%;overflow:auto;">
                 <div style="height:90vh;;overflow:auto;">
                     <table style="width:100%;border-left: 1px solid gray">
-                        <tr>
+                        <tr class="header">
                         <th>Patient Name</th>
                         <th>National ID</th>
                         <th>Date of Birth</th>
@@ -34,7 +50,7 @@
                         <th>Remote Count</th>
                         </tr>
                         <% @local_patients.each do |patient, name|%>
-                            <tr class="<%=cycle('even', 'odd')%>" onmousedown="loadRemoteDetails('<%= patient.national_id%>')">
+                            <tr class="<%=cycle('even', 'odd')%>" onclick="loadRemoteDetails('<%= patient.national_id%>')">
                             <td><%= name%></td>
                             <td><%= patient.national_id%></td>
                             <td><%= patient.person.birthdate.strftime("%d %b, %Y")%></td>
