@@ -99,4 +99,11 @@ class Patient < ActiveRecord::Base
     ).identifier rescue nil
   end
 
+  def remote_count
+    Bart2Connection::PatientIdentifier.all(:conditions => ["identifier_type = ? AND identifier = ? AND voided = 0",
+                                                          Bart2Connection::PatientIdentifierType.find_by_name("National id").id,
+                                                          self.national_id
+      ]).count rescue 0
+  end
+
 end

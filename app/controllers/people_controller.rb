@@ -336,6 +336,30 @@ class PeopleController < GenericPeopleController
 
   end
 
+  def verify_patient_npids
+
+    if request.get?
+      render :template => "/people/data_cleaning_date_range" and return
+    else
+      local_patients = []
+      Patient.find_by_sql(["SELECT * FROM patient
+                                    WHERE patient_id IN (
+                                      SELECT DISTINCT(patient_id) FROM encounter WHERE DATE(encounter_datetime) BETWEEN ? AND ?
+                                    )",
+                                    params[:start_date].to_date, params[:end_date].to_date]).each do |p|
+          local_patients << [p, p.person.name]
+      end
+      @local_patients = local_patients.sort_by{|patient, name| [name]}
+    end
+  end
+
+  def remote_people
+    @patients = Bart2Connection::Patient.find_by_sql("SELECT * FROM patient WHERE patient_id IN (
+                  SELECT patient_id FROM patient_identifier WHERE identifier = '#{params[:npid]}'
+              )");
+    render :layout => false
+  end
+
 
   protected
 	def cul_age(birthdate , birthdate_estimated , date_created = Date.today, today = Date.today)                                      
