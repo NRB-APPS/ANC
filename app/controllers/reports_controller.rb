@@ -203,7 +203,7 @@ class ReportsController < ApplicationController
 
     @ttv__total_previous_doses_2 = report.ttv__total_previous_doses_2
 
-    @fansida__sp___number_of_tablets_given_0 = report.fansida__sp___number_of_tablets_given_0
+    #@fansida__sp___number_of_tablets_given_0 = report.fansida__sp___number_of_tablets_given_0.uniq
 
     @fansida__sp___number_of_tablets_given_1, @fansida__sp___number_of_tablets_given_2, @fansida__sp___number_of_tablets_given_more_than_2 = report.fansida__sp
 
@@ -254,23 +254,17 @@ class ReportsController < ApplicationController
 
     @total_hiv_positive = (@hiv_test_result_prev_pos + @hiv_test_result_pos).delete_if{|p| p.blank?}
 
-    @not_on_art = report.not_on_art
+    @not_on_art = report.not_on_art.uniq
     @not_on_art.delete_if{|p| p.blank?}
 
     @on_art_before = report.on_art_before
     @on_art_before.delete_if{|p| p.blank?}
 
     @on_art_zero_to_27 = report.on_art_zero_to_27
-
     @on_art_zero_to_27.delete_if{|p| p.blank?}
 
-    @on_art_28_plus = report.on_art_28_plus
+    @on_art_28_plus = report.on_art_28_plus.uniq
     @on_art_28_plus.delete_if{|p| p.blank?}
-    #raise (@on_art_before + @not_on_art + @on_art_zero_to_27 + @on_art_28_plus).uniq.length.to_yaml
-    #@on_cpt__1 = report.on_cpt__1
-    #@no_cpt__1 = (@total_hiv_positive - @on_cpt__1)
-
-    #@nvp_baby__1 = report.nvp_baby__1
 
     #>>>>>>>>>>>>>>>>>>>>>>>>NEW ADDITIONS START<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
       @first_visit_hiv_test_result_prev_negative = report.first_visit_hiv_test_result_prev_negative
@@ -293,8 +287,26 @@ class ReportsController < ApplicationController
     @on_cpt__1 = report.on_cpt__1
     @no_cpt__1 = (@total_first_visit_hiv_positive - @on_cpt__1)
 
+    #filter for cohort validation rules
+    vars = ValidationRule.rules_xy
 
-    #raise @fansida__sp___number_of_tablets_given_more_than_2.to_yaml
+    @failures = []
+
+    if params[:selType] == "cohort"
+      if vars.collect{|v| eval("@#{v}") }.flatten.uniq.include?(nil) #nils are for failed eval executions
+        raise "One of the cohort validation rules is using an unknown variable".to_s
+      end
+
+      rules = ValidationRule.find_all_by_type_id(1)
+      rules.each do |rule|
+
+        exr =  rule.expr.gsub(/\{/, '@').gsub(/\}/, '.count')
+        if !eval(exr)
+          @failures << "Failed: #{rule.desc}"
+        end
+      end
+    end
+
     render :layout => false
   end
 

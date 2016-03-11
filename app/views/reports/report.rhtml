@@ -8,6 +8,29 @@
       <!--
       tt_cancel_destination = '/reports/select';
       tt_show = '/clinic';
+
+      cTable = "";
+      tableRows = JSON.parse('<%= @failures.to_json %>');
+
+      function buildConsistencyTable() {
+          cTable = document.getElementById("consistency-section");
+          if (!cTable)
+            return;
+
+          cTable.innerHTML = null;
+
+          var tRows = "";
+          if (tableRows.length < 1) {
+              tRows += "<tr><td class='pass-rows'>The report has passed all external consistency checks</td></tr>";
+          } else {
+              for (var i = 0; i < tableRows.length; i++) {
+                  tRows += "<tr><td class='err-rows err-num'>" + (i + 1) + "</td>";
+                  tRows += "<td class='err-rows'>" + tableRows[i] + "</td></tr>";
+              }
+          }
+          cTable.innerHTML = tRows;
+      }
+
       //-->
     </script>
     <style media="print">
@@ -19,6 +42,21 @@
       }
     </style>
     <style>
+
+        .err-rows {
+            background-color: red;
+            color: white;
+        }
+
+        .pass-rows {
+            background-color: green;
+            color: black;
+            border: 1px solid #000000;
+        }
+
+        .err-num {
+            width: 3%;
+        }
       #Unknown {display: none;}
       #num {display: none;}
       #main {
@@ -29,7 +67,6 @@
         color: #000;
         text-decoration: none;
       }
-
 
       a:hover {
         color: orange !important;
@@ -43,13 +80,18 @@
     </style>
   </head>
   <body>
-    <div id="contentt">
+  <% if @failures.length > 0 %>
+      <table style="width: 100%;" id="consistency-section"></table>
+  <% end %>
+
+  <div id="contentt">
 
       <% pixels = params[:from_print] ? 0 : 1
       @type = "cohort" if @type.blank?
     %>
-      <div style="background-color: #fff; height: 660px; width: 99%; padding: 5px;">
-        <table style="width: 100%; border: <%= pixels %>px solid #999; -moz-user-select: none;">
+
+    <div style="background-color: #fff; height: 660px; width: 99%; padding: 5px;">
+          <table style="width: 100%; border: <%= pixels %>px solid #999; -moz-user-select: none;">
           <tr>
             <%if @type != "monthly"%>
               <th style="font-size: 1.8em; color: #eee; background-color: #999; padding: 10px;">
@@ -65,6 +107,7 @@
               </th>
             <%end%>
           </tr>
+
           <tr>
             <td style="border: 1px solid #999;">
               <table width="100%" cellspacing="0" cellpadding="5">
@@ -473,6 +516,23 @@
                               <td style="border-right: 1px solid #999; border-left: 1px solid #999; border-top: 1px solid #999;">
                                 <a href="javascript:document.getElementById('fansida__sp___number_of_tablets_given_2').submit()">
                                   <%= @fansida__sp___number_of_tablets_given_2.length %>
+                                </a>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+
+                              </td>
+                              <td style="border-left: 1px solid #999; border-bottom: 1px solid #999;">
+                                <form id="fansida__sp___number_of_tablets_given_3" method="post" action="decompose">
+                                  <input type="hidden" value="<%= @fansida__sp___number_of_tablets_given_3.join(",") %>" name="patients" />
+                                  Tot. received 3 x 3 tabs
+                                </form>
+                              </td>
+                              <td style="border-left: 1px solid #999; border-top: 1px solid #999;
+                                      border-bottom: 1px solid #999; border-right: 1px solid #999;">
+                                <a href="javascript:document.getElementById('fansida__sp___number_of_tablets_given_3').submit()">
+                                  <%= @fansida__sp___number_of_tablets_given_3.length %>
                                 </a>
                               </td>
                             </tr>
@@ -1099,4 +1159,10 @@
       </div>
     </div>
   </body>
+
+<script>
+    if (tableRows.length > 0){
+        buildConsistencyTable();
+    }
+</script>
 </html>
