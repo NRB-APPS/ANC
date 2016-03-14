@@ -288,7 +288,7 @@ class ReportsController < ApplicationController
     @no_cpt__1 = (@total_first_visit_hiv_positive - @on_cpt__1)
 
     #filter for cohort validation rules
-    vars = [] #ValidationRule.rules_xy
+    vars = ValidationRule.rules_xy
 
     @failures = []
 
@@ -297,7 +297,7 @@ class ReportsController < ApplicationController
         raise "One of the cohort validation rules is using an unknown variable".to_s
       end
 
-      rules = [] #ValidationRule.find_all_by_type_id(1)
+      rules = ValidationRule.find_all_by_type_id(1)
       rules.each do |rule|
 
         exr =  rule.expr.gsub(/\{/, '@').gsub(/\}/, '.count')
