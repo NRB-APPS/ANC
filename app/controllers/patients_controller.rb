@@ -827,12 +827,16 @@ class PatientsController < ApplicationController
         @current_range[0]["START"], @current_range[0]["END"]]).collect{|e|
       @encounters[e.encounter_datetime.strftime("%d/%b/%Y")][e.type.name.upcase] = ({} rescue "") if !e.type.nil?
     }
+
     @multiple_gestation = ""
     @patient.encounters.find(:all, :conditions => ["encounter_datetime >= ? AND encounter_datetime <= ?",
         @current_range[0]["START"], @current_range[0]["END"]]).collect{|e|
       if !e.type.nil?
         e.observations.each{|o|
-          
+          if o.concept.name.name.upcase == "MULTIPLE GESTATION"
+						@multiple_gestation = o.answer_string
+					end
+					
           if o.to_a[0]
             if o.to_a[0].upcase == "DIAGNOSIS" && @encounters[e.encounter_datetime.strftime("%d/%b/%Y")][e.type.name.upcase][o.to_a[0].upcase]
               @encounters[e.encounter_datetime.strftime("%d/%b/%Y")][e.type.name.upcase][o.to_a[0].upcase] += "; " + o.to_a[1]
