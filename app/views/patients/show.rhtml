@@ -256,7 +256,7 @@
         <select id="navigation_links">
           <!--option link="/encounter_types?patient_id=<%= @patient.id  %>" ttSize = "160px">Tasks</option-->
           <%
-             if @patient.cant_go_to_art? && (@patient.in_bart? && (@patient.hiv_positive? rescue false))
+             if !@patient.cant_go_to_art? && (@patient.in_bart? && (@patient.hiv_positive? rescue false))
                if current_user.activities.include?("HIV Reception") %>
 
                   <option link="<%= "http://#{@art_link}/single_sign_on/single_sign_in?current_time=#{

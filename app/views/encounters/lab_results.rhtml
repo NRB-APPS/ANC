@@ -135,7 +135,17 @@
       }
     }
   }
+function alertStatus() {
+   <% if (@hiv_status.present? rescue false) %>
+        dispatchMessage("Patient Hiv Positive - From ART!");
+   <% end %>
+}
 
+  function alertARTStatus(){
+      <% if (@on_art.present? rescue false) %>
+      dispatchMessage("Patient On ART - From ART!");
+      <% end %>
+  }
   //-->
 </script>
 
@@ -145,16 +155,21 @@
   <%= hidden_field_tag "encounter[encounter_datetime]", DateTime.now() %>
   <%= hidden_field_tag "encounter[provider_id]", session[:user_id] %>
   <%session_date = session[:datetime] || DateTime.now() %>
-
+  <%
+     status = @hiv_status rescue nil
+     art_status = @on_art rescue nil
+  %>
   <% if params[:update].blank? %>
 
     <%= touch_select_tag "HIV status", @patient,
-      options_for_select([["", ""], ["Negative", "Negative"], ["Positive", "Positive"],["Inconclusive", "Inconclusive"], ["Unknown", "Unknown"], ["Not Done", "Not Done"]]),
+      options_for_select([["", ""], ["Negative", "Negative"], ["Positive", "Positive"],
+                          ["Inconclusive", "Inconclusive"], ["Unknown", "Unknown"], ["Not Done", "Not Done"]],
+                         status),
       {:id => "new_test_result_at_current_facility",
       :helptext => "HIV Test Result <span class='helper'> Lab Results</span>",
       :tt_BeforeUnload => "checkHIVTestUnknown()",
       :tt_onUnLoad => "parsedConceptName = '';",
-      :tt_onLoad => "parsedConceptName = 'HIV Status'; unknownToNotDone(); ",
+      :tt_onLoad => "parsedConceptName = 'HIV Status'; alertStatus(); unknownToNotDone(); ",
       :condition => "#{["unknown", "old_negative"].include?(@patient.resent_hiv_status?(session_date))}" } %>
 
     <%= touch_date_tag "HIV test date", @patient, nil,
@@ -169,11 +184,11 @@
     } %>
 
     <%= touch_select_tag "On ART", @patient,
-                         options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
+                         options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]], art_status),
        {:id => "on_art",
         :helptext => "Is Patient On ART? <span class='helper'> Lab Results</span>",
         :tt_onUnLoad => "parsedConceptName = '';",
-        :tt_onLoad => " parsedConceptName = 'On ART';",
+        :tt_onLoad => " parsedConceptName = 'On ART'; alertARTStatus()",
         :condition => "__$('new_test_result_at_current_facility').value == 'Positive'"
        } %>
 

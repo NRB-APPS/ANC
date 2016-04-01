@@ -226,7 +226,23 @@ class EncountersController < ApplicationController
     @names = @preg_encounters.collect{|e|
       e.name.upcase
     }.uniq
-    
+
+    if params[:encounter_type] == "lab_results"
+      if Bart2Connection::PatientProgram.find_by_sql("SELECT pg.* FROM patient_program pg
+          INNER JOIN program ON program.program_id = pg.program_id AND program.name = 'HIV Program'
+          INNER JOIN patient_identifier pi ON pi.patient_id = pg.patient_id WHERE pi.identifier = '#{@patient.national_id}'
+      ")
+        @hiv_status = ['Positive', 'Positive']
+
+       @on_art = ['Yes'] if !Bart2Connection::PatientProgram.find_by_sql("SELECT pg.* FROM patient_program pg
+          INNER JOIN program ON program.program_id = pg.program_id AND program.name = 'HIV Program'
+          INNER JOIN earliest_start_date esd ON esd.patient_id = pg.patient_id
+          INNER JOIN patient_identifier pi ON pi.patient_id = pg.patient_id WHERE pi.identifier = '#{@patient.national_id}'
+      ").present?
+
+      end
+    end
+
     if next_task(@patient) == "/patients/current_pregnancy/?patient_id=#{@patient.id}" && @names.include?("CURRENT PREGNANCY")
       redirect_to "/patients/hiv_status/?patient_id=#{@patient.id}" and return
     end

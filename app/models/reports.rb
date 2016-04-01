@@ -82,7 +82,12 @@ class Reports
     @bart_patients_first_visit.delete("arv_before_visit_one")
     @bart_patients_first_visit.delete("no_art")
     @bart_patients_first_visit_identifiers = @bart_patients_first_visit.keys
+    concept_ids = [].collect{|c| ConceptName.find_by_name(c).concept_id}
 
+    @extra_art_checks = Encounter.find_by_sql(["SELECT * FROM encounter e
+            INNER JOIN obs o on o.encounter_id = e.encounter_id
+            WHERE e.encounter_type IN () AND o.concept_id IN ()"
+            ])
   end
 
   def registrations(start_dt, end_dt)
@@ -488,7 +493,7 @@ class Reports
                 GROUP BY e.patient_id
                 HAVING DATE(date) > DATE(test_date)
                 ",
-                first_visit_patient_ids, (@startdate.to_date + @preg_range), (@startdate.to_date + @preg_range)
+                @cohortpatients, (@startdate.to_date + @preg_range), (@startdate.to_date + @preg_range)
                 ]).map(&:patient_id)
     return select
   end
@@ -519,7 +524,7 @@ class Reports
                 GROUP BY e.patient_id
                 HAVING DATE(date) > DATE(test_date)
                 ",
-                first_visit_patient_ids, (@startdate.to_date + @preg_range), (@startdate.to_date + @preg_range)
+                @cohortpatients, (@startdate.to_date + @preg_range), (@startdate.to_date + @preg_range)
                 ]).map(&:patient_id)
     return select
   end
@@ -550,7 +555,7 @@ class Reports
                 GROUP BY e.patient_id
                 HAVING DATE(date) = DATE(test_date)
                 ",
-                first_visit_patient_ids, (@startdate.to_date + @preg_range), (@startdate.to_date + @preg_range)
+                @cohortpatients, (@startdate.to_date + @preg_range), (@startdate.to_date + @preg_range)
                 ]).map(&:patient_id)
 
     return select
@@ -582,7 +587,7 @@ class Reports
                 GROUP BY e.patient_id
                 HAVING DATE(date) = DATE(test_date)
                 ",
-                first_visit_patient_ids, (@startdate.to_date + @preg_range), (@startdate.to_date + @preg_range)
+                @cohortpatients, (@startdate.to_date + @preg_range), (@startdate.to_date + @preg_range)
                 ]).map(&:patient_id)
 
     return select

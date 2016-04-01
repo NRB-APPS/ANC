@@ -1,6 +1,7 @@
 class ApplicationController < GenericApplicationController
 
   def next_task(patient)
+
     session_date = session[:datetime].to_date rescue Date.today
     task = main_next_task(Location.current_location, patient,session_date)
 
@@ -114,17 +115,16 @@ class ApplicationController < GenericApplicationController
 
     if @anc_patient.patient.hiv_positive? && 
 
-        session["patient_id_map"]["#{(session[:datetime] || Time.now()).to_date.strftime("%Y-%m-%d")}"][@patient.id].nil?
+      session["patient_id_map"]["#{(session[:datetime] || Time.now()).to_date.strftime("%Y-%m-%d")}"][@patient.id].nil?
 
       session["proceed_to_art"] = {} if session["proceed_to_art"].nil?
       session["proceed_to_art"]["#{(session[:datetime] || Time.now()).to_date.strftime("%Y-%m-%d")}"] = {} if session["proceed_to_art"]["#{(session[:datetime] || Time.now()).to_date.strftime("%Y-%m-%d")}"].nil?
 
-      if !File.exists?("#{RAILS_ROOT}/config/dde_connection.yml")
-        @external_id = Bart2Connection::PatientIdentifier.search_by_identifier(@anc_patient.national_id).person_id rescue nil
+      if create_from_dde_server
+        @external_id = Bart2Connection::PatientIdentifier.search_by_identifier(@anc_patient.national_id).person_id# rescue nil
       else
-        @external_id = Bart2Connection::PatientIdentifier.search_or_create(@anc_patient.national_id).person_id rescue nil
+        @external_id = Bart2Connection::PatientIdentifier.search_or_create(@anc_patient.national_id).person_id #rescue nil
       end
-
       @external_user_id = Bart2Connection::User.find_by_username(current_user.username).id rescue nil
 
       if !@external_id.nil? && !@external_id.blank?
