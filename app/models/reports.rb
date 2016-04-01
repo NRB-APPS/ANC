@@ -82,12 +82,23 @@ class Reports
     @bart_patients_first_visit.delete("arv_before_visit_one")
     @bart_patients_first_visit.delete("no_art")
     @bart_patients_first_visit_identifiers = @bart_patients_first_visit.keys
-    concept_ids = [].collect{|c| ConceptName.find_by_name(c).concept_id}
 
-    @extra_art_checks = Encounter.find_by_sql(["SELECT * FROM encounter e
+    concept_ids = ["Reason for exiting care", "On ART"].collect{|c| ConceptName.find_by_name(c).concept_id}
+    encounter_types = ["LAB RESULTS", "ART_FOLLOWUP"].collect{|t| EncounterType.find_by_name(t).id}
+    art_answers = ["Yes", "Already on ART at another facility"]
+    @extra_art_checks = Encounter.find_by_sql(["SELECT e.patient_id
+                 FROM encounter e
             INNER JOIN obs o on o.encounter_id = e.encounter_id
-            WHERE e.encounter_type IN () AND o.concept_id IN ()"
-            ])
+            WHERE e.voided = 0 AND
+                  e.patient_id IN (?) AND
+                  e.encounter_type IN (?) AND o.concept_id IN (?) AND
+                  DATE(e.encounter_datetime) BETWEEN ? AND ?
+                  AND COALESCE((SELECT name FROM concept_name WHERE concept_id = o.value_coded LIMIT 1), o.value_text) IN (?)
+                  ",
+              ([0] + @cohortpatients),
+              encounter_types, concept_ids,
+              @startdate.to_date, (@startdate.to_date + @preg_range), art_answers]
+           ).map(&:patient_id) rescue []
   end
 
   def registrations(start_dt, end_dt)
@@ -714,25 +725,25 @@ class Reports
 
     no_art = @no_art.split(",").collect { |id|
       PatientIdentifier.find_by_identifier(id).patient_id }.uniq rescue []
-    return no_art
+    return (no_art -  @extra_art_checks)
   end
 
   def first_visit_not_on_art
     first_visit_no_art =  @first_visit_no_art.split(",").collect { |id|
       PatientIdentifier.find_by_identifier(id).patient_id }.uniq rescue []
-    return first_visit_no_art
+    return (first_visit_no_art -  @extra_art_checks)
   end
 
   def on_art_before
     ids =  @on_art_before.split(",").collect { |id|
       PatientIdentifier.find_by_identifier(id).patient_id }.uniq rescue []
-    return ids
+    return ( @extra_art_checks + ids).uniq
   end
 
   def first_visit_on_art_before
     first_visit_on_art = @first_visit_on_art_before.split(",").collect { |id|
       PatientIdentifier.find_by_identifier(id).patient_id }.uniq rescue []
-    return first_visit_on_art
+    return ( @extra_art_checks + first_visit_on_art).uniq
   end
 
   def on_art_zero_to_27
@@ -757,7 +768,7 @@ class Reports
     }# rescue []
 
     remote = [] if remote.to_s.blank?
-    return remote
+    return (remote -  @extra_art_checks)
 
   end
 
@@ -782,7 +793,7 @@ class Reports
     }# rescue []
 
     remote = [] if remote.to_s.blank?
-    return remote
+    return (remote - @extra_art_checks)
   end
 
   def on_art_28_plus
@@ -806,7 +817,7 @@ class Reports
     } rescue []
 
     remote = [] if remote.to_s.blank?
-    return remote
+    return (remote -  @extra_art_checks)
   end
 
   def first_visit_on_art_28_plus
@@ -830,7 +841,7 @@ class Reports
     } rescue []
 
     remote = [] if remote.to_s.blank?
-    return remote
+    return (remote -  @extra_art_checks)
 
   end
 
