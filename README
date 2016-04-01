@@ -26,8 +26,13 @@ A. New installation on new database
 	
 	   Run application INITIAL USERNAME : admin
 		           INITIAL PASSWORD : test
+	5. Load metadata 
+	6. Run migrations 
+		bundle exec rake:db:migrate
+	7. Seed data
+		bundle exec rake db:seed
 
-
+	8. mysql -u user -ppassword db < db/anc2_schema_additions.sql
 B. Installation on existing database	
 	
 	1. Clone the application from github
@@ -51,7 +56,14 @@ B. Installation on existing database
 		mysql -u username -p database_name < db/drug_sets.sql
 
 	   If an error comes out showing a mysql table already exists, ignore it.
-	   
+	5. Load metadata
+
+	6. Run migrations
+		bundle exec rake db:migrate
+	7. Seed data
+	  	bundle exec rake db:seed
+	8. Load anc procedures and functions 
+		mysql -u user -ppassword db < db/anc2_schema_additions.sql
 	Run the application
 
 To clean data anomalies
