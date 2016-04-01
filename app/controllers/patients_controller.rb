@@ -644,11 +644,6 @@ class PatientsController < ApplicationController
         :conditions => ["person_id = ? AND encounter_id IN (?) AND concept_id = ?", @patient.id, @all_enc,
           ConceptName.find_by_name('GRAVIDA').concept_id]).answer_string.to_i rescue nil
 
-      @multipreg = Observation.find(:last,
-        :conditions => ["person_id = ? AND encounter_id IN (?) AND concept_id = ?", @patient.id,
-          encs.collect{|e| e.encounter_id},
-          ConceptName.find_by_name('MULTIPLE GESTATION').concept_id]).answer_string.upcase.squish rescue nil
-
       @abortions = Observation.find(:last,
         :conditions => ["person_id = ? AND encounter_id IN (?) AND concept_id = ?", @patient.id, @all_enc,
           ConceptName.find_by_name('NUMBER OF ABORTIONS').concept_id]).answer_string.to_i rescue nil
@@ -832,11 +827,12 @@ class PatientsController < ApplicationController
         @current_range[0]["START"], @current_range[0]["END"]]).collect{|e|
       @encounters[e.encounter_datetime.strftime("%d/%b/%Y")][e.type.name.upcase] = ({} rescue "") if !e.type.nil?
     }
-
+    @multiple_gestation = ""
     @patient.encounters.find(:all, :conditions => ["encounter_datetime >= ? AND encounter_datetime <= ?",
         @current_range[0]["START"], @current_range[0]["END"]]).collect{|e|
       if !e.type.nil?
         e.observations.each{|o|
+          
           if o.to_a[0]
             if o.to_a[0].upcase == "DIAGNOSIS" && @encounters[e.encounter_datetime.strftime("%d/%b/%Y")][e.type.name.upcase][o.to_a[0].upcase]
               @encounters[e.encounter_datetime.strftime("%d/%b/%Y")][e.type.name.upcase][o.to_a[0].upcase] += "; " + o.to_a[1]

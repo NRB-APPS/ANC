@@ -512,6 +512,16 @@
     <%= hidden_field_tag "encounter[encounter_datetime]", session_date %>
     <%= hidden_field_tag "encounter[provider_id]", session[:user_id] %>
 
+
+    <%= touch_select_tag "Multiple gestation", @patient, options_for_select([["", ""],
+                                                                             ["No", "No"], ["Twins", "Twins"],
+                                                                             ["Triplets", "Triplets"],
+                                                                             ["Quadruplet", "Quadruplet"],
+                                                                             ["Unknown", "Unknown"]]),
+                         {:id => "multiple_gestation",
+                          :helptext => "Is This a Multiple Pregnancy?  <span class='helper'> Current Pregnancy</span>" } %>
+
+
     <%= touch_numeric_tag "FUNDUS", @patient, nil,
                           {:id => "enter_fundal_height",
                            :helptext => "Fundus (weeks) <span class='helper'> ANC Examination</span>",
