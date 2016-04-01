@@ -228,13 +228,16 @@ class EncountersController < ApplicationController
     }.uniq
 
     if params[:encounter_type] == "lab_results"
-      if Bart2Connection::PatientProgram.find_by_sql("SELECT pg.* FROM patient_program pg
+
+      	hiv_positive = Bart2Connection::PatientProgram.find_by_sql("SELECT pg.* FROM patient_program pg
           INNER JOIN program ON program.program_id = pg.program_id AND program.name = 'HIV Program'
           INNER JOIN patient_identifier pi ON pi.patient_id = pg.patient_id WHERE pi.identifier = '#{@patient.national_id}'
       ")
+
+		 	if !hiv_positive.blank?
         @hiv_status = ['Positive', 'Positive']
 
-       @on_art = ['Yes'] if !Bart2Connection::PatientProgram.find_by_sql("SELECT pg.* FROM patient_program pg
+        @on_art = ['Yes'] if Bart2Connection::PatientProgram.find_by_sql("SELECT count(*) FROM patient_program pg
           INNER JOIN program ON program.program_id = pg.program_id AND program.name = 'HIV Program'
           INNER JOIN earliest_start_date esd ON esd.patient_id = pg.patient_id
           INNER JOIN patient_identifier pi ON pi.patient_id = pg.patient_id WHERE pi.identifier = '#{@patient.national_id}'
