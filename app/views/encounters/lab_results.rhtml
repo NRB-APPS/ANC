@@ -173,7 +173,7 @@ function remoteARTStatus(){
 		<% end %>
 
 		<% if art_status.present? %>
-    	displayText += "ART Status : &nbsp;&nbsp;&nbsp;&nbsp;<span class='value'><%= art_status %> </span><br />";
+    	displayText += "On ART : &nbsp;&nbsp;&nbsp;&nbsp;<span class='value'><%= art_status %> </span><br />";
 		<% end %>
 
 		<% if start_date.present? %>
@@ -248,20 +248,21 @@ function remoteARTStatus(){
         :condition => "__$('on_art').value == 'Yes'"
        } %>
 
-    <%= touch_select_tag("choice", @patient, options_for_select(["",  "HB Test Result",
-          "Syphilis Test Result", "Urine Protein", "Malaria Test Result"], nil),
+    <%= select_tag("choice", options_for_select([["", ""], ["", ""], ["HB Test Result", "HB Test Result"],
+          ["Syphilis Test Result", "Syphilis Test Result"], 
+					["Urine Protein", "Urine Protein"], 
+					["Malaria Test Result", "Malaria Test Result"]], ["", ""]),
       {
         :helpText => "Select Available Test Results <span class='helper'> Lab Results</span>", :id => "choice", :multiple => true,
-        :tt_onLoad => "transformMessages(); __$('clearButton').click()",
         :optional => :true
       })%>
   <% else %>
 
-    <%= touch_select_tag("choice", @patient, options_for_select(["", "HIV Test Result", "HB Test Result",
-          "Syphilis Test Result", "Urine Protein", "Malaria Test Result"], nil),
+    <%= select_tag("choice", options_for_select([["", ""], ["", ""], ["HIV Test Result", "HIV Test Result"], 
+					["HB Test Result", "HB Test Result"],["Syphilis Test Result", "Syphilis Test Result"],
+           ["Urine Protein", "Urine Protein"], ["Malaria Test Result", "Malaria Test Result"]], ["", ""]),
       {
         :helpText => "Select Available Test Results <span class='helper'> Lab Results</span>", :id => "choice", :multiple => true,
-        :tt_onLoad => "transformMessages(); __$('clearButton').click()",
         :optional => :true
       })%>
   <%end%>
