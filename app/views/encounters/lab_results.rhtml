@@ -181,7 +181,7 @@ function remoteARTStatus(){
 		<% end %>
 
 		<% if arv_number.present? %>
-    	displayText += "ARV Number : &nbsp;&nbsp;&nbsp;&nbsp;<span class='value'><%= start_date %> </span> <br />";
+    	displayText += "ARV Number : &nbsp;&nbsp;&nbsp;&nbsp;<span class='value'><%= arv_number %> </span> <br />";
 		<% end %>
 
     document.getElementById('inputFrame'+tstCurrentPage).innerHTML = '<div id="summary">' + displayText + '</div>';   
