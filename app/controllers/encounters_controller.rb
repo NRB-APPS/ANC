@@ -236,13 +236,24 @@ class EncountersController < ApplicationController
 
 		 	if !hiv_positive.blank?
         @hiv_status = ['Positive', 'Positive']
-
-        @on_art = ['Yes'] if Bart2Connection::PatientProgram.find_by_sql("
-										SELECT pg.patient_id FROM patient_program pg
+				
+				@art_start_date = Bart2Connection::PatientProgram.find_by_sql("
+										SELECT pg.patient_id, esd.date_enrolled FROM patient_program pg
 											INNER JOIN earliest_start_date esd ON esd.patient_id = pg.patient_id
 											INNER JOIN patient_identifier pi ON pi.patient_id = pg.patient_id
-										WHERE pi.identifier = '#{@patient.national_id}' AND pg.program_id = #{hiv_program_id}
-      ").present?
+										WHERE pi.identifier = '#{@patient.national_id}' AND pg.program_id = #{hiv_program_id}				
+      	").first.date_enrolled.to_date.to_s(:db) rescue nil
+
+        @on_art = ['Yes'] if @art_start_date.present?
+
+ 				@arv_number = Bart2Connection::PatientIdentifier.find_by_sql("
+										SELECT pi.identifier FROM patient_identifier pi
+											INNER JOIN earliest_start_date esd ON esd.patient_id = pi.patient_id
+										WHERE pi.identifier_type = (SELECT patient_identifier_type_id FROM patient_identifier_type
+																								WHERE name = 'ARV Number') 
+											AND pi.patient_id = (SELECT patient_id FROM patient_identifier 
+																							WHERE identifier = '#{@patient.national_id}')				
+      	")[0]['identifier'] rescue nil
 
       end
     end
