@@ -974,8 +974,13 @@ class Reports
 
     uri = "http://#{login}:#{password}@#{server}/encounters/export_on_art_patients"
 
-    patient_identifiers = JSON.parse(RestClient.post(uri, paramz))
-
+    #patient_identifiers = JSON.parse(RestClient.post(uri, paramz))
+		patient_identifiers = JSON.parse(RestClient::Request.execute(:method => :post, 
+														:url => uri, 
+														:timeout => 90000000,
+														:open_timeout => 90000000, 
+														:payload => paramz
+													))
     return patient_identifiers
   end
 
