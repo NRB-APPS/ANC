@@ -228,31 +228,36 @@ class EncountersController < ApplicationController
     }.uniq
 
     if params[:encounter_type] == "lab_results"
-			hiv_program_id = Bart2Connection::Program.find_by_name('HIV Program').id
+
       hiv_positive = Bart2Connection::PatientProgram.find_by_sql("SELECT pg.patient_id FROM patient_program pg
                     INNER JOIN patient_identifier pi ON pi.patient_id = pg.patient_id 
-										WHERE pi.identifier = '#{@patient.national_id}' AND pg.program_id = #{hiv_program_id}
+										WHERE pi.identifier = '#{@patient.national_id}' AND pg.program_id = 1
       ")
 
 		 	if !hiv_positive.blank?
         @hiv_status = ['Positive', 'Positive']
-				
-				@art_start_date = Bart2Connection::PatientProgram.find_by_sql("
-										SELECT pg.patient_id, esd.date_enrolled FROM patient_program pg
-											INNER JOIN earliest_start_date esd ON esd.patient_id = pg.patient_id
-											INNER JOIN patient_identifier pi ON pi.patient_id = pg.patient_id
-										WHERE pi.identifier = '#{@patient.national_id}' AND pg.program_id = #{hiv_program_id}				
-      	").first.date_enrolled.to_date.to_s(:db) rescue nil
+				query = "SELECT pg.date_enrolled, s2.start_date, s2.state  FROM patient_identifier i 
+									INNER JOIN patient_program pg ON i.patient_id = pg.patient_id AND pg.program_id = 1 
+									AND pg.voided = 0 
+									INNER JOIN patient_state s2 ON s2.patient_state_id = s2.patient_state_id 
+											AND pg.patient_program_id = s2.patient_program_id
+											AND s2.patient_state_id = (SELECT MAX(s3.patient_state_id) FROM patient_state s3
+																		WHERE s3.patient_state_id = s2.patient_state_id 
+																	)
+									AND i.voided = 0 AND i.identifier = '#{@patient.national_id}' AND s2.state = 7
+									ORDER BY s2.start_date ASC LIMIT 1"
+
+				@art_start_date = Bart2Connection::PatientProgram.find_by_sql(query).first.date_enrolled.to_date.to_s(:db) rescue nil
 
         @on_art = ['Yes'] if @art_start_date.present?
 
  				@arv_number = Bart2Connection::PatientIdentifier.find_by_sql("
 										SELECT pi.identifier FROM patient_identifier pi
-											INNER JOIN earliest_start_date esd ON esd.patient_id = pi.patient_id
 										WHERE pi.identifier_type = (SELECT patient_identifier_type_id FROM patient_identifier_type
 																								WHERE name = 'ARV Number') 
 											AND pi.patient_id = (SELECT patient_id FROM patient_identifier 
-																							WHERE identifier = '#{@patient.national_id}')				
+																							WHERE identifier = '#{@patient.national_id}')
+										ORDER BY pi.date_created DESC LIMIT 1				
       	")[0]['identifier'] rescue nil
 
       end
