@@ -1837,6 +1837,324 @@ class PatientsController < ApplicationController
       @patient = Patient.find(params[:id])
   end
 
+
+
+  def get_similar_patients
+    @type = params[:type]
+    found_person = nil
+    if params[:identifier]
+      local_results = PatientService.search_by_identifier(params[:identifier])
+      if local_results.length > 1
+        redirect_to :action => 'duplicates' ,:search_params => params
+        return
+      elsif local_results.length == 1
+        if create_from_dde_server
+          dde_server = GlobalProperty.find_by_property("dde_server_ip").property_value rescue ""
+          dde_server_username = GlobalProperty.find_by_property("dde_server_username").property_value rescue ""
+          dde_server_password = GlobalProperty.find_by_property("dde_server_password").property_value rescue ""
+          uri = "http://#{dde_server_username}:#{dde_server_password}@#{dde_server}/people/find.json"
+          uri += "?value=#{params[:identifier]}"
+          output = RestClient.get(uri)
+          p = JSON.parse(output)
+          if p.count > 1
+            redirect_to :action => 'duplicates' ,:search_params => params
+            return
+          end
+        end
+        found_person = local_results.first
+      else
+        # TODO - figure out how to write a test for this
+        # This is sloppy - creating something as the result of a GET
+        if create_from_remote
+          found_person_data = PatientService.find_remote_person_by_identifier(params[:identifier])
+          found_person = PatientService.create_from_form(found_person_data['person']) unless found_person_data.blank?
+        end
+      end
+      if found_person
+        if params[:identifier].length != 6 and create_from_dde_server
+          patient = DDEService::Patient.new(found_person.patient)
+          national_id_replaced = patient.check_old_national_id(params[:identifier])
+          if national_id_replaced.to_s != "true" and national_id_replaced.to_s !="false"
+            redirect_to :action => 'remote_duplicates' ,:search_params => params
+            return
+          end
+        end
+
+        if params[:relation]
+          redirect_to search_complete_url(found_person.id, params[:relation]) and return
+        elsif national_id_replaced.to_s == "true"
+          print_and_redirect("/patients/national_id_label?patient_id=#{found_person.id}", next_task(found_person.patient)) and return
+          redirect_to :action => 'confirm', :found_person_id => found_person.id, :relation => params[:relation] and return
+        else
+          redirect_to :action => 'confirm',:found_person_id => found_person.id, :relation => params[:relation] and return
+        end
+      end
+    end
+
+    @relation = params[:relation]
+    @people = PatientService.person_search(params)
+    @search_results = {}
+    @patients = []
+
+    (PatientService.search_from_remote(params) || []).each do |data|
+      national_id = data["person"]["data"]["patient"]["identifiers"]["National id"] rescue nil
+      national_id = data["person"]["value"] if national_id.blank? rescue nil
+      national_id = data["npid"]["value"] if national_id.blank? rescue nil
+      national_id = data["person"]["data"]["patient"]["identifiers"]["old_identification_number"] if national_id.blank? rescue nil
+
+      next if national_id.blank?
+      results = PersonSearch.new(national_id)
+      results.national_id = national_id
+      results.current_residence =data["person"]["data"]["addresses"]["city_village"]
+      results.person_id = 0
+      results.home_district = data["person"]["data"]["addresses"]["address2"]
+      results.traditional_authority =  data["person"]["data"]["addresses"]["county_district"]
+      results.name = data["person"]["data"]["names"]["given_name"] + " " + data["person"]["data"]["names"]["family_name"]
+      gender = data["person"]["data"]["gender"]
+      results.occupation = data["person"]["data"]["occupation"]
+      results.sex = (gender == 'M' ? 'Male' : 'Female')
+      results.birthdate_estimated = (data["person"]["data"]["birthdate_estimated"]).to_i
+      results.birth_date = birthdate_formatted((data["person"]["data"]["birthdate"]).to_date , results.birthdate_estimated)
+      results.birthdate = (data["person"]["data"]["birthdate"]).to_date
+      results.age = cul_age(results.birthdate.to_date , results.birthdate_estimated)
+      @search_results[results.national_id] = results
+    end if create_from_dde_server
+
+    (@people || []).each do | person |
+      patient = PatientService.get_patient(person) rescue nil
+      next if patient.blank?
+      results = PersonSearch.new(patient.national_id || patient.patient_id)
+      results.national_id = patient.national_id
+      results.birth_date = patient.birth_date
+      results.current_residence = patient.current_residence
+      results.guardian = patient.guardian
+      results.person_id = patient.person_id
+      results.home_district = patient.home_district
+      results.current_district = patient.current_district
+      results.traditional_authority = patient.traditional_authority
+      results.mothers_surname = patient.mothers_surname
+      results.dead = patient.dead
+      results.arv_number = patient.arv_number
+      results.eid_number = patient.eid_number
+      results.pre_art_number = patient.pre_art_number
+      results.name = patient.name
+      results.sex = patient.sex
+      results.age = patient.age
+      @search_results.delete_if{|x,y| x == results.national_id }
+      @patients << results
+    end
+
+    (@search_results || {}).each do | npid , data |
+      @patients << data
+    end
+
+  end
+
+
+  def merge
+
+    old_patient_id = params[:primary_pat]
+    new_patient_id = params[:person]["id"]	rescue nil
+
+
+    old_patient = Patient.find old_patient_id
+    new_patient = Patient.find new_patient_id
+
+    raise "Old patient does not exist" unless old_patient
+    raise "New patient does not exist" unless new_patient
+
+    ActiveRecord::Base.transaction do
+
+      PatientService.merge_patients(old_patient, new_patient)
+
+      # void patient
+      patient = old_patient.person
+      patient.void("Merged with patient #{new_patient_id}")
+
+      # void person
+      person = old_patient.person
+      person.void("Merged with person #{new_patient_id}")
+
+
+
+    end
+    return
+  end
+
+  def duplicate_menu
+
+  end
+
+  def duplicates
+    @logo = CoreService.get_global_property_value("logo")
+    @current_location_name = Location.current_health_center.name
+    @duplicates = Patient.duplicates(params[:attributes])
+    render(:layout => "layouts/report")
+  end
+
+  def merge_all_patients
+    if request.method == :post
+      params[:patient_ids].split(":").each do | ids |
+        master = ids.split(',')[0].to_i ; slaves = ids.split(',')[1..-1]
+        ( slaves || [] ).each do | patient_id  |
+          next if master == patient_id.to_i
+          Patient.merge(master,patient_id.to_i)
+        end
+      end
+      flash[:notice] = "Successfully merged patients"
+    end
+    redirect_to :action => "merge_show" and return
+  end
+
+  def merge_patients
+    master = params[:patient_ids].split(",")[0].to_i
+    slaves = []
+    params[:patient_ids].split(",").each{ | patient_id |
+      next if patient_id.to_i == master
+      slaves << patient_id.to_i
+    }
+    ( slaves || [] ).each do | patient_id  |
+      Patient.merge(master,patient_id)
+    end
+    render :text => "true" and return
+  end
+
+
+  def confirm_merge
+    master = params[:master_id]
+    slaves = params[:slaves_ids]
+    primary = Patient.find(master)
+    all_patients = []
+    primary_patient = {}
+    primary_patient[primary.id] = {}
+    primary_patient[primary.id][:first_name] = primary.person.names[0].given_name
+    primary_patient[primary.id][:last_name] = primary.person.names[0].family_name
+    primary_patient[primary.id][:gender] = primary.person.gender
+    primary_patient[primary.id][:date_of_birth] = primary.person.birthdate.strftime("%d-%B-%Y")
+    primary_patient[primary.id][:city_village] = primary.person.addresses[0].city_village
+    primary_patient[primary.id][:county_district] = primary.person.addresses[0].county_district
+    primary_patient[primary.id][:date_created] = primary.date_created.strftime("%d-%B-%Y at (%H:%M)")
+    primary_patient[primary.id][:master] = true
+    secondary_patients = {}
+    (slaves.split(",") || []).each{ |slave|
+      slave = Patient.find(slave)
+      secondary_patients[slave.id] = {}
+      secondary_patients[slave.id][:first_name] = slave.person.names[0].given_name
+      secondary_patients[slave.id][:last_name] = slave.person.names[0].family_name
+      secondary_patients[slave.id][:gender] = slave.person.gender
+      secondary_patients[slave.id][:date_of_birth] = slave.person.birthdate.strftime("%d-%B-%Y")
+      secondary_patients[slave.id][:city_village] = slave.person.addresses[0].city_village
+      secondary_patients[slave.id][:county_district] = slave.person.addresses[0].county_district
+      secondary_patients[slave.id][:date_created] = slave.date_created.strftime("%d-%B-%Y at (%H:%M)")
+    }
+    all_patients.push(primary_patient)
+    all_patients.push(secondary_patients)
+    patients ={}
+    all_patients.each do |patient|
+      patient.each do |key,value|
+        patients[key] = value
+      end
+
+    end
+    render :json => patients
+  end
+
+  def merge_menu
+   render :layout => "report"
+  end
+
+
+  def search_all
+    search_str = params[:search_str]
+    side = params[:side]
+    search_by_identifier = search_str.match(/[0-9]+/).blank? rescue false
+
+    unless search_by_identifier
+      patients = PatientIdentifier.find(:all, :conditions => ["voided = 0 AND (identifier LIKE ?)",
+                                                              "%#{search_str}%"],:limit => 10).map{| p |p.patient}
+    else
+      given_name = search_str.split(' ')[0] rescue ''
+      family_name = search_str.split(' ')[1] rescue ''
+      patients = PersonName.find(:all ,:joins => [:person => [:patient]], :conditions => ["person.voided = 0 AND family_name LIKE ? AND given_name LIKE ?",
+                                                                                          "#{family_name}%","%#{given_name}%"],:limit => 10).collect{|pn|pn.person.patient}
+    end
+    @html = <<EOF
+<html>
+<head>
+<style>
+  .color_blue{
+    border-style:solid;
+  }
+  .color_white{
+    border-style:solid;
+  }
+
+  th{
+    border-style:solid;
+  }
+</style>
+</head>
+<body>
+<br/>
+<table class="data_table" width="100%">
+EOF
+
+    color = 'blue'
+    patients.each do |patient|
+      next if patient.person.blank?
+      next if patient.person.addresses.blank?
+      if color == 'blue'
+        color = 'white'
+      else
+        color='blue'
+      end
+      bean = PatientService.get_patient(patient.person)
+      total_encounters = patient.encounters.count rescue nil
+      latest_visit = patient.encounters.last.encounter_datetime.strftime("%a, %d-%b-%y") rescue nil
+      @html+= <<EOF
+
+<tr>
+  <td class='color_#{color} patient_#{patient.id}' style="text-align:left;" onclick="setPatient('#{patient.id}','#{color}','#{side}')">Name:&nbsp;#{bean.name || '&nbsp;'}</td>
+  <td class='color_#{color} patient_#{patient.id}' style="text-align:left;" onclick="setPatient('#{patient.id}','#{color}','#{side}')">Age:&nbsp;#{bean.age || '&nbsp;'}</td>
+</tr>
+<tr>
+  <td class='color_#{color} patient_#{patient.id}' style="text-align:left;" onclick="setPatient('#{patient.id}','#{color}','#{side}')">Gender:&nbsp;#{patient.person.gender rescue '&nbsp;'}</td>
+  <td class='color_#{color} patient_#{patient.id}' style="text-align:left;" onclick="setPatient('#{patient.id}','#{color}','#{side}')">ARV number:&nbsp;#{bean.arv_number rescue '&nbsp;'}</td>
+</tr>
+<tr>
+  <td class='color_#{color} patient_#{patient.id}' style="text-align:left;" onclick="setPatient('#{patient.id}','#{color}','#{side}')">National ID:&nbsp;#{bean.national_id rescue '&nbsp;'}</td>
+  <td class='color_#{color} patient_#{patient.id}' style="text-align:left;" onclick="setPatient('#{patient.id}','#{color}','#{side}')">TA:&nbsp;#{bean.home_district rescue '&nbsp;'}</td>
+</tr>
+<tr>
+  <td class='color_#{color} patient_#{patient.id}' style="text-align:left;" onclick="setPatient('#{patient.id}','#{color}','#{side}')">Total Encounters:&nbsp;#{total_encounters rescue '&nbsp;'}</td>
+  <td class='color_#{color} patient_#{patient.id}' style="text-align:left;" onclick="setPatient('#{patient.id}','#{color}','#{side}')">Latest Visit:&nbsp;#{latest_visit rescue '&nbsp;'}</td>
+</tr>
+
+EOF
+    end
+
+    @html+="</table></body></html>"
+    render :text => @html ; return
+  end
+
+  def merge_similar_patients
+    master = -1
+    if request.method == :post
+      params[:patient_ids].split(":").each do | ids |
+        master = ids.split(',')[0].to_i
+        slaves = ids.split(',')[1..-1]
+        ( slaves || [] ).each do | patient_id  |
+          next if master == patient_id.to_i
+          Patient.merge(master,patient_id.to_i)
+        end
+      end
+      #render :text => "showMessage('Successfully merged patients')" and return
+    end
+    redirect_to :action => "merge_menu",
+                :master_patient_id => master,
+                :result => "success" and return
+  end
+
   private
 
 end
