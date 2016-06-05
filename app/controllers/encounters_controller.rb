@@ -445,5 +445,43 @@ class EncountersController < ApplicationController
 
     render :text => (["No", "APH", "PPH"]).join('|')  and return
   end
+
+  def duplicate_encounters
+    @duplicate_encounters = ActiveRecord::Base.connection.select_all("
+   SELECT patient_id, encounter_type,
+      (SELECT name FROM encounter_type WHERE encounter_type_id = encounter.encounter_type) type,
+      (SELECT CONCAT(given_name, ' ', family_name) FROM person_name WHERE voided = 0 AND person_id = encounter.patient_id LIMIT 1) name,
+      (SELECT identifier FROM patient_identifier WHERE voided = 0 AND patient_id = encounter.patient_id AND identifier_type = 3 LIMIT 1) national_id,
+      DATE(encounter_datetime) visit_date, count(*) c
+    FROM encounter WHERE voided = 0
+    GROUP by patient_id, encounter_type, visit_date
+      HAVING
+		IF (type = 'VITALS',
+			 c > 2 ,
+			 c > 1)
+		;")
+
+  end
+
+  def duplicates
+    @data = []
+    @name = EncounterType.find(params[:encounter_type]).name
+    @patient_name = Person.find(params[:patient_id]).name
+
+    encounters = Encounter.find_by_sql("
+      SELECT * FROM encounter
+        WHERE voided = 0 AND encounter_type = #{params[:encounter_type]}
+          AND patient_id = #{params[:patient_id]} AND DATE(encounter_datetime) = '#{params[:date]}'
+        ORDER by encounter_datetime DESC
+    ").each do |enc|
+      data = {'encounter_id' => enc.encounter_id, 'encounter_datetime' => enc.encounter_datetime}
+      enc.observations.each do |ob|
+        data[ob.concept.name.name.strip] = ob.answer_string
+      end
+      @data << data
+    end
+
+    render :layout => false
+  end
   
 end

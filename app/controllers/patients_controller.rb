@@ -359,6 +359,10 @@ class PatientsController < ApplicationController
       @patient = @encounter.patient
       @encounter.void
     end
+
+    if !params[:return_uri].blank? and params[:return_uri] == "source"
+      redirect_to "/encounters/duplicates?patient_id=#{params[:patient_id]}&encounter_type=#{params[:encounter_type]}&date=" + params[:date] and return
+    end
     # redirect_to "/patients/tab_visit_summary/?patient_id=#{@patient.id}" and return
     redirect_to "/patients/show/#{@patient.id}" and return
   end
