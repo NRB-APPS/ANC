@@ -2123,7 +2123,7 @@ EOF
 </tr>
 <tr>
   <td class='color_#{color} patient_#{patient.id}' style="text-align:left;" onclick="setPatient('#{patient.id}','#{color}','#{side}')">National ID:&nbsp;#{bean.national_id rescue '&nbsp;'}</td>
-  <td class='color_#{color} patient_#{patient.id}' style="text-align:left;" onclick="setPatient('#{patient.id}','#{color}','#{side}')">TA:&nbsp;#{bean.home_district rescue '&nbsp;'}</td>
+  <td class='color_#{color} patient_#{patient.id}' style="text-align:left;" onclick="setPatient('#{patient.id}','#{color}','#{side}')">Home District:&nbsp;#{bean.home_district rescue '&nbsp;'}</td>
 </tr>
 <tr>
   <td class='color_#{color} patient_#{patient.id}' style="text-align:left;" onclick="setPatient('#{patient.id}','#{color}','#{side}')">Total Encounters:&nbsp;#{total_encounters rescue '&nbsp;'}</td>
@@ -2153,6 +2153,89 @@ EOF
     redirect_to :action => "merge_menu",
                 :master_patient_id => master,
                 :result => "success" and return
+  end
+
+
+  def possible_duplicates
+    require "similars"
+    primary_person = ActiveRecord::Base.connection.select_all("
+ SELECT p.person_id,
+  (SELECT given_name FROM person_name WHERE person_id = p.person_id) AS given_name,
+  (SELECT family_name FROm person_name WHERE person_id = p.person_id) AS family_name,
+  p.gender, p.birthdate,
+  ad.address2 AS home_district, ad.city_village AS home_village, ad.address1 AS place_of_residence
+  FROM person p INNER JOIN person_address ad ON p.person_id = ad.person_id AND p.voided = 0 AND ad.voided = 0
+  WHERE p.person_id = #{params[:patient_id]}").first
+
+
+    people = ActiveRecord::Base.connection.select_all("
+ SELECT p.person_id,
+  (SELECT given_name FROm person_name WHERE person_id = p.person_id) AS given_name,
+  (SELECT family_name FROm person_name WHERE person_id = p.person_id) AS family_name,
+  p.gender, p.birthdate,
+  ad.address2 AS home_district, ad.city_village AS home_village, ad.address1 AS place_of_residence
+  FROM person p INNER JOIN person_address ad ON p.person_id = ad.person_id AND p.voided = 0 AND ad.voided = 0")
+
+    suspects = Similars.search(primary_person, people)
+    color = 'blue'
+    side = 'right'
+    @html = <<EOF
+<html>
+<head>
+<style>
+  .color_blue{
+    border-style:solid;
+  }
+  .color_white{
+    border-style:solid;
+  }
+
+  th{
+    border-style:solid;
+  }
+</style>
+</head>
+<body>
+<br/>
+<table class="data_table" width="100%">
+EOF
+    suspects.each do |patient|
+      patient = Patient.find(patient.person_id)
+      next if patient.person.blank?
+      next if patient.person.addresses.blank?
+      if color == 'blue'
+        color = 'white'
+      else
+        color='blue'
+      end
+      bean = PatientService.get_patient(patient.person)
+      total_encounters = patient.encounters.count rescue nil
+      latest_visit = patient.encounters.last.encounter_datetime.strftime("%a, %d-%b-%y") rescue nil
+      @html+= <<EOF
+
+<tr>
+  <td class='color_#{color} patient_#{patient.id}' style="text-align:left;" onclick="setPatient('#{patient.id}','#{color}','#{side}')">Name:&nbsp;#{bean.name || '&nbsp;'}</td>
+  <td class='color_#{color} patient_#{patient.id}' style="text-align:left;" onclick="setPatient('#{patient.id}','#{color}','#{side}')">Age:&nbsp;#{bean.age || '&nbsp;'}</td>
+</tr>
+<tr>
+  <td class='color_#{color} patient_#{patient.id}' style="text-align:left;" onclick="setPatient('#{patient.id}','#{color}','#{side}')">Gender:&nbsp;#{patient.person.gender rescue '&nbsp;'}</td>
+  <td class='color_#{color} patient_#{patient.id}' style="text-align:left;" onclick="setPatient('#{patient.id}','#{color}','#{side}')">ARV number:&nbsp;#{bean.arv_number rescue '&nbsp;'}</td>
+</tr>
+<tr>
+  <td class='color_#{color} patient_#{patient.id}' style="text-align:left;" onclick="setPatient('#{patient.id}','#{color}','#{side}')">National ID:&nbsp;#{bean.national_id rescue '&nbsp;'}</td>
+  <td class='color_#{color} patient_#{patient.id}' style="text-align:left;" onclick="setPatient('#{patient.id}','#{color}','#{side}')">Home District:&nbsp;#{bean.home_district rescue '&nbsp;'}</td>
+</tr>
+<tr>
+  <td class='color_#{color} patient_#{patient.id}' style="text-align:left;" onclick="setPatient('#{patient.id}','#{color}','#{side}')">Total Encounters:&nbsp;#{total_encounters rescue '&nbsp;'}</td>
+  <td class='color_#{color} patient_#{patient.id}' style="text-align:left;" onclick="setPatient('#{patient.id}','#{color}','#{side}')">Latest Visit:&nbsp;#{latest_visit rescue '&nbsp;'}</td>
+</tr>
+
+EOF
+    end
+
+    @html+="</table></body></html>"
+    render :text => @html ; return
+
   end
 
   private

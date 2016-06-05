@@ -292,6 +292,7 @@ function showNumericKeypad(){
           current_div='right'
      }
    search = document.getElementById(side);
+
    showKeyboard();
  }
 
@@ -348,40 +349,91 @@ function showNumericKeypad(){
     } else { div = document.getElementById('left_div'); patients_to_merge[0] = null }
     div.innerHTML = text
   }
+ global_text_left = "";
+ global_text_right = "";
 
-  function setPatient(patient_id,current_color,side) {
-    left_div = document.getElementById('left_div');
-    right_div = document.getElementById('right_div');
-    row = document.getElementsByClassName("patient_" + patient_id)
-    name = row[0].innerHTML ; arv_number = row[3].innerHTML
-    age = row[1].innerHTML ; national_id = row[4].innerHTML
-    guardian = row[2].innerHTML ; ta = row[5].innerHTML;
-    total_encounters = row[6].innerHTML; latest_visit = row[7].innerHTML;
+ function setPatient(patient_id,current_color,side) {
+      if (global_text_left.length == 0 && side=="left") {
+          global_text_left = __$(side+"_div").innerHTML;
+      }else if(global_text_right.length == 0 && side=="right"){
+          global_text_right = __$(side+"_div").innerHTML;
+      }
+      left_div = document.getElementById('left_div');
+      right_div = document.getElementById('right_div');
+      row = document.getElementsByClassName("patient_" + patient_id)
+      name = row[0].innerHTML;
+      arv_number = row[3].innerHTML
+      age = row[1].innerHTML;
+      national_id = row[4].innerHTML
+      guardian = row[2].innerHTML;
+      ta = row[5].innerHTML;
+      total_encounters = row[6].innerHTML;
+      latest_visit = row[7].innerHTML;
 
-    table_name = "data_table_" + patient_id
+      table_name = "data_table_" + patient_id
 
-    current_color = '#008B8B'
+      current_color = '#008B8B'
 
-    new_table = "<style>." + table_name + " td { border-style:solid;border-width:1px;background-color:" + current_color + ";}</style>"
+      new_table = "<style>." + table_name + " td { border-style:solid;border-width:1px;background-color:" + current_color + ";}</style>"
 
-    new_table+= "<table width='100%' class='"+ table_name + "'><tr>" +
-                "<td>" + name + "</td>" +
-                "<td>" + age + "</td></tr>" +
-                "<tr><td>" + guardian + "</td>" +
-                "<td>" + arv_number + "</td></tr>" +
-                "<tr><td>" + national_id + "</td>" +
-                "<td>" + ta + "</td></tr>" +
-                "<tr><td>" + total_encounters + "</td>" +
-                "<td>" + latest_visit + "</td>" +
-                "</tr></table>"
+     if(side == "left"){
+      new_table += "<table nomerge=false onclick='this.parentNode.innerHTML=global_text_left' width='100%' class='" + table_name + "'><tr>" +
+              "<td>" + name + "</td>" +
+              "<td>" + age + "</td></tr>" +
+              "<tr><td>" + guardian + "</td>" +
+              "<td>" + arv_number + "</td></tr>" +
+              "<tr><td>" + national_id + "</td>" +
+              "<td>" + ta + "</td></tr>" +
+              "<tr><td>" + total_encounters + "</td>" +
+              "<td>" + latest_visit + "</td>" +
+              "</tr></table>"
+     }else{
+         new_table += "<table nomerge=false onclick='this.parentNode.innerHTML=global_text_right' width='100%' class='" + table_name + "'><tr>" +
+                 "<td>" + name + "</td>" +
+                 "<td>" + age + "</td></tr>" +
+                 "<tr><td>" + guardian + "</td>" +
+                 "<td>" + arv_number + "</td></tr>" +
+                 "<tr><td>" + national_id + "</td>" +
+                 "<td>" + ta + "</td></tr>" +
+                 "<tr><td>" + total_encounters + "</td>" +
+                 "<td>" + latest_visit + "</td>" +
+                 "</tr></table>"
+     }
 
-    if (side == 'right') {
-      div = right_div ; patients_to_merge[1] = patient_id
-    } else { div = left_div ; patients_to_merge[0] = patient_id }
-    div.innerHTML = new_table
+      if (side == 'right') {
+          div = right_div;
+          patients_to_merge[1] = patient_id
+      } else {
+          div = left_div;
+          patients_to_merge[0] = patient_id
+      }
+      div.innerHTML = new_table
+      if (side == 'left') {
+          confirmYesNo("Automatically search for possible duplicates?", function () {
+              hideConfirmation();
+              right_div.innerHTML = "<div style='color: forestgreen;margin-top: 20vh; width: 100%;text-align: center;'><i>Fetching possible duplicates ...</i></div>";
+              jQuery.ajax({url: "/patients/possible_duplicates?patient_id=" + patient_id,
+                  success: function (data) {
+                      right_div.innerHTML = data;
+                      console.log("Done");
+                  }
+              });
+          }, function () {
+              hideConfirmation();
+          });
+      }
   }
 
   function mergePatients(){
+    if(!left_div.innerHTML.match("nomerge")){
+        showMessage("Missing primary patient")
+        return
+    }
+
+  if(!right_div.innerHTML.match("nomerge")){
+      showMessage("Missing secondary patient")
+      return
+  }
     merge_button = document.getElementById('merge')
     merge_button.disabled = true
     if (patients_to_merge[0] == patients_to_merge[1]) {
@@ -475,5 +527,47 @@ td {
   <span class="keypad">
   </span>
 </div>
-  
+  <script>
+      var confirmation = null;
+      var confirmationTimeout = null;
+
+      function confirmYesNo(message, yes, no) {
+          hideConfirmation();
+          if (confirmation == null) {
+              confirmation = document.createElement("div");
+              confirmation.setAttribute('id', 'confirmation');
+              confirmation.setAttribute('style', 'display:none');
+              confirmation.style.left = "50%";
+              confirmation.style.marginLeft = "-225px";
+              confirmation.style.width = "450px";
+              confirmation.style.position = "absolute";
+              confirmation.style.top = "30%";
+              confirmation.style.fontSize = "2em";
+              confirmation.style.textAlign = "center";
+              confirmation.style.backgroundColor = "tomato";
+              confirmation.style.zIndex = "999";
+
+              document.body.appendChild(confirmation);
+          }
+          confirmation.innerHTML = ''+
+                  '<div class="confirmation" style="left:50%; margin-left: -225px; width: 450px; ' +
+                  'position: absolute; top: 30%; font-size: 2em; text-align: center; ' +
+                  'background-color: tomato; z-index: 999;">'+ message+ '<div>'+
+                  '<button id="yes"><span>Yes</span></button>'+
+                  '<button id="no"><span>No</span></button></div>'+
+                  '</div>';
+          setTimeout(function() {
+              jQuery("#yes").mousedown(yes);
+              jQuery("#no").mousedown(no);
+          }, 300);
+
+          confirmation.setAttribute('style', 'display:block');
+          confirmationTimeout = window.setTimeout("hideConfirmation()", 20000);
+      }
+
+      function hideConfirmation(){
+          if (confirmation != null) confirmation.setAttribute('style', 'display:none');
+          if (confirmationTimeout != null) window.clearTimeout(confirmationTimeout);
+      }
+  </script>
 </html>
