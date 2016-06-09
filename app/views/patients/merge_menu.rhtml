@@ -98,7 +98,9 @@ table{
     font-weight: bold;
     font-size: 14pt;
     }
-
+  .keyboardButton{
+      margin: 0px;
+  }
 #merge{
     border-radius: 7px;
     background-color: #6495ED;
@@ -207,7 +209,7 @@ div{
   }
 
  function getCharButtonSetID(character,id){
-  return '<button onMouseDown="press(\''+character+'\');" class="keyboardButton" id="'+id+'">' + "<span>"+ character +"</span>"+ "</button>";
+  return '<button onMouseDown="press(\''+character+'\');" class="keyboardButton" id="'+id+'">' + "<span style='width:28px'>"+ character +"</span>"+ "</button>";
  }
 
  function getButtons(chars){
@@ -274,7 +276,7 @@ function showNumericKeypad(){
      primary_button.style.display = ''
    } else {
      if (side == 'primary_patient') {
-       document.getElementById('keypad').style.left='37%'
+       document.getElementById('keypad').style.left='20%'
        secondary_button.style.display = 'none'
        disabled_button_right.style.display = ''
        primary_button.innerHTML = "Hide keypad"
@@ -493,7 +495,7 @@ function showNumericKeypad(){
         position: absolute;
         right: 13px;
         top: 104px;
-        width: 60%;
+        width: 75%;
         opacity: 0.8;
         z-index: 1000;
       }

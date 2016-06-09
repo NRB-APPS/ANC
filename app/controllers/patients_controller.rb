@@ -2242,6 +2242,37 @@ EOF
 
   end
 
+  def incomplete_visits
+    start_date = params[:start_date] || "2000-01-01".to_date
+    end_date = params[:start_date] || Date.today
+
+    complete_first_visit = ["REGISTRATION", "VITALS", "OBSERVATIONS", "SOCIAL HISTORY", "OBSTETRIC HISTORY",
+                            "MEDICAL HISTORY"].collect{|c| EncounterType.find_by_name(c).id}.join(",")
+    complete_next_visits = ["REGISTRATION", "VITALS", "OBSERVATIONS", "SOCIAL HISTORY", "OBSTETRIC HISTORY",
+                            "MEDICAL HISTORY"].collect{|c| EncounterType.find_by_name(c).id}.join(",")
+    query = "
+      SELECT DATE(encounter_datetime) visit_date,
+        CONCAT('\'',GROUP_CONCAT(DISTINCT(e.encounter_type)), '\'') et,
+        e.patient_id,
+		(SELECT COUNT(DISTINCT(DATE(encounter_datetime))) FROM encounter
+			WHERE patient_id = e.patient_id
+				AND DATE(encounter_datetime) <= DATE(e.encounter_datetime)
+			) visit_no
+        FROM encounter e
+        GROUP BY e.patient_id, visit_date
+			HAVING
+          (SELECT COUNT(*) FROM encounter_type WHERE find_in_set(encounter_type_id, et) > 0) =
+					(SELECT COUNT(*) FROM encounter_type WHERE find_in_set(encounter_type_id,
+            IF(visit_no = 1, '#{complete_first_visit}', '#{complete_next_visits}')
+        ) > 0)
+      "
+
+    raise query.to_s
+    @visits = ActiveRecord::Base.connection.select_all()
+
+    raise @visits.inspect
+  end
+
   private
 
 end
