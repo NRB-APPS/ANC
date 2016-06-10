@@ -234,25 +234,25 @@ class ReportsController < ApplicationController
 
     @syphilis_result_unk = (@observations_total - (@syphilis_result_pos + @syphilis_result_neg).uniq).uniq
 
-    @hiv_test_result_prev_neg = report.hiv_test_result_prev_neg.uniq
+    #@hiv_test_result_prev_neg = report.hiv_test_result_prev_neg.uniq
 
-    @hiv_test_result_prev_pos = report.hiv_test_result_prev_pos.uniq
+    #@hiv_test_result_prev_pos = report.hiv_test_result_prev_pos.uniq
 
-    @hiv_test_result_neg = report.hiv_test_result_neg.uniq
+    #@hiv_test_result_neg = report.hiv_test_result_neg.uniq
 
-    @hiv_test_result_pos = report.hiv_test_result_pos.uniq
+    #@hiv_test_result_pos = report.hiv_test_result_pos.uniq
 
-    @hiv_test_result_inc  = report.hiv_test_result_inc.uniq
+    #@hiv_test_result_inc  = report.hiv_test_result_inc.uniq
 
     #getting rid of overlaps
-    @hiv_test_result_prev_neg -= (@hiv_test_result_pos + @hiv_test_result_neg + @hiv_test_result_pos)
-    @hiv_test_result_neg -= (@hiv_test_result_prev_pos + @hiv_test_result_pos)
-    @hiv_test_result_prev_pos -= (@hiv_test_result_pos)
+    #@hiv_test_result_prev_neg -= (@hiv_test_result_pos + @hiv_test_result_neg + @hiv_test_result_pos)
+    #@hiv_test_result_neg -= (@hiv_test_result_prev_pos + @hiv_test_result_pos)
+    #@hiv_test_result_prev_pos -= (@hiv_test_result_pos)
 
-    @hiv_test_result_unk = (@observations_total - (@hiv_test_result_prev_neg + @hiv_test_result_prev_pos +
-    @hiv_test_result_neg + @hiv_test_result_pos + @hiv_test_result_inc).uniq).uniq
+    #@hiv_test_result_unk = (@observations_total - (@hiv_test_result_prev_neg + @hiv_test_result_prev_pos +
+    #@hiv_test_result_neg + @hiv_test_result_pos + @hiv_test_result_inc).uniq).uniq
 
-    @total_hiv_positive = (@hiv_test_result_prev_pos + @hiv_test_result_pos).delete_if{|p| p.blank?}
+    #@total_hiv_positive = (@hiv_test_result_prev_pos + @hiv_test_result_pos).delete_if{|p| p.blank?}
 
     @not_on_art = report.not_on_art.uniq
     @not_on_art.delete_if{|p| p.blank?}
@@ -272,10 +272,11 @@ class ReportsController < ApplicationController
 
       @first_visit_new_negative = report.first_visit_new_negative
       @first_visit_new_positive = report.first_visit_new_positive
-      @first_visit_hiv_not_done = report.first_visit_hiv_not_done
+      @first_visit_hiv_not_done = @observations_total - (@first_visit_new_positive +
+          @first_visit_new_negative + @first_visit_hiv_test_result_prev_positive + @first_visit_hiv_test_result_prev_negative)
 
       @total_first_visit_hiv_positive = (@first_visit_hiv_test_result_prev_positive + @first_visit_new_positive).delete_if{|p| p.blank?}
-
+      @total_hiv_positive = @total_first_visit_hiv_positive
       @first_visit_not_on_art = report.first_visit_not_on_art
       @first_visit_on_art_zero_to_27 = report.first_visit_on_art_zero_to_27
       @first_visit_on_art_28_plus = report.first_visit_on_art_28_plus
