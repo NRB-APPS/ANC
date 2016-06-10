@@ -20,45 +20,33 @@ class Reports
 
     @preg_range = (@type == "cohort") ? 6.months : ((end_date.to_time - start_date.to_time).round/(3600*24)).days
 
-    if @type == "cohort"
-
-      @cohortpatients = registrations(@startdate.to_date.beginning_of_month, @enddate.to_date.end_of_month)
-    else
-
-      @cohortpatients = Encounter.find(:all, :joins => [:observations], :group => [:patient_id],
-                                       :select => ["patient_id"],
-                                       :conditions => ["encounter_type = ? AND concept_id = ? AND encounter_datetime >= ? " +
-                                                           "AND encounter_datetime <= ? AND encounter.voided = 0",
-                                                       EncounterType.find_by_name("ANC VISIT TYPE").id,
-                                                       ConceptName.find_by_name("TYPE OF VISIT").concept_id,
-                                                       @startdate, @enddate]).collect { |e| e.patient_id }.uniq
-
-    end
-
     e_date = ((@startdate.to_date + @preg_range) - 1.day).to_date
     min_date = @startdate.to_date - 10.months
 
-    lmp_concept = ConceptName.find_by_name("DATE OF LAST MENSTRUAL PERIOD").concept_id
-
     @lmp = "(SELECT (max_patient_lmp(encounter.patient_id, '#{e_date.to_s}', '#{min_date.to_s}')))"
 
-    @anc_visits = Encounter.find_by_sql(["SELECT #{@lmp} lmp, encounter.patient_id patient_id, MAX(ob.value_numeric) form_id FROM encounter
-                                        INNER JOIN obs ob ON ob.encounter_id = encounter.encounter_id
-                                        WHERE encounter.patient_id IN (?) AND encounter.encounter_type = ?
-                                        AND ob.concept_id = ? AND DATE(encounter.encounter_datetime) <= ?
-                                        AND DATE(encounter.encounter_datetime) >= #{@lmp}
-                                        GROUP BY encounter.patient_id HAVING COALESCE(lmp, '') != '' ",
-                                       @cohortpatients,
-                                       EncounterType.find_by_name("ANC VISIT TYPE").id,
-                                       ConceptName.find_by_name("Reason for visit").concept_id,
-                                       e_date
-                                      ]).collect { |e| [e.patient_id, e.form_id] }
+    data = Encounter.find_by_sql(["SELECT #{@lmp} lmp, encounter.patient_id patient_id, MAX(ob.value_numeric) form_id FROM encounter
+                                          INNER JOIN obs ob ON ob.encounter_id = encounter.encounter_id
+                                          WHERE encounter.encounter_type = ?
+                                          AND ob.concept_id = ? AND
+                                            (DATE(encounter.encounter_datetime) BETWEEN ? AND ?)
+                                          AND DATE(encounter.encounter_datetime) >= #{@lmp}
+                                          GROUP BY encounter.patient_id",
+                                  EncounterType.find_by_name("ANC VISIT TYPE").id,
+                                  ConceptName.find_by_name("Reason for visit").concept_id,
+                                  @startdate, @enddate
+                                 ])
+
+    @anc_visits = data.collect { |e| [e.patient_id, e.form_id] }
 
     if @type == "cohort"
       # For cohort report only include patients with LMP
       @cohortpatients = observations_total
+    else
+      @cohortpatients = data.map(&:patient_id)
     end
 
+    lmp_concept = ConceptName.find_by_name("DATE OF LAST MENSTRUAL PERIOD").concept_id
 
     @positive_patients = (hiv_test_result_pos.uniq + hiv_test_result_prev_pos.uniq).delete_if { |p| p.blank? }
     @first_visit_positive_patients = (first_visit_hiv_test_result_prev_positive.uniq + first_visit_new_positive.uniq).delete_if { |p| p.blank? }
