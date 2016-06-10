@@ -103,8 +103,8 @@ table{
   }
 #merge{
     border-radius: 7px;
-    background-color: #6495ED;
-    border-bottom: 1px outset black;
+    
+    border-bottom: 0px outset black;
     color: white;
     padding: 10px 10px 10px 10px;
     text-align: center;
@@ -176,7 +176,7 @@ div{
 </div>
 
 <!--<div id='center_div'>-->
-  <button id="merge" style = 'width: 89px;' onmousedown='mergePatients()' class="blue" > << </button>
+  <button id="merge" style = 'width: 89px;' onmousedown='mergePatients()' class="blue" ><span> << </span> </button>
   <!-- <a id='merge' style = 'width: 89px;' onmousedown='mergePatients()'>&nbsp;<span><<</span></a> -->
 <!--</div>-->
 
@@ -443,16 +443,26 @@ function showNumericKeypad(){
       showMessage("Merging not done. Check for the errors and try again")
     }
     if (patients_to_merge[0] != null && patients_to_merge[1] != null) {
-      form = document.createElement("form")
-      form.method =  'post'
-      form.action = '/patients/merge_similar_patients'
-      input = document.createElement('input')
-      input.name = 'patient_ids'
-      input.value = patients_to_merge[0] + "," + patients_to_merge[1]
-      input.type = 'hidden'
-      form.appendChild(input)
-      document.body.appendChild(form)
-      form.submit()
+      
+          confirmYesNo("Are you sure you want to Merge?", function(){
+            hideConfirmation();
+              form = document.createElement("form")
+              form.method =  'post'
+              form.action = '/patients/merge_similar_patients'
+              input = document.createElement('input')
+              input.name = 'patient_ids'
+              input.value = patients_to_merge[0] + "," + patients_to_merge[1]
+              input.type = 'hidden'
+              form.appendChild(input)
+              document.body.appendChild(form)
+              form.submit()
+            
+          }, function(){
+            hideConfirmation();
+
+
+          })
+
     }
     else{
       showMessage("Merging not done. Check for the errors and try again")
