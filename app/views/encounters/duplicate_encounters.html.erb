@@ -81,16 +81,21 @@
         <div style="height:90vh;;overflow:auto;">
           <table style="width:100%;border-left: 1px solid gray">
             <tr class="header">
+              <th>#</th>
               <th>Patient Name</th>
               <th>National ID</th>
               <th>Encounter Type</th>
               <th>Date Captured</th>
               <th>Total Found</th>
             </tr>
+            <% @count = 0 %>
             <% @duplicate_encounters.each do |encounter|
               patient = Patient.find(encounter['patient_id'])
+              @count += 1
             %>
+
                 <tr class="<%=cycle('even', 'odd')%>">
+                  <td><%= @count %></td>
                   <td><%= encounter['name']%></td>
                   <td><%= encounter['national_id']%></td>
                   <td><%= encounter['type']%></td>
