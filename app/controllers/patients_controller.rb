@@ -2243,6 +2243,7 @@ EOF
   end
 
   def incomplete_visits
+    render :template => "/patients/data_cleaning_date_range" and return  if request.get?
     start_date = params[:start_date] || "2000-01-01".to_date
     end_date = params[:start_date] || Date.today
     @incomplete_visits = []
@@ -2266,12 +2267,31 @@ EOF
     visits = ActiveRecord::Base.connection.select_all(query)
     visits.each do |v|
       if v['visit_no'] == 1
-        @incomplete_visits << v if (complete_first_visit - v['et'].split(",")).length > 0
+        if (complete_first_visit - v['et'].split(",")).length > 0
+            patient_name = Person.find(v['patient_id']).name
+            national_id = PatientIdentifier.find_by_patient_id(v['patient_id']).identifier
+            visit_hash = {"name"=> patient_name,
+                          "n_id"=>national_id,  
+                          "visit_no"=> v['visit_no'],
+                          "visit_date"=>v['visit_date']
+                        }
+            @incomplete_visits << visit_hash
+        end
       else
-        @incomplete_visits << v if (complete_next_visits - v['et'].split(",")).length > 0
+        if (complete_next_visits - v['et'].split(",")).length > 0
+            patient_name = Person.find(v['patient_id']).name
+            national_id = PatientIdentifier.find_by_patient_id(v['patient_id']).identifier
+            visit_hash = {"name"=> patient_name,
+                          "n_id"=>national_id,  
+                          "visit_no"=> v['visit_no'],
+                          "visit_date"=>v['visit_date']
+                        }
+            @incomplete_visits << visit_hash
+      
+        end
       end
     end
-    raise  @incomplete_visits.inspect
+    render :layout => 'report'
   end
 
   private
