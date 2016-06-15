@@ -2245,14 +2245,15 @@ EOF
   def incomplete_visits
     start_date = params[:start_date] || "2000-01-01".to_date
     end_date = params[:start_date] || Date.today
+    @incomplete_visits = []
 
     complete_first_visit = ["REGISTRATION", "VITALS", "OBSERVATIONS", "SOCIAL HISTORY", "OBSTETRIC HISTORY",
-                            "MEDICAL HISTORY"].collect{|c| EncounterType.find_by_name(c).id}.join(",")
+                            "MEDICAL HISTORY"].collect{|c| EncounterType.find_by_name(c).id}
     complete_next_visits = ["REGISTRATION", "VITALS", "OBSERVATIONS", "SOCIAL HISTORY", "OBSTETRIC HISTORY",
-                            "MEDICAL HISTORY"].collect{|c| EncounterType.find_by_name(c).id}.join(",")
+                            "MEDICAL HISTORY"].collect{|c| EncounterType.find_by_name(c).id}
     query = "
       SELECT DATE(encounter_datetime) visit_date,
-        CONCAT('\'',GROUP_CONCAT(DISTINCT(e.encounter_type)), '\'') et,
+        GROUP_CONCAT(DISTINCT(e.encounter_type)) AS et,
         e.patient_id,
 		(SELECT COUNT(DISTINCT(DATE(encounter_datetime))) FROM encounter
 			WHERE patient_id = e.patient_id
@@ -2260,16 +2261,17 @@ EOF
 			) visit_no
         FROM encounter e
         GROUP BY e.patient_id, visit_date
-			HAVING
-          (SELECT COUNT(*) FROM encounter_type WHERE find_in_set(encounter_type_id, et) > 0) =
-					(SELECT COUNT(*) FROM encounter_type WHERE find_in_set(encounter_type_id,
-            IF(visit_no = 1, '#{complete_first_visit}', '#{complete_next_visits}')
-        ) > 0)
       "
 
-    @visits = ActiveRecord::Base.connection.select_all(query)
-
-    raise @visits.inspect
+    visits = ActiveRecord::Base.connection.select_all(query)
+    visits.each do |v|
+      if v['visit_no'] == 1
+        @incomplete_visits << v if (complete_first_visit - v['et'].split(",")).length > 0
+      else
+        @incomplete_visits << v if (complete_next_visits - v['et'].split(",")).length > 0
+      end
+    end
+    raise  @incomplete_visits.inspect
   end
 
   private
