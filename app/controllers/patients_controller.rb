@@ -2267,8 +2267,7 @@ EOF
         ) > 0)
       "
 
-    raise query.to_s
-    @visits = ActiveRecord::Base.connection.select_all()
+    @visits = ActiveRecord::Base.connection.select_all(query)
 
     raise @visits.inspect
   end
