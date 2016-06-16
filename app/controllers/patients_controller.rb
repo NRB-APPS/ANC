@@ -2243,15 +2243,17 @@ EOF
   end
 
   def incomplete_visits
+    @encounter_types = ActiveRecord::Base.connection.select_all(
+            "SELECT distinct encounter_type FROM encounter").collect{
+              |c|EncounterType.find(c['encounter_type']).name}
     render :template => "/patients/data_cleaning_date_range" and return  if request.get?
-    start_date = params[:start_date] || "2000-01-01".to_date
-    end_date = params[:start_date] || Date.today
+    @start_date = params[:start_date] || "2000-01-01".to_date
+    @end_date = params[:end_date] || Date.today
+
     @incomplete_visits = []
 
-    complete_first_visit = ["REGISTRATION", "VITALS", "OBSERVATIONS", "SOCIAL HISTORY", "OBSTETRIC HISTORY",
-                            "MEDICAL HISTORY"].collect{|c| EncounterType.find_by_name(c).id}
-    complete_next_visits = ["REGISTRATION", "VITALS", "OBSERVATIONS", "SOCIAL HISTORY", "OBSTETRIC HISTORY",
-                            "MEDICAL HISTORY"].collect{|c| EncounterType.find_by_name(c).id}
+    complete_first_visit = params['incomplete_first_visit'].collect{|c| EncounterType.find_by_name(c).id.to_s}
+    complete_next_visits = params['incomplete_next_visit'].collect{|c| EncounterType.find_by_name(c).id.to_s}
     query = "
       SELECT DATE(encounter_datetime) visit_date,
         GROUP_CONCAT(DISTINCT(e.encounter_type)) AS et,
@@ -2260,12 +2262,12 @@ EOF
 			WHERE patient_id = e.patient_id
 				AND DATE(encounter_datetime) <= DATE(e.encounter_datetime)
 			) visit_no
-        FROM encounter e
+        FROM encounter e WHERE Date(e.encounter_datetime) >= '#{@start_date}'
+        AND Date(e.encounter_datetime) <= '#{@end_date}'
         GROUP BY e.patient_id, visit_date
       "
-
     visits = ActiveRecord::Base.connection.select_all(query)
-    visits.each do |v|
+    visits.each do |v| 
       if v['visit_no'] == 1
         if (complete_first_visit - v['et'].split(",")).length > 0
             patient_name = Person.find(v['patient_id']).name
@@ -2273,7 +2275,7 @@ EOF
             visit_hash = {"name"=> patient_name,
                           "n_id"=>national_id,  
                           "visit_no"=> v['visit_no'],
-                          "visit_date"=>v['visit_date']
+                          "visit_date"=>format_date(v['visit_date'])
                         }
             @incomplete_visits << visit_hash
         end
@@ -2284,16 +2286,20 @@ EOF
             visit_hash = {"name"=> patient_name,
                           "n_id"=>national_id,  
                           "visit_no"=> v['visit_no'],
-                          "visit_date"=>v['visit_date']
+                          "visit_date"=>format_date(v['visit_date'])
                         }
             @incomplete_visits << visit_hash
       
         end
       end
     end
+    @start_date = format_date(@start_date)
+    @end_date = format_date(@end_date)
     render :layout => 'report'
   end
 
   private
-
+  def format_date(date)
+     return  DateTime.parse(date).strftime("%d/%m/%Y")
+  end
 end
