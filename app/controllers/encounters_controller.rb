@@ -461,6 +461,7 @@ class EncountersController < ApplicationController
 			 c > 1)
 		;")
 
+    render :layout => 'duplicate-encounters'
   end
 
   def duplicates

@@ -2064,7 +2064,7 @@ class PatientsController < ApplicationController
   end
 
   def merge_menu
-   render :layout => "report"
+   
   end
 
 
