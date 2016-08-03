@@ -1,12 +1,16 @@
 class PatientsController < ApplicationController
   before_filter :find_patient, :except => [:void]
 
-  def show
+  def show      
+
+    if !params[:data_cleaning].blank?
+      session[:datetime] = params[:session_date].to_date
+      session[:data_cleaning] = true 
+    end
 
     session_date = session[:datetime].to_date rescue Date.today
     next_destination = next_task(@patient) rescue nil
-    session[:update] = false
-    session[:home_url] = ""
+    session[:update] = false  
 
     if (next_destination.match("check_abortion") rescue false)
       redirect_to next_destination and return
@@ -2246,14 +2250,32 @@ EOF
     @encounter_types = ActiveRecord::Base.connection.select_all(
             "SELECT distinct encounter_type FROM encounter").collect{
               |c|EncounterType.find(c['encounter_type']).name}
-    render :template => "/patients/data_cleaning_date_range" and return  if request.get?
+
+    if request.get? && params[:type].blank?
+      render :template => "/patients/data_cleaning_date_range" and return  
+    else
+      session[:cleaning_params] = params
+    end
+
     @start_date = params[:start_date] || "2000-01-01".to_date
     @end_date = params[:end_date] || Date.today
 
     @incomplete_visits = []
 
-    complete_first_visit = params['incomplete_first_visit'].collect{|c| EncounterType.find_by_name(c).id.to_s}
-    complete_next_visits = params['incomplete_next_visit'].collect{|c| EncounterType.find_by_name(c).id.to_s}
+    if params['incomplete_first_visit'].class.to_s == "String"
+        params['incomplete_first_visit'] = params['incomplete_first_visit'].split("|")
+        params['incomplete_next_visit'] = params['incomplete_next_visit'].split("|")
+    end
+
+    complete_first_visit = params['incomplete_first_visit'].collect{|c| EncounterType.find_by_name(c).id}
+    complete_next_visits = params['incomplete_next_visit'].collect{|c| EncounterType.find_by_name(c).id} 
+
+    first_visit =  complete_first_visit 
+    next_visits =  complete_next_visits
+    all_visits = first_visit.concat next_visits
+    all_visits = all_visits.uniq
+    
+
     query = "
       SELECT DATE(encounter_datetime) visit_date,
         GROUP_CONCAT(DISTINCT(e.encounter_type)) AS et,
@@ -2266,32 +2288,26 @@ EOF
         AND Date(e.encounter_datetime) <= '#{@end_date}'
         GROUP BY e.patient_id, visit_date
       "
-    visits = ActiveRecord::Base.connection.select_all(query)
+    visits = ActiveRecord::Base.connection.select_all(query)    
     visits.each do |v| 
-      if v['visit_no'] == 1
-        if (complete_first_visit - v['et'].split(",")).length > 0
-            patient_name = Person.find(v['patient_id']).name
-            national_id = PatientIdentifier.find_by_patient_id(v['patient_id']).identifier
-            visit_hash = {"name"=> patient_name,
+            all_et = all_visits
+            patient_et =  v['et'].split(',')
+            patient_et = patient_et.map{|n|eval n}
+            a = all_et.to_set.subset?(patient_et.to_set)
+            if !a == true
+              patient_name = Person.find(v['patient_id']).name
+              national_id = PatientIdentifier.find_by_patient_id(v['patient_id']).identifier
+              visit_hash = {"name"=> patient_name,
                           "n_id"=>national_id,  
                           "visit_no"=> v['visit_no'],
-                          "visit_date"=>format_date(v['visit_date'])
+                          "visit_date"=>format_date(v['visit_date']),
+                          "patient_id"=> v['patient_id']
                         }
-            @incomplete_visits << visit_hash
-        end
-      else
-        if (complete_next_visits - v['et'].split(",")).length > 0
-            patient_name = Person.find(v['patient_id']).name
-            national_id = PatientIdentifier.find_by_patient_id(v['patient_id']).identifier
-            visit_hash = {"name"=> patient_name,
-                          "n_id"=>national_id,  
-                          "visit_no"=> v['visit_no'],
-                          "visit_date"=>format_date(v['visit_date'])
-                        }
-            @incomplete_visits << visit_hash
-      
-        end
-      end
+
+              @incomplete_visits << visit_hash
+            else
+
+            end
     end
     @start_date = format_date(@start_date)
     @end_date = format_date(@end_date)

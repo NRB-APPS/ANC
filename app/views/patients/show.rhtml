@@ -5,8 +5,22 @@
 %>
 <script type="text/javascript" language="javascript">
     <!--
-    tt_cancel_show = "/clinic";
-    tt_cancel_destination = "/clinic";
+    <% if !session[:data_cleaning].blank? %>
+      cancel_url = "/patients/incomplete_visits?type=post"
+      <%
+       session[:cleaning_params].each do |key, value|
+        next if key.match(/action|controller/)
+        value = value.join("|") if value.class.to_s == "Array"
+        %>
+        cancel_url += "&<%=key%>=<%=value%>";
+      <% end %>
+
+      tt_cancel_show = cancel_url
+      tt_cancel_destination = "/clinic";
+    <% else %>
+      tt_cancel_show = "/clinic";
+      tt_cancel_destination = "/clinic";
+    <% end %>
 
     var start_time = [
         <%= (@time rescue Time.now).year %>,
@@ -274,6 +288,7 @@
           <% if !@next_task.nil? && @next_task.url != "/patients/show/#{@patient.id}" %>
 
               <option link="<%= @next_task.url  %>" ttSize = "160px">Continue</option>
+
 
           <% else %>
 

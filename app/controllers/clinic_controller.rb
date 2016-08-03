@@ -1,6 +1,11 @@
 class ClinicController < GenericClinicController
   def index
     
+    if !session[:data_cleaning].blank?
+      session.delete(:data_cleaning)
+      session.delete(:cleaning_params) if session[:cleaning_params].present?
+      session.delete(:datetime) if session[:datetime].present? 
+    end
     @facility = Location.current_health_center.name rescue ''
 
     @location = Location.find(session[:location_id]).name rescue ""
@@ -10,8 +15,6 @@ class ClinicController < GenericClinicController
     @user = User.find(current_user.user_id) rescue nil
 
     @roles = User.find(current_user.user_id).user_roles.collect{|r| r.role} rescue []
-
-    # raise session.to_yaml
 
     render :layout => 'dynamic-dashboard'
   end
