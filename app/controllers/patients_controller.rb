@@ -2314,6 +2314,33 @@ EOF
     render :layout => 'report'
   end
 
+  def set_datetime
+    if request.post?
+      unless params[:set_day]== "" or params[:set_month]== "" or params[:set_year]== ""
+        # set for 1 second after midnight to designate it as a retrospective date
+        date_of_encounter = Time.mktime(params[:set_year].to_i,
+                                        params[:set_month].to_i,
+                                        params[:set_day].to_i,0,0,1)
+        session[:datetime] = date_of_encounter #if date_of_encounter.to_date != Date.today
+      end
+      if !params[:id].blank?
+        redirect_to "/patients/show/#{params[:id]}" and return
+      else
+        redirect_to :action => "index"
+      end
+    end
+    @patient_id = params[:id]
+  end
+
+  def reset_datetime
+    session[:datetime] = nil
+    if params[:id].blank?
+      redirect_to :action => "index" and return
+    else
+      redirect_to "/patients/show/#{params[:id]}" and return
+    end
+  end
+
   private
   def format_date(date)
      return  DateTime.parse(date).strftime("%d/%m/%Y")
