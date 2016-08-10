@@ -450,21 +450,25 @@ class EncountersController < ApplicationController
     if request.get? && params[:type].blank?
       render :template => "/patients/encounter_cleaning_date_range" and return  
     else
-
+      @start_date = params[:start_date]
+      @end_date = params[:end_date]
       @duplicate_encounters = ActiveRecord::Base.connection.select_all("
       SELECT patient_id, encounter_type,
       (SELECT name FROM encounter_type WHERE encounter_type_id = encounter.encounter_type) type,
       (SELECT CONCAT(given_name, ' ', family_name) FROM person_name WHERE voided = 0 AND person_id = encounter.patient_id LIMIT 1) name,
       (SELECT identifier FROM patient_identifier WHERE voided = 0 AND patient_id = encounter.patient_id AND identifier_type = 3 LIMIT 1) national_id,
       DATE(encounter_datetime) visit_date, count(*) c
-      FROM encounter WHERE voided = 0
+      FROM encounter WHERE voided = 0 AND Date(encounter_datetime) >= '#{@start_date}'
+      AND Date(encounter_datetime) <= '#{@end_date}'
       GROUP by patient_id, encounter_type, visit_date
       HAVING
       IF (type = 'VITALS',
        c > 2 ,
        c > 1)
       ;")
-      #session[:cleaning_params] = params
+
+      
+      session[:cleaning_params] = params
     end
 
     @start_date = params[:start_date] || "2000-01-01".to_date

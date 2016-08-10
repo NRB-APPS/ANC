@@ -2,7 +2,7 @@
 
 <script>
     function loadVisit(patient_id, visit_date){
-       location.href = "show/" + patient_id + "?session_date=" + visit_date.replace(/\//g, "-") +"&data_cleaning=true";
+       location.href = "show/" + patient_id + "?session_date=" + visit_date.replace(/\//g, "-") +"&data_cleaning=true" + "&from_encounters=false";
     }
 </script>
 <style type="text/css">

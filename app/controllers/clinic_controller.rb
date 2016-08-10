@@ -5,6 +5,7 @@ class ClinicController < GenericClinicController
       session.delete(:data_cleaning)
       session.delete(:cleaning_params) if session[:cleaning_params].present?
       session.delete(:datetime) if session[:datetime].present? 
+      session.delete(:from_encounters) if session[:from_encounters].present?
     end
     @facility = Location.current_health_center.name rescue ''
 
