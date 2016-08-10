@@ -8,6 +8,10 @@ class PatientsController < ApplicationController
       session[:data_cleaning] = true 
     end
 
+    if !params[:from_encounters].blank?
+      session[:from_encounters] = params[:from_encounters]
+    end
+
     session_date = session[:datetime].to_date rescue Date.today
     next_destination = next_task(@patient) rescue nil
     session[:update] = false  
