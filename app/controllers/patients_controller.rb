@@ -1131,7 +1131,7 @@ class PatientsController < ApplicationController
   end
 
   def current_visit
-    @nc_types =  EncounterType.find(:all, :conditions => ["name in ('PREGNANCY STATUS', 'OBSERVATIONS', 'VITALS', 'TREATMENT', 'LAB RESULTS', " +
+    @nc_types =  EncounterType.find(:all, :conditions => ["name in ('ART_FOLLOWUP', 'PREGNANCY STATUS', 'OBSERVATIONS', 'VITALS', 'TREATMENT', 'LAB RESULTS', " +
           "'DIAGNOSIS', 'APPOINTMENT', 'UPDATE OUTCOME')"]).collect{|t| t.id}
 
     @encounters = @patient.encounters.find(:all, :conditions => ["encounter_type IN (?) AND " +
