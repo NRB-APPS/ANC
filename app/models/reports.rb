@@ -94,12 +94,12 @@ class Reports
             WHERE e.voided = 0 AND
                   e.patient_id IN (?) AND
                   e.encounter_type IN (?) AND o.concept_id IN (?) AND
-                  DATE(e.encounter_datetime) BETWEEN ? AND ?
+                  DATE(e.encounter_datetime) < ?
                   AND COALESCE((SELECT name FROM concept_name WHERE concept_id = o.value_coded LIMIT 1), o.value_text) IN (?)
                   ",
               ([0] + @cohortpatients),
               encounter_types, concept_ids,
-              @startdate.to_date, (@startdate.to_date + @preg_range), art_answers]
+              (@startdate.to_date + @preg_range), art_answers]
            ).map(&:patient_id) rescue []
   end
 
