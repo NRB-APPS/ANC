@@ -339,17 +339,26 @@ class PeopleController < GenericPeopleController
   def verify_patient_npids
 
     if request.get?
-      render :template => "/people/data_cleaning_date_range" and return
+      render :template => "/people/end_date" and return
     else
+
       local_patients = []
-      Patient.find_by_sql(["SELECT * FROM patient
-                                    WHERE patient_id IN (
-                                      SELECT DISTINCT(patient_id) FROM encounter WHERE DATE(encounter_datetime) BETWEEN ? AND ?
-                                    )",
-                                    params[:start_date].to_date, params[:end_date].to_date]).each do |p|
-          local_patients << [p, p.person.name]
-      end
-      @local_patients = local_patients.sort_by{|patient, name| [name]}
+
+      hiv_concept_id = ConceptName.find_by_name("HIV Status").id
+      positive_concept_id = ConceptName.find_by_name("Positive").id
+
+      local_npids = [-1] + Encounter.find_by_sql(["SELECT pi.identifier FROM encounter e
+                                INNER JOIN obs o ON o.encounter_id = e.encounter_id AND o.concept_id = #{hiv_concept_id}
+                                  AND ((o.value_coded = #{positive_concept_id}) OR (o.value_text = 'Positive'))
+                                INNER JOIN patient_identifier pi ON pi.patient_id = e.patient_id AND pi.identifier_type = 3
+                              WHERE e.voided = 0 AND DATE(e.encounter_datetime) <= ?", params[:end_date].to_date])
+
+      sql_arr = "'" + local_npids.join("', '") + "'"
+      remote_npids = Bart2Connection::PatientProgram.find_by_sql(["SELECT pi.identifier FROM patient_program pg
+                                INNER JOIN patient_identifier pi ON pi.patient_id = pg.patient_id
+                              WHERE pi.identifier IN (#{sql_arr}) AND pg.program_id = 1 AND DATE(pg.date_created) <= ?
+                              ",  params[:end_date].to_date])
+
     end
   end
 
