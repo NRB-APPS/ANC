@@ -1,0 +1,67 @@
+
+
+<script>
+    function loadVisit(patient_id, visit_date){
+       location.href = "/patients/show/" + patient_id + "?session_date=" + visit_date.replace(/\//g, "-") +"&data_cleaning=true" + "&from_encounters=false";
+    }
+</script>
+<style type="text/css">
+  body {
+    -moz-user-select:none;
+  }
+
+  #stats {
+    width:96%;
+    border:1px solid #eee;
+    margin:auto;
+    margin-top: 0px;
+    background:white;
+  }
+  #stats td, #stats th {
+    text-align:center;
+    padding: 0.5%;
+  }
+  #stats tr:nth-child(even){
+    background-color: #eeeef7;
+  }
+   #stats tr td:nth-child(2){
+    text-align: left;
+    padding-left: 2%;
+  }
+</style>
+  <div id="contentt">
+
+    <h2 style="text-align: center; color: #6281a7; margin-top: 3px; margin-bottom: 3px;">Patients With Missing ART Status as of <%= params[:end_date].to_date.strftime("%d-%b-%Y")%></h2>
+    <div class="div_scroll">
+      <table id="stats" style="margin-bottom: 8px;" cellpadding="5" width="90%">
+        <tr style="color: #fff; background-color: #6281a7;">
+          <th>#</th>
+          <th>Patient Name</th>
+          <th>DOB</th>
+          <th>National ID</th>
+          <th>Date ART status Provided</th>
+          <th></th>
+        </tr>
+        <% count =1 %>
+        <%@people.each do |p| %>
+        
+            <tr>
+            <td><%=count%></td>
+            <td><%=p["name"]%></td>
+            <td><%=p["dob"]%></td>
+             <td><%=p["npid"]%></td>
+            <td><%=p["date_tested"]%></td>
+            <td  onclick="loadVisit('<%= p['patient_id'] %>', '<%= p["date_tested"]%>')" class="btn blue button" ><span>Load Visit</span></td>
+            <% count = count + 1 %>
+
+        </tr>
+        <%end%>
+      </table>
+    </div>
+  </div>
+<script type="text/javascript">
+  var height = 0.7 * window.innerHeight;
+  if ($("#stats").height() > height){
+      $(".div_scroll").css({"height":height,"overflow-y":"scroll"});
+    }
+</script>

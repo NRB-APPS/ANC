@@ -338,27 +338,63 @@ class PeopleController < GenericPeopleController
 
   def verify_patient_npids
 
-    if request.get?
+    if request.get? && params[:type].blank?
       render :template => "/people/end_date" and return
     else
 
       local_patients = []
 
-      hiv_concept_id = ConceptName.find_by_name("HIV Status").id
-      positive_concept_id = ConceptName.find_by_name("Positive").id
+      session[:cleaning_params] = params
 
-      local_npids = [-1] + Encounter.find_by_sql(["SELECT pi.identifier FROM encounter e
+      hiv_concept_id = ConceptName.find_by_name("HIV Status").concept_id
+      positive_concept_id = ConceptName.find_by_name("Positive").concept_id rescue -1
+      art_concept_id = ConceptName.find_by_name("Reason For Exiting Care").concept_id
+      art_concept_value = ConceptName.find_by_name("Already on ART at another facility").concept_id rescue -1
+
+
+      local_npids = Encounter.find_by_sql(["SELECT pi.identifier FROM encounter e
                                 INNER JOIN obs o ON o.encounter_id = e.encounter_id AND o.concept_id = #{hiv_concept_id}
                                   AND ((o.value_coded = #{positive_concept_id}) OR (o.value_text = 'Positive'))
                                 INNER JOIN patient_identifier pi ON pi.patient_id = e.patient_id AND pi.identifier_type = 3
-                              WHERE e.voided = 0 AND DATE(e.encounter_datetime) <= ?", params[:end_date].to_date])
+                              WHERE e.voided = 0 AND DATE(e.encounter_datetime) <= ?", params[:end_date].to_date]).map(&:identifier).uniq
 
-      sql_arr = "'" + local_npids.join("', '") + "'"
+      sql_arr = "'" + ([-1] + local_npids).join("', '") + "'"
       remote_npids = Bart2Connection::PatientProgram.find_by_sql(["SELECT pi.identifier FROM patient_program pg
                                 INNER JOIN patient_identifier pi ON pi.patient_id = pg.patient_id
                               WHERE pi.identifier IN (#{sql_arr}) AND pg.program_id = 1 AND DATE(pg.date_created) <= ?
-                              ",  params[:end_date].to_date])
+                              ",  params[:end_date].to_date]).map(&:identifier).uniq
 
+      local_art_status_npids = Encounter.find_by_sql(["SELECT pi.identifier FROM encounter e
+                                INNER JOIN obs o ON o.encounter_id = e.encounter_id AND o.concept_id = #{art_concept_id }
+                                  AND ((o.value_coded = #{art_concept_value}) OR (o.value_text = 'Already on ART at another facility'))
+                                INNER JOIN patient_identifier pi ON pi.patient_id = e.patient_id AND pi.identifier_type = 3
+                              WHERE e.voided = 0 AND DATE(e.encounter_datetime) <= ?", params[:end_date].to_date]).map(&:identifier).uniq
+
+      identifiers = local_npids - (remote_npids + local_art_status_npids).uniq
+
+      sql_arr = "'" + ([-1] + identifiers).join("', '") + "'"
+
+      @people = []
+
+      Patient.find_by_sql("SELECT * FROM patient WHERE patient_id IN (
+                  SELECT patient_id FROM patient_identifier WHERE identifier IN (#{sql_arr})
+              )").each do |p|
+
+        person = p.person
+        test_date = Observation.find_by_sql("SELECT obs_datetime FROM obs WHERE obs.concept_id = #{hiv_concept_id}
+                        AND ((obs.value_coded = #{positive_concept_id}) OR (obs.value_text = 'Positive')) AND obs.person_id = #{p.patient_id}
+                      ").first.obs_datetime.to_date.strftime("%d-%b-%Y") rescue "N/A"
+
+        @people << {
+            'patient_id' => p.patient_id,
+            'name' => person.name,
+            'npid' => p.national_id,
+            'dob' => (person.birthdate_estimated.to_i == 1) ? "~ #{person.birthdate.to_date.strftime("%d-%b-%Y")}" : "#{person.birthdate.to_date.strftime("%d-%b-%Y")}",
+            'date_tested' => test_date
+        }
+      end
+
+      render :template => "/patients/missing_art_status", :layout => 'report' and return
     end
   end
 
