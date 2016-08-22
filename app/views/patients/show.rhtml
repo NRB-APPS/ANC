@@ -6,16 +6,13 @@
 <script type="text/javascript" language="javascript">
     <!--
     <% if !session[:data_cleaning].blank? %>
-      <% if session[:from_encounters] == "false" %>
-        cancel_url = "/patients/incomplete_visits?type=post";
-      <% elsif session[:from_encounters] == "true" %>
-        cancel_url = "/encounters/duplicate_encounters?type=post";
-      <% end %>
-      <%
-       session[:cleaning_params].each do |key, value|
-        next if key.match(/action|controller/)
-        value = value.join("|") if value.class.to_s == "Array"
-        %>
+    cancel_url = "/<%=session[:cleaning_params][:controller]%>/<%=session[:cleaning_params][:action]%>?type=post";
+
+    <%
+     session[:cleaning_params].each do |key, value|
+      next if key.match(/action|controller/)
+      value = value.join("|") if value.class.to_s == "Array"
+      %>
         cancel_url += "&<%=key%>=<%=value%>";
       <% end %>
 

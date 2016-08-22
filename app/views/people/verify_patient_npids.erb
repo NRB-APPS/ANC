@@ -47,7 +47,7 @@
                         <th>National ID</th>
                         <th>Date of Birth</th>
                         <th>Date Registered</th>
-                        <th>Remote Count</th>
+                        <th>Load Visit</th>
                         </tr>
                         <% @local_patients.each do |patient, name|%>
                             <tr class="<%=cycle('even', 'odd')%>" onclick="loadRemoteDetails('<%= patient.national_id%>')">
