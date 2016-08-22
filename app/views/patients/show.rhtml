@@ -15,7 +15,7 @@
       %>
         cancel_url += "&<%=key%>=<%=value%>";
       <% end %>
-
+      cancel_url = encodeURI(cancel_url);
       tt_cancel_show = cancel_url
       tt_cancel_destination = "/clinic";
     <% else %>
