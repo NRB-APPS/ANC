@@ -375,6 +375,13 @@ class PatientsController < ApplicationController
     redirect_to "/patients/show/#{@patient.id}" and return
   end
 
+
+  def void_patient
+    person = Person.find(params[:id])
+    person.void("ANC data cleaning")
+    render :text => "Ok"
+  end
+
   def print_registration
     print_and_redirect("/patients/national_id_label/?patient_id=#{@patient.id}", "/patients/demographics?patient_id=#{@patient.id}")
   end
@@ -2373,6 +2380,78 @@ EOF
       redirect_to "/patients/show/#{params[:id]}" and return
     end
   end
+
+  def void_patients
+
+    if request.get? && params[:type].blank?
+
+      @patient_categories = ["Test Patients", "Male Clients"]
+      @patient_names = ["Test", "Patient", "Numeric Name"]
+      render :template => "/patients/void_patients_date_range" and return
+    else
+
+      params["patient_category"] =  params["patient_category"].split("|") if  (params["patient_category"].match("|") rescue false)
+      params["test_patient_names"] =  params["test_patient_names"].split("|") if  (params["test_patient_names"].match("|") rescue false)
+
+      session[:cleaning_params] = params
+
+      patients = []
+      @patients = []
+      user_person_ids = [-1] + User.find_by_sql("SELECT person_id FROM users WHERE person_id > 0").map(&:person_id)
+
+      if params[:patient_category].include?("Test Patients")
+        infixes = {"Test" => " REGEXP 'Test' ",
+                    "Patient" => " REGEXP 'Patient' ",
+                    "Numeric Name" => " REGEXP '([0-9]+\.*)+' " }
+
+        conditions = []
+        params[:test_patient_names].each do |name|
+          conditions << (" (given_name #{infixes[name]}  OR family_name #{infixes[name]}) " )
+        end
+
+        conditions = conditions.join(" OR ")
+        patients += Patient.find_by_sql(["SELECT person.person_id FROM person
+                                  INNER JOIN person_name ON person_name.person_id = person.person_id
+                                  WHERE #{conditions} AND person.voided = 0 AND person_name.voided = 0
+                                  AND person.person_id NOT IN (#{ user_person_ids.join(', ')})
+                                  AND DATE(person.date_created) BETWEEN ? AND ?
+                                  GROUP BY person.person_id
+                    ", params[:start_date].to_date, params[:end_date]]).map(&:person_id)
+      end
+
+      if params[:patient_category].include?("Male Clients")
+        patients += Patient.find_by_sql(["SELECT person.person_id FROM person
+                                  INNER JOIN patient ON person.person_id = patient.patient_id
+                                  WHERE person.gender = 'M' AND person.voided = 0 AND patient.voided = 0
+                                  AND person.person_id NOT IN (#{ user_person_ids.join(', ')})
+                                  AND DATE(person.date_created) BETWEEN ? AND ?
+                    ", params[:start_date].to_date, params[:end_date]]).map(&:person_id)
+      end
+
+      if params[:patient_category].include?("Non-Pregnant Women")
+
+      end
+
+      patients.each do |patient|
+        person = Person.find(patient) rescue next
+        next if person.patient.blank?
+
+        encounter_count = Encounter.find_by_sql("SELECT count(*) cc FROM encounter WHERE voided = 0 AND patient_id = #{patient_id}").last.cc rescue "N/A"
+        @patients << {
+            'patient_id' => person.person_id,
+            'name' => person.name,
+            'gender' => person.gender,
+            'date' => Date.today,
+            'dob' => (((person.birthdate_estimated.to_i == 1) ? "~ #{person.birthdate.to_date.strftime("%d-%b-%Y")}" : "#{person.birthdate.to_date.strftime("%d-%b-%Y")}") rescue "N/A"),
+            'npid' => (person.patient.national_id rescue "N/A"),
+            'encounters' => encounter_count
+        }
+      end
+
+      render :layout => "report" and return
+    end
+  end
+
 
   private
   def format_date(date)
