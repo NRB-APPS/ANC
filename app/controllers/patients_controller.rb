@@ -535,15 +535,19 @@ class PatientsController < ApplicationController
   end
 
   def tab_visit_summary
+    session_date = session[:datetime].to_date rescue Date.today
     @data = []
-    @encounters = @patient.encounters.all(:order => "encounter_datetime DESC") rescue []
+    @encounters = @patient.encounters.all(:conditions => [" DATE(encounter_datetime) <= ? ", session_date],
+                                          :order => "encounter_datetime DESC") rescue []
 
     @external_encounters = []
 
     if !File.exists?("#{RAILS_ROOT}/config/dde_connection.yml")
-      @external_encounters = Bart2Connection::PatientIdentifier.search_by_identifier(@anc_patient.national_id).patient.encounters rescue [] if @anc_patient.hiv_status.downcase == "positive"
+      @external_encounters = Bart2Connection::PatientIdentifier.search_by_identifier(@anc_patient.national_id
+      ).patient.encounters.all(:conditions => [" DATE(encounter_datetime) <= ? ", session_date]) rescue [] if @anc_patient.hiv_status.downcase == "positive"
     else
-      @external_encounters = Bart2Connection::PatientIdentifier.search_or_create(@anc_patient.national_id).patient.encounters rescue [] if @anc_patient.hiv_status.downcase == "positive"
+      @external_encounters = Bart2Connection::PatientIdentifier.search_or_create(@anc_patient.national_id
+      ).patient.encounters.all(:conditions => [" DATE(encounter_datetime) <= ? ", session_date]) rescue [] if @anc_patient.hiv_status.downcase == "positive"
     end
 
     @encounter_data = @encounters.collect{|e|
