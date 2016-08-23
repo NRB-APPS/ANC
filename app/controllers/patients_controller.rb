@@ -2083,12 +2083,41 @@ class PatientsController < ApplicationController
   end
 
   def merge_menu
-   
+    query = "
+                SELECT given_name, family_name, birthdate, identifier, patient.date_created
+                FROM patient 
+                INNER JOIN person_name 
+                ON patient.patient_id = person_name.person_name_id 
+                INNER JOIN person 
+                ON patient.patient_id = person.person_id
+                INNER JOIN patient_identifier
+                ON patient.patient_id = patient_identifier.patient_id
+    "
+    @possible_patient_juplicates = ActiveRecord::Base.connection.select_all(query)
+    
+    render :layout => 'report'
   end
 
+  def search
+    search_str = params[:search_str]
+    side = params[:side]
+    search_by_identifier = search_str.match(/[0-9]+/).blank? rescue false
+
+    unless search_by_identifier
+      patients = PatientIdentifier.find(:all, :conditions => ["voided = 0 AND (identifier LIKE ?)",
+                                                              "%#{search_str}%"],:limit => 10).map{| p |p.patient}
+    else
+      given_name = search_str.split(' ')[0] rescue ''
+      family_name = search_str.split(' ')[1] rescue ''
+      patients = PersonName.find(:all ,:joins => [:person => [:patient]], :conditions => ["person.voided = 0 AND family_name LIKE ? AND given_name LIKE ?",
+                                                                                          "#{family_name}%","%#{given_name}%"],:limit => 10).collect{|pn|pn.person.patient}
+    end
+  end
 
   def search_all
+
     search_str = params[:search_str]
+    raise search_str.inspect
     side = params[:side]
     search_by_identifier = search_str.match(/[0-9]+/).blank? rescue false
 
