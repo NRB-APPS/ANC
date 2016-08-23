@@ -2072,11 +2072,19 @@ class PatientsController < ApplicationController
   end
 
   def merge_menu
-
-     #@possible_duplicate_patients = ActiveRecord::Base.connection.select_all(query)
-     render :layout => 'report'
-
-   
+    query = "
+                SELECT given_name, family_name, birthdate, identifier, patient.date_created
+                FROM patient 
+                INNER JOIN person_name 
+                ON patient.patient_id = person_name.person_name_id 
+                INNER JOIN person 
+                ON patient.patient_id = person.person_id
+                INNER JOIN patient_identifier
+                ON patient.patient_id = patient_identifier.patient_id
+    "
+    @possible_patient_juplicates = ActiveRecord::Base.connection.select_all(query)
+    
+    render :layout => 'report'
   end
 
   def search

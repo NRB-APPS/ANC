@@ -22,6 +22,22 @@
     padding-left: 2%;
   }
 </style>
+
+
+
+<script type="text/javascript">
+  
+  function loadPatient(){
+
+    alert("hello");
+    document.location.href = "../patients/search";
+  
+
+  }
+
+
+</script>
+
   <div id="contentt">
 
     <h2 style="text-align: center; color: #6281a7; margin-top: 3px; margin-bottom: 3px;">Possible Patient Duplicates</h2>
@@ -29,25 +45,24 @@
       <table id="stats" style="margin-bottom: 8px;" cellpadding="5" width="90%">
         <tr style="color: #fff; background-color: #6281a7;">
           <th>#</th>
-          <th>First Name</th>
-          <th>Sir Name</th>
-          <th>Date of Birth</th>
+          <th>Patient Name</th>
+          <th>DOB</th>
+          <th>National ID</th>
           <th>Reporting Date</th>
-          <th>Location</th>
           <th>Operations</th>
         </tr>
+            <% count =1 %>
+            <% @possible_patient_juplicates.each do |duplicate| %>
+          <tr>
+            <td><% count %></td>
+            <td><%= duplicate["given_name"] +" "+ duplicate["family_name"]%></td>
+            <td><%= duplicate["birthdate"]%></td>
+            <td><%= duplicate["identifier"]%></td>
+            <td><%= duplicate["date_created"]%></td>
 
-        
-            <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td  onclick="loadVisit('')" class="btn blue button" ><span>Load</span></td>
-            
-
+            <td  onclick="loadPatient()" class="btn blue button" ><span>Load</span></td>
+            <% count = count + 1 %>
+            <% end %>
         </tr>
 
       </table>
