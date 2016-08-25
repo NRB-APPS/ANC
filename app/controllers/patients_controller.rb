@@ -2079,8 +2079,53 @@ class PatientsController < ApplicationController
   end
 
   def merge_menu
-    query = "
+    query = 
+            "
+              SELECT given_name, family_name, birthdate, identifier, patient.date_created, patient.patient_id
+              FROM patient 
+              INNER JOIN person_name 
+              ON patient.patient_id = person_name.person_name_id 
+              INNER JOIN person 
+              ON patient.patient_id = person.person_id
+              INNER JOIN patient_identifier
+              ON patient.patient_id = patient_identifier.patient_id
+            "
+    @possible_patient_duplicates = ActiveRecord::Base.connection.select_all(query)
+    raise @possible_patient_duplicates.inspect
+
+    if !@possible_patient_duplicates.blank?
+         record_num = @possible_patient_duplicates.count
+         @possible_patient_duplicates.each do |possible_patient_duplicate|
+            primary_record = possible_patient_duplicate
+            inner_query = 
+              "
                 SELECT given_name, family_name, birthdate, identifier, patient.date_created
+                FROM patient
+                INNER JOIN person_name 
+                ON patient.patient_id = person_name.person_name_id 
+                INNER JOIN person 
+                ON patient.patient_id = person.person_id
+                INNER JOIN patient_identifier
+                ON patient.patient_id = patient_identifier.patient_id
+                WHERE person_name.given_name LIKE '#{primary_record['given_name']}'
+                AND person_name.family_name LIKE '#{primary_record['family_name']}'
+                AND person.birthdate LIKE '#{primary_record['birthdate']}'
+              "
+            @dup = ActiveRecord::Base.connection.select_all(inner_query)
+            if @dup.count > 1
+               @duplicate_results = []
+               @duplicate_results.push(primary_record)
+            end
+          end
+    end
+    render :layout => 'report'
+  end
+
+  def search
+         patient_id = params[:patient_id]
+         query = 
+              "
+                SELECT *
                 FROM patient 
                 INNER JOIN person_name 
                 ON patient.patient_id = person_name.person_name_id 
@@ -2088,26 +2133,12 @@ class PatientsController < ApplicationController
                 ON patient.patient_id = person.person_id
                 INNER JOIN patient_identifier
                 ON patient.patient_id = patient_identifier.patient_id
-    "
-    @possible_patient_juplicates = ActiveRecord::Base.connection.select_all(query)
+                WHERE patient.patient_id = '#{patient_id}'
+                LIMIT 1
+              "
+    @duplicate_patient = ActiveRecord::Base.connection.select_all(query)
     
-    render :layout => 'report'
-  end
-
-  def search
-    search_str = params[:search_str]
-    side = params[:side]
-    search_by_identifier = search_str.match(/[0-9]+/).blank? rescue false
-
-    unless search_by_identifier
-      patients = PatientIdentifier.find(:all, :conditions => ["voided = 0 AND (identifier LIKE ?)",
-                                                              "%#{search_str}%"],:limit => 10).map{| p |p.patient}
-    else
-      given_name = search_str.split(' ')[0] rescue ''
-      family_name = search_str.split(' ')[1] rescue ''
-      patients = PersonName.find(:all ,:joins => [:person => [:patient]], :conditions => ["person.voided = 0 AND family_name LIKE ? AND given_name LIKE ?",
-                                                                                          "#{family_name}%","%#{given_name}%"],:limit => 10).collect{|pn|pn.person.patient}
-    end
+        
   end
 
   def search_all

@@ -27,12 +27,8 @@
 
 <script type="text/javascript">
   
-  function loadPatient(){
-
-    alert("hello");
-    document.location.href = "../patients/search";
-  
-
+  function loadPatient(patient_id, lastname){
+    document.location.href = "../patients/search?patient_id=" + patient_id;
   }
 
 
@@ -51,8 +47,8 @@
           <th>Reporting Date</th>
           <th>Operations</th>
         </tr>
-            <% count =1 %>
-            <% @possible_patient_juplicates.each do |duplicate| %>
+            <% count = 1 %>
+            <%  @duplicate_results.each do |duplicate| %>
           <tr>
             <td><% count %></td>
             <td><%= duplicate["given_name"] +" "+ duplicate["family_name"]%></td>
@@ -60,7 +56,7 @@
             <td><%= duplicate["identifier"]%></td>
             <td><%= duplicate["date_created"]%></td>
 
-            <td  onclick="loadPatient()" class="btn blue button" ><span>Load</span></td>
+            <td  onclick="loadPatient('<%= duplicate["patient_id"]%>', '<%= duplicate["family_name"]%>')" class="btn blue button" ><span>Load</span></td>
             <% count = count + 1 %>
             <% end %>
         </tr>
