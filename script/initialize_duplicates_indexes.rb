@@ -5,7 +5,7 @@ class DupInit
     npid_type = PatientIdentifierType.find_by_name("National id").id
     query =
         "
-                SELECT person.uuid AS id, given_name first_name, family_name last_name, birthdate, identifier national_id,
+                SELECT person.person_id AS id, given_name first_name, family_name last_name, birthdate, identifier national_id,
                   DATE(patient.date_created) date_created, patient.patient_id, person_address.address2 home_district
                 FROM patient
                   INNER JOIN person_name ON patient.patient_id = person_name.person_name_id
@@ -21,7 +21,7 @@ class DupInit
     if all.length > 0
 
         #used by node app to store duplicate  weighted values
-        Dir.mkdir '/var/www/data'
+        Dir.mkdir '/var/www/data' rescue nil
 
         file = File.open("dup_index.yml", "w")
         arr = {}
@@ -45,11 +45,13 @@ class DupInit
   def self.index_all_remote
     all = YAML.load_file "dup_index.yml"
 
+    i = 0
     all.each do |uuid, record|
       record = [record]
-      url = "http://localhost:3008/write"
+      url = "http://#{CoreService.get_global_property_value('duplicates_check_url')}/write"
       response = RestClient.post(url, record.to_json, :content_type => "application/json", :accept => 'json')
-      puts response
+      i += 1
+      puts i
     end
   end
 

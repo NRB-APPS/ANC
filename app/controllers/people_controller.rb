@@ -67,6 +67,14 @@ class PeopleController < GenericPeopleController
       person = PatientService.create_from_form(params[:person])
     end
 
+    ######## Push details for de-duplication indexes ###########
+
+    record= [{'first_name' => 'FN'}]
+    url = "http://#{CoreService.get_global_property_value('duplicates_check_url')}/write" rescue nil
+    response = RestClient.post(url, record.to_json, :content_type => "application/json", :accept => 'json') rescue nil
+
+    ######## End ###############################################
+
     if params[:person][:patient] && success
 
       if params[:encounter]

@@ -21,7 +21,7 @@ production:
  remote_bart.password: test
  remote_bart.location: 721
  remote_machine.account_name: localhost
- portal_url: 192.100.100.200:80
+ duplicates_check_url: localhost:3008
  same_database: false
  use.column.interface: true
  maternity.links: localhost:3000
@@ -50,7 +50,7 @@ development:
  remote_bart.password: test
  remote_bart.location: 721
  remote_machine.account_name: localhost
- portal_url: 192.100.100.200:80
+ duplicates_check_url: localhost:3008
  same_database: false
  use.column.interface: true
  maternity.links: localhost:3000
