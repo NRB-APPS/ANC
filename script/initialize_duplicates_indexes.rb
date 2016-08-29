@@ -48,7 +48,7 @@ class DupInit
     i = 0
     all.each do |uuid, record|
       record = [record]
-      url = "http://localhost:3008/write"
+      url = "http://#{CoreService.get_global_property_value('duplicates_check_url')}/write"
       response = RestClient.post(url, record.to_json, :content_type => "application/json", :accept => 'json')
       i += 1
       puts i
