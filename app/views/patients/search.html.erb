@@ -307,6 +307,17 @@
                   if(res == 'Ok') {
                       for(var i = 0; i < secondaryPatients.length; i++) {
                           jQuery("#" + secondaryPatients[i]).remove();
+
+                          var selected = document.getElementsByClassName("blue-back");
+
+                          if(selected.length > 0){
+
+                              document.getElementById("mergeButton").className = "button navButton blue";
+                          }else{
+
+                              document.getElementById("mergeButton").className = "button navButton gray";
+                          }
+
                           showMessage("Patients merged Successfully!");
                       }
                   }else{

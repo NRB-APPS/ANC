@@ -2009,6 +2009,13 @@ class PatientsController < ApplicationController
         Patient.merge(params[:primary_patient], new_patient_id)
     end
 
+
+
+    indexes = YAML.load_file "dup_index.yml"
+    file = File.open("dup_index.yml", "w")
+    indexes["#{params[:primary_patient]}"]['count'] = ((indexes["#{params[:primary_patient]}"]['count'].to_i - params[:secondary_patients].count) rescue 0)
+    file.write indexes.to_yaml
+
     render :text => "Ok"
   end
 

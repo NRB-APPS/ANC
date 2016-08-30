@@ -19,12 +19,13 @@ class DupInit
 
     all = ActiveRecord::Base.connection.select_all(query)
 
+    file = File.open("dup_index.yml", "w")
+
     if all.length > 0
 
         #used by node app to store duplicate  weighted values
         Dir.mkdir '/var/www/data' rescue nil
 
-        file = File.open("dup_index.yml", "w")
         arr = {}
         all.each do |record|
 

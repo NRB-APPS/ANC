@@ -89,7 +89,7 @@ class PeopleController < GenericPeopleController
 
       indexes = YAML.load_file "dup_index.yml"
       file = File.open("dup_index.yml", "w")
-      indexes[person.id]['count'] = response.count
+      indexes["#{person.id}"]['count'] = response.count
       file.write indexes.to_yaml
     end
 
