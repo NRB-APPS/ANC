@@ -82,13 +82,16 @@ class PeopleController < GenericPeopleController
     RestClient.post("#{url}/write", record.to_json, :content_type => "application/json", :accept => 'json') rescue nil
 
     response = RestClient.post("#{url}/read", record.to_json, :content_type => "application/json", :accept => 'json') rescue nil
-    response = response.first
-    response = response["#{person.id}"]['ids']
 
-    indexes = YAML.load_file "dup_index.yml"
-    file = File.open("dup_index.yml", "w")
-    indexes[person.id]['count'] = response.count
-    file.write indexes.to_yaml
+    if !response.blank?
+      response = response.first
+      response = response["#{person.id}"]['ids']
+
+      indexes = YAML.load_file "dup_index.yml"
+      file = File.open("dup_index.yml", "w")
+      indexes[person.id]['count'] = response.count
+      file.write indexes.to_yaml
+    end
 
     ######## End ###############################################
 
