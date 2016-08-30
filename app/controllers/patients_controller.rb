@@ -1976,32 +1976,11 @@ class PatientsController < ApplicationController
 
   def merge
 
-    old_patient_id = params[:primary_patient]
-    new_patient_id = params[:secondary_patients]	rescue nil
-
-
-    old_patient = Patient.find old_patient_id
-    new_patient = Patient.find new_patient_id
-
-    raise "Old patient does not exist" unless old_patient
-    raise "New patient does not exist" unless new_patient
-
-    ActiveRecord::Base.transaction do
-
-      PatientService.merge_patients(old_patient, new_patient)
-
-      # void patient
-      patient = old_patient.person
-      patient.void("Merged with patient #{new_patient_id}")
-
-      # void person
-      person = old_patient.person
-      person.void("Merged with person #{new_patient_id}")
-
-
-
+    (params[:secondary_patients] || []).each do |new_patient_id|
+        Patient.merge(params[:primary_patient], new_patient_id)
     end
-    return
+
+    render :text => "Ok"
   end
 
   def duplicate_menu
@@ -2084,7 +2063,6 @@ class PatientsController < ApplicationController
 
   def merge_menu
     all = YAML.load_file "dup_index.yml"
-
     @duplicates = []
 
     all.each do |key, record|
@@ -2096,7 +2074,39 @@ class PatientsController < ApplicationController
   end
 
   def search
+    url_read = "http://#{CoreService.get_global_property_value('duplicates_check_url')}/read";
+    patient_ids = []
+    @duplicates = []
 
+    record = [{
+        "id" => params['id'],
+        "patient_id" => params["patient_id"],
+        "identifier" => params["identifier"],
+        "first_name" => params["first_name"],
+        "birthdate" => params["birthdate"],
+        "last_name" => params["last_name"],
+        "home_district" => params["home_district"],
+        "gender" => params["gender"]
+        }]
+
+    JSON.parse(RestClient.post(url_read, record.to_json, :content_type => "application/json",
+                               :accept => 'json')).each do |result|
+      patient_ids << result.keys.last
+    end
+
+    Patient.find_by_sql(["SELECT * FROM patient WHERE voided = 0 AND patient_id IN (?)", patient_ids]).each do |patient|
+      person = patient.person
+      @duplicates << {
+          'id' => patient.id,
+          'patient_id' => patient.id,
+          'first_name' => person.names.last.given_name,
+          'last_name' =>  person.names.last.family_name,
+          'identifier' => patient.national_id,
+          'gender' => person.gender,
+          'birthdate' => person.birthdate,
+          'home_district' => person.addresses.last.state_province
+      }
+    end
   end
 
   def search_all

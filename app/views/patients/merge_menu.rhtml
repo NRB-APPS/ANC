@@ -45,13 +45,13 @@
     <h2 style="text-align: center; color: #6281a7; margin-top: 3px; margin-bottom: 3px;">Possible Patient Duplicates</h2>
     <table id="stats2" style="margin-bottom: 8px;" cellpadding="5" width="90%">
       <tr style="color: #fff; background-color: #6281a7;">
-        <th style="width:2%">#</th>
-        <th style="width:22%">Patient Name</th>
-        <th style="width:16%">DOB</th>
-        <th style="width:16%">National ID</th>
-        <th style="width:16%">Date Created</th>
-        <th style="width:16%">Possible duplicates</th>
-        <th>&nbsp;</th>
+        <th  class="header" style="width:1%;padding: 3px;">#</th>
+        <th  class="header" style="width:22%">Patient Name</th>
+        <th class="header"  style="width:16%">DOB</th>
+        <th class="header"  style="width:16%">National ID</th>
+        <th  class="header" style="width:16%">Date Created</th>
+        <th  class="header" style="width:16%">Possible duplicates</th>
+        <th  class="header" >&nbsp;</th>
       </tr>
     </table>
     <div class="div_scroll">
@@ -59,7 +59,7 @@
 
             <% count = 1 %>
             <%  @duplicates.each do |duplicate| %>
-          <tr>
+          <tr  class="data" >
             <td style="width:2%"><%= count %></td>
             <td style="width:24%"><%= duplicate["first_name"] +" "+ duplicate["last_name"]%></td>
             <td style="width:16%"><%= duplicate["birthdate"]%></td>
@@ -95,4 +95,12 @@
   if ($("#stats").height() > height){
       $(".div_scroll").css({"height":height,"overflow-y":"scroll"});
     }
+
+   var headers = document.getElementsByClassName("header");
+   var data = document.getElementsByClassName("data")[0].getElementsByTagName("td");
+
+  for(var i = 0; i < headers.length; i ++){
+      jQuery(headers[i]).css("width", jQuery(data[i]).width());
+  }
+
 </script>

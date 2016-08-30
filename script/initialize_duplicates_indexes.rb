@@ -7,7 +7,7 @@ class DupInit
         "
                 SELECT person.person_id AS id, given_name first_name, family_name last_name, birthdate,
                   DATE(patient.date_created) date_created, patient.patient_id, person_address.address2 home_district,
-                  identifier
+                  identifier, gender
                 FROM patient
                   INNER JOIN person_name ON patient.patient_id = person_name.person_name_id
                   INNER JOIN person ON patient.patient_id = person.person_id
@@ -15,7 +15,6 @@ class DupInit
                     AND patient_identifier.identifier_type = #{npid_type}
                   INNER JOIN person_address ON person_address.person_id = patient.patient_id
                 WHERE patient.voided = 0 AND person.voided = 0 AND patient_identifier.voided = 0 AND person_address.voided = 0
-              LIMIT 500
               "
 
     all = ActiveRecord::Base.connection.select_all(query)
