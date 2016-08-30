@@ -3,14 +3,14 @@
     -moz-user-select:none;
   }
 
-  #stats {
+  #stats, #stats2 {
     width:96%;
     border:1px solid #eee;
     margin:auto;
     margin-top: 0px;
     background:white;
   }
-  #stats td, #stats th {
+  #stats2 td, #stats th {
     text-align:center;
     padding: 0.5%;
   }
@@ -21,14 +21,20 @@
     text-align: left;
     padding-left: 2%;
   }
+
 </style>
 
 
 
 <script type="text/javascript">
-  
-  function loadPatient(patient_id, lastname){
-    document.location.href = "../patients/search?patient_id=" + patient_id;
+
+  function __$(id){
+    return document.getElementById(id);
+  }
+
+  function loadPatient(patient_id){
+    __$(patient_id).submit();
+    //document.location.href = "../patients/search?patient_id=" + patient_id;
   }
 
 
@@ -39,12 +45,12 @@
     <h2 style="text-align: center; color: #6281a7; margin-top: 3px; margin-bottom: 3px;">Possible Patient Duplicates</h2>
     <table id="stats2" style="margin-bottom: 8px;" cellpadding="5" width="90%">
       <tr style="color: #fff; background-color: #6281a7;">
-        <th>#</th>
-        <th>Patient Name</th>
-        <th>DOB</th>
-        <th>National ID</th>
-        <th>Date Created</th>
-        <th>Possible duplicates</th>
+        <th style="width:2%">#</th>
+        <th style="width:22%">Patient Name</th>
+        <th style="width:16%">DOB</th>
+        <th style="width:16%">National ID</th>
+        <th style="width:16%">Date Created</th>
+        <th style="width:16%">Possible duplicates</th>
         <th>&nbsp;</th>
       </tr>
     </table>
@@ -54,14 +60,28 @@
             <% count = 1 %>
             <%  @duplicates.each do |duplicate| %>
           <tr>
-            <td><% count %></td>
-            <td><%= duplicate["first_name"] +" "+ duplicate["last_name"]%></td>
-            <td><%= duplicate["birthdate"]%></td>
-            <td><%= duplicate["identifier"]%></td>
-            <td><%= duplicate["date_created"]%></td>
-            <td><%= duplicate["count"]%></td>
+            <td style="width:2%"><%= count %></td>
+            <td style="width:24%"><%= duplicate["first_name"] +" "+ duplicate["last_name"]%></td>
+            <td style="width:16%"><%= duplicate["birthdate"]%></td>
+            <td style="width:16%"><%= duplicate["identifier"]%></td>
+            <td style="width:16%"><%= duplicate["date_created"]%></td>
+            <td style="width:16%"><%= duplicate["count"]%></td>
 
-            <td  onclick="loadPatient('<%= duplicate["patient_id"]%>', '<%= duplicate["last_name"]%>')" class="btn blue button" ><span>Load</span></td>
+            <td  onclick="
+                var form = document.createElement('form');
+                form.id = '<%= duplicate["patient_id"]%>';
+                form.action = '/patients/search?patient_id=<%= duplicate["patient_id"]%>';
+                document.body.appendChild(form);
+            <% duplicate.each do |k, v|%>
+                var input = document.createElement('input');
+                input.setAttribute('type', 'hidden');
+                input.setAttribute('name', '<%= k%>');
+                input.setAttribute('value', '<%= v%>');
+                form.appendChild(input);
+            <% end %>
+
+            loadPatient('<%= duplicate["patient_id"]%>');
+            " class="btn blue button" ><span>Load</span></td>
             <% count = count + 1 %>
             <% end %>
         </tr>
@@ -69,6 +89,7 @@
       </table>
     </div>
   </div>
+
 <script type="text/javascript">
   var height = 0.7 * window.innerHeight;
   if ($("#stats").height() > height){

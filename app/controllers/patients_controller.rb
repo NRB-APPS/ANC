@@ -1976,8 +1976,8 @@ class PatientsController < ApplicationController
 
   def merge
 
-    old_patient_id = params[:primary_pat]
-    new_patient_id = params[:person]["id"]	rescue nil
+    old_patient_id = params[:primary_patient]
+    new_patient_id = params[:secondary_patients]	rescue nil
 
 
     old_patient = Patient.find old_patient_id
@@ -2096,23 +2096,7 @@ class PatientsController < ApplicationController
   end
 
   def search
-         patient_id = params[:patient_id]
-         query = 
-              "
-                SELECT *
-                FROM patient 
-                INNER JOIN person_name 
-                ON patient.patient_id = person_name.person_name_id 
-                INNER JOIN person 
-                ON patient.patient_id = person.person_id
-                INNER JOIN patient_identifier
-                ON patient.patient_id = patient_identifier.patient_id
-                WHERE patient.patient_id = '#{patient_id}'
-                LIMIT 1
-              "
-    @duplicate_patient = ActiveRecord::Base.connection.select_all(query)
-    
-        
+
   end
 
   def search_all
