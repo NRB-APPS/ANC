@@ -5,7 +5,7 @@ class DupInit
     npid_type = PatientIdentifierType.find_by_name("National id").id
     query =
         "
-                SELECT person.person_id AS id, given_name first_name, family_name last_name, birthdate, identifier national_id,
+                SELECT person.person_id AS id, given_name first_name, family_name last_name, birthdate,
                   DATE(patient.date_created) date_created, patient.patient_id, person_address.address2 home_district
                 FROM patient
                   INNER JOIN person_name ON patient.patient_id = person_name.person_name_id
@@ -44,15 +44,26 @@ class DupInit
 
   def self.index_all_remote
     all = YAML.load_file "dup_index.yml"
+    url_read = "http://#{CoreService.get_global_property_value('duplicates_check_url')}/read"
+    url_write = "http://#{CoreService.get_global_property_value('duplicates_check_url')}/write"
+    file = File.open("dup_index.yml", "w")
 
     i = 0
     all.each do |uuid, record|
       record = [record]
-      url = "http://#{CoreService.get_global_property_value('duplicates_check_url')}/write"
-      response = RestClient.post(url, record.to_json, :content_type => "application/json", :accept => 'json')
+      RestClient.post(url_write, record.to_json, :content_type => "application/json", :accept => 'json')
+      r = JSON.parse(RestClient.post(url_read, record.to_json, :content_type => "application/json",
+                                             :accept => 'json'))# rescue []
+      next if r.length == 0
+
+      all[uuid]["count"] = r.count
+
       i += 1
-      puts i
+      puts "#{i.to_s} := #{r.count.to_s}"
     end
+
+    file.write all.to_yaml
+
   end
 
   def self.start
