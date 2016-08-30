@@ -68,8 +68,18 @@ class PeopleController < GenericPeopleController
     end
 
     ######## Push details for de-duplication indexes ###########
+      date_created = Date.today.to_s
+      patient_id = params[:person][:id]
+      first_name  = params[:person][:names][:given_name]
+      national_id = params[:person][:names][:given_name]
+      home_district = params[:person][:addresses][:state_province]
+      birth_year = params[:person][:birth_year]
+      birth_month = params[:person][:birth_month]
+      birth_day = params[:person][:birth_day]
+      birth_date = birth_year + "-" + birth_month + "-" + birth_day
+      last_name = params[:person][:names][:family_name]
 
-    record= [{'first_name' => 'FN'}]
+    record= [{'first_name' => first_name, 'last_name' => last_name, 'birth_date' => birth_date, 'date_created' => date_created, "national_id" => identifier, 'patient_id' => patient_id, 'home_district' => home_district}]
     url = "http://#{CoreService.get_global_property_value('duplicates_check_url')}/write" rescue nil
     response = RestClient.post(url, record.to_json, :content_type => "application/json", :accept => 'json') rescue nil
 
