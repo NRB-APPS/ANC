@@ -68,20 +68,25 @@ class PeopleController < GenericPeopleController
     end
 
     ######## Push details for de-duplication indexes ###########
-      date_created = Date.today.to_s
-      patient_id = params[:person][:id]
-      first_name  = params[:person][:names][:given_name]
-      national_id = params[:person][:names][:given_name]
-      home_district = params[:person][:addresses][:state_province]
-      birth_year = params[:person][:birth_year]
-      birth_month = params[:person][:birth_month]
-      birth_day = params[:person][:birth_day]
-      birth_date = birth_year + "-" + birth_month + "-" + birth_day
-      last_name = params[:person][:names][:family_name]
 
-    record= [{'first_name' => first_name, 'last_name' => last_name, 'birth_date' => birth_date, 'date_created' => date_created, "national_id" => identifier, 'patient_id' => patient_id, 'home_district' => home_district}]
-    url = "http://#{CoreService.get_global_property_value('duplicates_check_url')}/write" rescue nil
-    response = RestClient.post(url, record.to_json, :content_type => "application/json", :accept => 'json') rescue nil
+    record= [{'first_name' => person.names.last.given_name,
+              'last_name' => person.names.last.family_name,
+              'birth_date' => person.birthdate,
+              'date_created' => (session[:datetime].to_date rescue Date.today),
+              "national_id" => person.patient.national_id,
+              'id' => person.id,
+              'patient_id' => person.id,
+              'home_district' => person.addresses.last.state_province}]
+
+    url = "http://#{CoreService.get_global_property_value('duplicates_check_url')}" rescue nil
+    RestClient.post("#{url}/write", record.to_json, :content_type => "application/json", :accept => 'json') #rescue nil
+
+    response = RestClient.post("#{url}/read", record.to_json, :content_type => "application/json", :accept => 'json') #rescue nil
+
+    indexes = YAML.load_file "dup_index.yml"
+    file = File.open("dup_index.yml", "w")
+    indexes[person.id]['count'] = response.count
+    file.write indexes.to_yaml
 
     ######## End ###############################################
 
