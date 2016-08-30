@@ -2085,6 +2085,17 @@ class PatientsController < ApplicationController
   def merge_menu
 
 
+    url = "http://#{CoreService.get_global_property_value('duplicates_check_url')}/read"
+
+    all = YAML.load_file "dup_index.yml"
+    @duplicates = []
+    all.each do |key, record|
+      next if record['remote_count'] > 0 rescue true
+      @duplicates << record
+    end
+
+    raise @duplicates.inspect
+
     if !@possible_patient_duplicates.blank?
          record_num = @possible_patient_duplicates.count
          @possible_patient_duplicates.each do |possible_patient_duplicate|
