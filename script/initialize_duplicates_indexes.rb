@@ -55,6 +55,9 @@ class DupInit
       RestClient.post(url_write, record.to_json, :content_type => "application/json", :accept => 'json')
       r = JSON.parse(RestClient.post(url_read, record.to_json, :content_type => "application/json",
                                              :accept => 'json'))# rescue []
+      r = r.first
+      r = r["#{uuid}"]['ids']
+
       next if r.length == 0
 
       all[uuid]["count"] = r.count

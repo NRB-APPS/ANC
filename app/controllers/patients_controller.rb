@@ -2089,10 +2089,10 @@ class PatientsController < ApplicationController
         "gender" => params["gender"]
         }]
 
-    JSON.parse(RestClient.post(url_read, record.to_json, :content_type => "application/json",
-                               :accept => 'json')).each do |result|
-      patient_ids << result.keys.last
-    end
+    r = JSON.parse(RestClient.post(url_read, record.to_json, :content_type => "application/json",
+                               :accept => 'json')).each
+    r = r.first
+    patient_ids = r["#{params['patient_id']}"]['ids'].keys
 
     Patient.find_by_sql(["SELECT * FROM patient WHERE voided = 0 AND patient_id IN (?)", patient_ids]).each do |patient|
       person = patient.person

@@ -79,9 +79,11 @@ class PeopleController < GenericPeopleController
               'home_district' => person.addresses.last.state_province}]
 
     url = "http://#{CoreService.get_global_property_value('duplicates_check_url')}" rescue nil
-    RestClient.post("#{url}/write", record.to_json, :content_type => "application/json", :accept => 'json') #rescue nil
+    RestClient.post("#{url}/write", record.to_json, :content_type => "application/json", :accept => 'json') rescue nil
 
-    response = RestClient.post("#{url}/read", record.to_json, :content_type => "application/json", :accept => 'json') #rescue nil
+    response = RestClient.post("#{url}/read", record.to_json, :content_type => "application/json", :accept => 'json') rescue nil
+    response = response.first
+    response = response["#{person.id}"]['ids']
 
     indexes = YAML.load_file "dup_index.yml"
     file = File.open("dup_index.yml", "w")
