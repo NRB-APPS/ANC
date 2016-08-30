@@ -2083,44 +2083,15 @@ class PatientsController < ApplicationController
   end
 
   def merge_menu
-
-
-    url = "http://#{CoreService.get_global_property_value('duplicates_check_url')}/read"
-
     all = YAML.load_file "dup_index.yml"
+
     @duplicates = []
+
     all.each do |key, record|
-      next if record['remote_count'] > 0 rescue true
+      next if (record['count'] == 0 rescue true) # has to be > 1
       @duplicates << record
     end
 
-    raise @duplicates.inspect
-
-    if !@possible_patient_duplicates.blank?
-         record_num = @possible_patient_duplicates.count
-         @possible_patient_duplicates.each do |possible_patient_duplicate|
-            primary_record = possible_patient_duplicate
-            inner_query = 
-              "
-                SELECT given_name, family_name, birthdate, identifier, patient.date_created
-                FROM patient
-                INNER JOIN person_name 
-                ON patient.patient_id = person_name.person_name_id 
-                INNER JOIN person 
-                ON patient.patient_id = person.person_id
-                INNER JOIN patient_identifier
-                ON patient.patient_id = patient_identifier.patient_id
-                WHERE person_name.given_name LIKE '#{primary_record['given_name']}'
-                AND person_name.family_name LIKE '#{primary_record['family_name']}'
-                AND person.birthdate LIKE '#{primary_record['birthdate']}'
-              "
-            @dup = ActiveRecord::Base.connection.select_all(inner_query)
-            if @dup.count > 1
-               @duplicate_results = []
-               @duplicate_results.push(primary_record)
-            end
-          end
-    end
     render :layout => 'report'
   end
 
