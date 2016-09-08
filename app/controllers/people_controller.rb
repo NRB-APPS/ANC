@@ -367,7 +367,7 @@ class PeopleController < GenericPeopleController
   def verify_patient_npids
 
     if request.get? && params[:type].blank?
-      render :template => "/people/end_date" and return
+      render :template => "/people/start_and_end_date" and return
     else
 
       local_patients = []
@@ -384,19 +384,21 @@ class PeopleController < GenericPeopleController
                                 INNER JOIN obs o ON o.encounter_id = e.encounter_id AND o.concept_id = #{hiv_concept_id}
                                   AND ((o.value_coded = #{positive_concept_id}) OR (o.value_text = 'Positive'))
                                 INNER JOIN patient_identifier pi ON pi.patient_id = e.patient_id AND pi.identifier_type = 3
-                              WHERE e.voided = 0 AND DATE(e.encounter_datetime) <= ?", params[:end_date].to_date]).map(&:identifier).uniq
+                              WHERE e.voided = 0 AND DATE(e.encounter_datetime) <= ?", params[:end_date].to_date]).map(&:identifier).uniq 
+                              
+
 
       sql_arr = "'" + ([-1] + local_npids).join("', '") + "'"
       remote_npids = Bart2Connection::PatientProgram.find_by_sql(["SELECT pi.identifier FROM patient_program pg
                                 INNER JOIN patient_identifier pi ON pi.patient_id = pg.patient_id
                               WHERE pi.identifier IN (#{sql_arr}) AND pg.program_id = 1 AND DATE(pg.date_created) <= ?
-                              ",  params[:end_date].to_date]).map(&:identifier).uniq
+                              ",  params[:end_date].to_date]).map(&:identifier).uniq 
 
       local_art_status_npids = Encounter.find_by_sql(["SELECT pi.identifier FROM encounter e
                                 INNER JOIN obs o ON o.encounter_id = e.encounter_id AND o.concept_id = #{art_concept_id }
                                   AND ((o.value_coded = #{art_concept_value}) OR (o.value_text = 'Already on ART at another facility'))
                                 INNER JOIN patient_identifier pi ON pi.patient_id = e.patient_id AND pi.identifier_type = 3
-                              WHERE e.voided = 0 AND DATE(e.encounter_datetime) <= ?", params[:end_date].to_date]).map(&:identifier).uniq
+                              WHERE e.voided = 0 AND DATE(e.encounter_datetime) <= ?", params[:end_date].to_date]).map(&:identifier).uniq 
 
       identifiers = local_npids - (remote_npids + local_art_status_npids).uniq
 

@@ -4,7 +4,7 @@
   }
 
   #stats, #stats2 {
-    width:96%;
+    width:99%;
     border:1px solid #eee;
     margin:auto;
     margin-top: 0px;
@@ -21,6 +21,19 @@
     text-align: left;
     padding-left: 2%;
   }
+    th{
+        background-color: #6281a7;
+        border-radius: 1px;
+        color: white;
+        text-align: center;
+        font-size: 22.5px
+    }
+    td{
+        color: #242E35;
+    }
+    .header th{
+        padding: 10px;
+    }
 
 </style>
 
@@ -41,7 +54,6 @@
 </script>
 
   <div id="contentt">
-
     <h2 style="text-align: center; color: #6281a7; margin-top: 3px; margin-bottom: 3px;">Possible Patient Duplicates</h2>
     <table id="stats2" style="margin-bottom: 8px;" cellpadding="5" width="90%">
       <tr style="color: #fff; background-color: #6281a7;">
@@ -60,8 +72,8 @@
             <% count = 1 %>
             <%  @duplicates.each do |duplicate| %>
           <tr  class="data" >
-            <td style="width:2%"><%= count %></td>
-            <td style="width:24%"><%= duplicate["first_name"] +" "+ duplicate["last_name"]%></td>
+            <td style="width:1%"><%= count %></td>
+            <td style="width:22%"><%= duplicate["first_name"] +" "+ duplicate["last_name"]%></td>
             <td style="width:16%"><%= duplicate["birthdate"]%></td>
             <td style="width:16%"><%= duplicate["identifier"]%></td>
             <td style="width:16%"><%= duplicate["date_created"]%></td>
@@ -81,7 +93,7 @@
             <% end %>
 
             loadPatient('<%= duplicate["patient_id"]%>');
-            " class="btn blue button" ><span>Load</span></td>
+            " class="btn blue button" ><span>Load Patient</span></td>
             <% count = count + 1 %>
             <% end %>
         </tr>

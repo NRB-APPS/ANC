@@ -9,10 +9,6 @@
 </style>
 <form action="/patients/void_patients" method='post'>
 
-  <%= text_field_tag("start_date", nil, {:field_type => 'date', :helpText => 'Start date'}) %> <br>
-
-  <%= text_field_tag("end_date", nil, {:field_type => 'date', :helpText => 'End date'})%><br>
-
   <%= select_tag 'patient_category[]',
 	    options_for_select(@patient_categories, ''),
         :id => 'patient_category',

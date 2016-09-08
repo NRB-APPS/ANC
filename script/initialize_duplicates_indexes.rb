@@ -19,8 +19,8 @@ class DupInit
 
     all = ActiveRecord::Base.connection.select_all(query)
 
-    file = File.open("dup_index.yml", "w")
 
+    file = File.open("dup_index.yml", "w")
     if all.length > 0
 
         #used by node app to store duplicate  weighted values
@@ -29,6 +29,7 @@ class DupInit
         arr = {}
         all.each do |record|
 
+    
             uuid = record['id']
 
             arr[uuid] = {} if arr[uuid].blank?
@@ -36,7 +37,6 @@ class DupInit
               arr[uuid][key] = value
             end
         end
-
         file.write arr.to_yaml
         file.close
     end
@@ -55,8 +55,9 @@ class DupInit
       record = [record]
       RestClient.post(url_write, record.to_json, :content_type => "application/json", :accept => 'json')
       r = JSON.parse(RestClient.post(url_read, record.to_json, :content_type => "application/json",
-                                             :accept => 'json'))# rescue []
+                                             :accept => 'json')) rescue []
       r = r.first
+
       r = r["#{uuid}"]['ids']
 
       next if r.length == 0
@@ -65,6 +66,8 @@ class DupInit
 
       i += 1
       puts "#{i.to_s} := #{r.count.to_s}"
+      
+    file.write all.to_yaml
     end
 
     file.write all.to_yaml

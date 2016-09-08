@@ -1218,7 +1218,6 @@ class PatientsController < ApplicationController
     RestClient.post("#{url}/write", record.to_json, :content_type => "application/json", :accept => 'json') rescue nil
 
     response = RestClient.post("#{url}/read", record.to_json, :content_type => "application/json", :accept => 'json') rescue nil
-
     if !response.blank?
       response = response.first
       response = response["#{person.id}"]['ids']
@@ -2357,6 +2356,7 @@ EOF
         e.patient_id,
 		(SELECT COUNT(DISTINCT(DATE(encounter_datetime))) FROM encounter
 			WHERE patient_id = e.patient_id
+        AND voided = '0'
 				AND DATE(encounter_datetime) <= DATE(e.encounter_datetime)
 			) visit_no
         FROM encounter e WHERE Date(e.encounter_datetime) >= '#{@start_date}'
@@ -2450,8 +2450,7 @@ EOF
                                   WHERE #{conditions} AND person.voided = 0 AND person_name.voided = 0
                                   AND person.person_id NOT IN (#{ user_person_ids.join(', ')})
                                   AND DATE(person.date_created) BETWEEN ? AND ?
-                                  GROUP BY person.person_id
-                    ", params[:start_date].to_date, params[:end_date]]).map(&:person_id)
+                                  GROUP BY person.person_id ", params[:start_date].to_date, params[:end_date]]).map(&:person_id)
       end
 
       if params[:patient_category].include?("Male Clients")
@@ -2459,8 +2458,7 @@ EOF
                                   INNER JOIN patient ON person.person_id = patient.patient_id
                                   WHERE person.gender = 'M' AND person.voided = 0 AND patient.voided = 0
                                   AND person.person_id NOT IN (#{ user_person_ids.join(', ')})
-                                  AND DATE(person.date_created) BETWEEN ? AND ?
-                    ", params[:start_date].to_date, params[:end_date]]).map(&:person_id)
+                                  AND DATE(person.date_created) BETWEEN ? AND ? ", params[:start_date].to_date, params[:end_date]]).map(&:person_id)
       end
 
       if params[:patient_category].include?("Non-Pregnant Women")

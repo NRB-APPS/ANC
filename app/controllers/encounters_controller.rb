@@ -469,6 +469,7 @@ class EncountersController < ApplicationController
 
       
       session[:cleaning_params] = params
+      render :layout => 'report'
     end
 
     @start_date = params[:start_date] || "2000-01-01".to_date
