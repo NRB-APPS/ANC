@@ -500,16 +500,47 @@ class ReportsController < ApplicationController
     render :layout => "application"
   end
   def list_appointments
-          @start_date = params[:start_date]
-          @end_date = params[:end_date]
-          session[:appointment_start_date] = @start_date
-          session[:appointment_end_date] = @end_date
+
+          
+          year = session[:appointments_year] = params[:observations][0][:value_text]
+     
+          month = params[:observations][1][:value_text]
+          
+          
+          case month
+             when "January"
+                session[:appointments_month] = "01"
+              when "February"
+                session[:appointments_month] = "02"
+              when "March"
+                session[:appointments_month] = "03"
+              when "April"
+                session[:appointments_month] = "04"
+              when "May"
+                session[:appointments_month] = "05"
+              when "June"
+                session[:appointments_month] = "06"
+              when "July"
+                session[:appointments_month] = "07"
+              when "August"
+                session[:appointments_month] = "08"
+              when "September"
+                session[:appointments_month] = "09"
+              when "October"
+                session[:appointments_month] = "10"
+              when "November"
+                session[:appointments_month] = "11"
+              when "December"
+                session[:appointments_month] = "12"
+          end
+          @start_date = year + "-" + session[:appointments_month] + "-01"
+          @end_date = year + "-" + session[:appointments_month] + "-30"
           
   end
   def appointments_by_date
 
-          @start_date = session[:appointment_start_date]
-          @end_date = session[:appointment_end_date]
+         @appointments_month = session[:appointments_month]
+         @appointments_year = session[:appointments_year]
           
 
          query = "SELECT date(encounter_datetime), patient_id FROM encounter 
@@ -519,8 +550,8 @@ class ReportsController < ApplicationController
                   ON concept.concept_id = obs.concept_id
                   WHERE concept.concept_id = '5096'
                   AND obs.voided = '0'
-                  AND encounter.encounter_datetime >= '#{@start_date}'
-                  AND encounter.encounter_datetime <= '#{@end_date}'"
+                  AND MONTH(encounter.encounter_datetime) = '#{@appointments_month}'
+                  AND YEAR(encounter.encounter_datetime) = '#{@appointments_year}'"
           @appointment_result = ActiveRecord::Base.connection.select_all(query)
           @appointments = @appointment_result.group_by {|ap| ap["date(encounter_datetime)"] }
           @appointments = @appointments.map {|k,v| [k, v.length]}
