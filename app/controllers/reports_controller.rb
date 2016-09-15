@@ -499,29 +499,34 @@ class ReportsController < ApplicationController
   def select
     render :layout => "application"
   end
-
   def list_appointments
-
           @start_date = params[:start_date]
           @end_date = params[:end_date]
+          session[:appointment_start_date] = @start_date
+          session[:appointment_end_date] = @end_date
+          
+  end
+  def appointments_by_date
 
-          date = params[:start_date].to_date
-          encounter_type = EncounterType.find_by_name('APPOINTMENT')
-          concept_id = ConceptName.find_by_name('APPOINTMENT DATE').concept_id
-          count = Observation.count(:all,
-          :joins => "INNER JOIN encounter e USING(encounter_id)",:group => "value_datetime",
-          :conditions =>["concept_id = ? AND encounter_type = ? AND value_datetime >= ? AND value_datetime <= ?",
-          concept_id,encounter_type.id,date.strftime('%Y-%m-%d 00:00:00'),date.strftime('%Y-%m-%d 23:59:59')])
-          count = count.values unless count.blank?
-          count = '0' if count.blank?
+          @start_date = session[:appointment_start_date]
+          @end_date = session[:appointment_end_date]
+          
 
-           query = "SELECT * FROM encounter 
-                    INNER JOIN obs 
-                    ON obs.encounter_id = encounter.encounter_id
-                    INNER JOIN concept
-                    ON concept.concept_id = obs.concept_id
-                    WHERE concept.concept_id = '5096'"
-                  query = ActiveRecord::Base.connection.select_all(query)
+         query = "SELECT date(encounter_datetime), patient_id FROM encounter 
+                  INNER JOIN obs 
+                  ON obs.encounter_id = encounter.encounter_id
+                  INNER JOIN concept
+                  ON concept.concept_id = obs.concept_id
+                  WHERE concept.concept_id = '5096'
+                  AND obs.voided = '0'
+                  AND encounter.encounter_datetime >= '#{@start_date}'
+                  AND encounter.encounter_datetime <= '#{@end_date}'"
+          @appointment_result = ActiveRecord::Base.connection.select_all(query)
+          @appointments = @appointment_result.group_by {|ap| ap["date(encounter_datetime)"] }
+          @appointments = @appointments.map {|k,v| [k, v.length]}
+          @appointments = Hash[@appointments]
+          render :text => (@appointments.to_json)
+          #raise a.inspect
 
   end
 
