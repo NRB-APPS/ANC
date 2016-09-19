@@ -500,13 +500,10 @@ class ReportsController < ApplicationController
     render :layout => "application"
   end
   def list_appointments
-
-          
+          session[:clicked] = nil
           year = session[:appointments_year] = params[:observations][0][:value_text]
      
-          month = params[:observations][1][:value_text]
-          
-          
+          month = params[:observations][1][:value_text]          
           case month
              when "January"
                 session[:appointments_month] = "01"
@@ -535,14 +532,12 @@ class ReportsController < ApplicationController
           end
           @start_date = year + "-" + session[:appointments_month] + "-01"
           @end_date = year + "-" + session[:appointments_month] + "-30"
+          session[:clicked] = nil
           
   end
   def appointments_by_date
-
          @appointments_month = session[:appointments_month]
          @appointments_year = session[:appointments_year]
-          
-
          query = "SELECT date(encounter_datetime), patient_id FROM encounter 
                   INNER JOIN obs 
                   ON obs.encounter_id = encounter.encounter_id
@@ -558,10 +553,25 @@ class ReportsController < ApplicationController
           @appointments = Hash[@appointments]
           render :text => (@appointments.to_json)
           #raise a.inspect
-
   end
 
   def select_dates
+  end
+
+  def appointments_on_date 
+      @datetime = "2016-09-09"
+      query = "SELECT date(encounter_datetime), patient_id, given_name, family_name FROM encounter 
+                  INNER JOIN obs 
+                  ON obs.encounter_id = encounter.encounter_id
+                  INNER JOIN concept
+                  ON concept.concept_id = obs.concept_id
+                  INNER JOIN person_name
+                  ON person_name.person_name_id = obs.person_id
+                  WHERE concept.concept_id = '5096'
+                  AND obs.voided = '0'
+                  AND date(obs.obs_datetime) = '#{@datetime}'"
+        @appointment_result = ActiveRecord::Base.connection.select_all(query)
+        render :layout => 'report'
   end
 
 

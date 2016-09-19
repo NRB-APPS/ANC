@@ -70,16 +70,15 @@
         <script type="text/javascript">
             <!--
 
-             function loadAppointment(){ 
-                alert("loading");
+             function loadAppointments(){ 
+                jQuery('.day').click();
             }
 
              jQuery.ajax({
               url: '/reports/appointments_by_date?date=',
               type: "POST",
               success: function() {
-
-               jQuery('.day').click()
+                loadAppointments();
               },
             }); 
             var sel = {};
@@ -114,7 +113,7 @@
 
                     <input type='text' field_type='calendar' name='calender' id='calender' 
                            helptext='Appointments List' value="<%= @start_date %>" 
-                           startweekdate="<%= @start_date %>" endweekdate="<%= @end_date %>" ajaxCalendarUrl="/reports/appointments_by_date?date=" onClick="loadAppointment()"/>
+                           startweekdate="<%= @start_date %>" endweekdate="<%= @end_date %>" ajaxCalendarUrl="/reports/appointments_by_date?date=" onMouseDown="loadAppointment()"/>
 
                 </form>            
             </center>
