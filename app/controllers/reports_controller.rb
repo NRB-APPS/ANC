@@ -559,14 +559,18 @@ class ReportsController < ApplicationController
   end
 
   def appointments_on_date 
-      @datetime = "2016-09-09"
-      query = "SELECT date(encounter_datetime), patient_id, given_name, family_name FROM encounter 
+      @datetime = params[:date]
+      query = "SELECT date(encounter_datetime), identifier, given_name, family_name, birthdate FROM encounter 
                   INNER JOIN obs 
                   ON obs.encounter_id = encounter.encounter_id
                   INNER JOIN concept
                   ON concept.concept_id = obs.concept_id
                   INNER JOIN person_name
                   ON person_name.person_name_id = obs.person_id
+                  INNER JOIN patient_identifier
+                  ON patient_identifier.patient_id = person_name.person_name_id
+                  INNER JOIN person
+                  ON person.person_id = patient_identifier.patient_id
                   WHERE concept.concept_id = '5096'
                   AND obs.voided = '0'
                   AND date(obs.obs_datetime) = '#{@datetime}'"
