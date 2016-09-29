@@ -538,17 +538,14 @@ class ReportsController < ApplicationController
   def appointments_by_date
          @appointments_month = session[:appointments_month]
          @appointments_year = session[:appointments_year]
-         query = "SELECT date(encounter_datetime), patient_id FROM encounter 
-                  INNER JOIN obs 
-                  ON obs.encounter_id = encounter.encounter_id
-                  INNER JOIN concept
-                  ON concept.concept_id = obs.concept_id
-                  WHERE concept.concept_id = '5096'
-                  AND obs.voided = '0'
-                  AND MONTH(encounter.encounter_datetime) = '#{@appointments_month}'
-                  AND YEAR(encounter.encounter_datetime) = '#{@appointments_year}'"
+         concept_id = ConceptName.find_by_name("APPOINTMENT DATE").concept_id
+         query = "SELECT date(obs_datetime), person_id FROM obs 
+                  WHERE obs.concept_id = #{concept_id}
+                  AND obs.voided = 0
+                  AND MONTH(obs.obs_datetime) = '#{@appointments_month}'
+                  AND YEAR(obs.obs_datetime) = '#{@appointments_year}'"
           @appointment_result = ActiveRecord::Base.connection.select_all(query)
-          @appointments = @appointment_result.group_by {|ap| ap["date(encounter_datetime)"] }
+          @appointments = @appointment_result.group_by {|ap| ap["date(obs_datetime)"] }
           @appointments = @appointments.map {|k,v| [k, v.length]}
           @appointments = Hash[@appointments]
           render :text => (@appointments.to_json)
@@ -558,8 +555,10 @@ class ReportsController < ApplicationController
   def select_dates
   end
 
+
   def appointments_on_date 
       @datetime = params[:date]
+      concept_id = ConceptName.find_by_name("APPOINTMENT DATE").concept_id
       query = "SELECT date(encounter_datetime), identifier, given_name, family_name, birthdate FROM encounter 
                   INNER JOIN obs 
                   ON obs.encounter_id = encounter.encounter_id
@@ -571,7 +570,7 @@ class ReportsController < ApplicationController
                   ON patient_identifier.patient_id = person_name.person_name_id
                   INNER JOIN person
                   ON person.person_id = patient_identifier.patient_id
-                  WHERE concept.concept_id = '5096'
+                  WHERE concept.concept_id = '#{concept_id}'
                   AND obs.voided = '0'
                   AND date(obs.obs_datetime) = '#{@datetime}'"
         @appointment_result = ActiveRecord::Base.connection.select_all(query)
