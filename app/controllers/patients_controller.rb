@@ -2330,7 +2330,7 @@ EOF
       session[:cleaning_params] = params
     end
 
-    @start_date = params[:start_date] || "2000-01-01".to_date
+    @start_date = params[:start_date] || "1970-01-01".to_date
     @end_date = params[:end_date] || Date.today
 
     @incomplete_visits = []

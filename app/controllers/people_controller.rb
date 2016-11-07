@@ -378,7 +378,8 @@ class PeopleController < GenericPeopleController
       positive_concept_id = ConceptName.find_by_name("Positive").concept_id rescue -1
       art_concept_id = ConceptName.find_by_name("Reason For Exiting Care").concept_id
       art_concept_value = ConceptName.find_by_name("Already on ART at another facility").concept_id rescue -1
-
+      art_concept_value2 = ConceptName.find_by_name("PMTCT to be done in another room").concept_id rescue -1
+      art_concept_values = "#{art_concept_value}, #{art_concept_value2}"
 
       local_npids = Encounter.find_by_sql(["SELECT pi.identifier FROM encounter e
                                 INNER JOIN obs o ON o.encounter_id = e.encounter_id AND o.concept_id = #{hiv_concept_id}
@@ -396,7 +397,8 @@ class PeopleController < GenericPeopleController
 
       local_art_status_npids = Encounter.find_by_sql(["SELECT pi.identifier FROM encounter e
                                 INNER JOIN obs o ON o.encounter_id = e.encounter_id AND o.concept_id = #{art_concept_id }
-                                  AND ((o.value_coded = #{art_concept_value}) OR (o.value_text = 'Already on ART at another facility'))
+                                  AND ((o.value_coded IN (#{art_concept_values}))
+                                        OR (o.value_text IN ('Already on ART at another facility', 'PMTCT to be done in another room')))
                                 INNER JOIN patient_identifier pi ON pi.patient_id = e.patient_id AND pi.identifier_type = 3
                               WHERE e.voided = 0 AND DATE(e.encounter_datetime) BETWEEN ? AND ?",params[:start_date], params[:end_date].to_date]).map(&:identifier).uniq 
 

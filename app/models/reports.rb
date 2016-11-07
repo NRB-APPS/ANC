@@ -87,7 +87,7 @@ class Reports
 
     concept_ids = ["Reason for exiting care", "On ART"].collect{|c| ConceptName.find_by_name(c).concept_id}
     encounter_types = ["LAB RESULTS", "ART_FOLLOWUP"].collect{|t| EncounterType.find_by_name(t).id}
-    art_answers = ["Yes", "Already on ART at another facility"]
+    art_answers = ["Yes", "Already on ART at another facility", "PMTCT to be done in another room"]
     @extra_art_checks = Encounter.find_by_sql(["SELECT e.patient_id
                  FROM encounter e
             INNER JOIN obs o on o.encounter_id = e.encounter_id
