@@ -375,18 +375,23 @@ class PeopleController < GenericPeopleController
       session[:cleaning_params] = params
 
       hiv_concept_id = ConceptName.find_by_name("HIV Status").concept_id
+      on_art_concept_id = ConceptName.find_by_name("On ART").concept_id
       positive_concept_id = ConceptName.find_by_name("Positive").concept_id rescue -1
       art_concept_id = ConceptName.find_by_name("Reason For Exiting Care").concept_id
       art_concept_value = ConceptName.find_by_name("Already on ART at another facility").concept_id rescue -1
       art_concept_value2 = ConceptName.find_by_name("PMTCT to be done in another room").concept_id rescue -1
       art_concept_values = "#{art_concept_value}, #{art_concept_value2}"
-
-      local_npids = Encounter.find_by_sql(["SELECT pi.identifier FROM encounter e
-                                INNER JOIN obs o ON o.encounter_id = e.encounter_id AND o.concept_id = #{hiv_concept_id}
+      
+      first_local_npids = Encounter.find_by_sql(["SELECT pi.identifier FROM encounter e
+                                INNER JOIN obs o ON o.encounter_id = e.encounter_id AND o.concept_id IN (#{hiv_concept_id}, #{on_art_concept_id})
                                   AND ((o.value_coded = #{positive_concept_id}) OR (o.value_text = 'Positive'))
                                 INNER JOIN patient_identifier pi ON pi.patient_id = e.patient_id AND pi.identifier_type = 3
                               WHERE e.voided = 0 AND DATE(e.encounter_datetime) BETWEEN ? AND ?",params[:start_date], params[:end_date].to_date]).map(&:identifier).uniq 
-                              
+                            
+      local_npids = Encounter.find_by_sql(["SELECT pi.identifier FROM encounter e
+                                INNER JOIN obs o ON o.encounter_id = e.encounter_id AND o.concept_id NOT IN (7010, 703, 664)
+                                INNER JOIN patient_identifier pi ON pi.patient_id = e.patient_id AND pi.identifier_type = 3
+                                WHERE e.voided = 0 AND  o.value_text NOT IN ('Positive', 'Negative')  AND DATE(e.encounter_datetime) BETWEEN ? AND ?",params[:start_date], params[:end_date].to_date]).map(&:identifier).uniq 
 
 
       sql_arr = "'" + ([-1] + local_npids).join("', '") + "'"
@@ -402,6 +407,7 @@ class PeopleController < GenericPeopleController
                                 INNER JOIN patient_identifier pi ON pi.patient_id = e.patient_id AND pi.identifier_type = 3
                               WHERE e.voided = 0 AND DATE(e.encounter_datetime) BETWEEN ? AND ?",params[:start_date], params[:end_date].to_date]).map(&:identifier).uniq 
 
+      
       identifiers = local_npids - (remote_npids + local_art_status_npids).uniq
 
       sql_arr = "'" + ([-1] + identifiers).join("', '") + "'"

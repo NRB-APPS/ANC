@@ -24,7 +24,6 @@ class PatientsController < ApplicationController
     @alert_for_hiv_test = false
     last_known_hiv_test = Observation.find_last_by_concept_id(
       ConceptName.find_by_name("HIV STATUS").concept_id)
-
     @alert_for_hiv_test = true if ["unknown", "old_negative"].include?(
       @patient.resent_hiv_status?(session_date)) && !last_known_hiv_test.blank? &&
       last_known_hiv_test.obs_datetime.to_date < session_date
