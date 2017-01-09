@@ -2334,6 +2334,7 @@ EOF
 
     @incomplete_visits = []
 
+   
     if params['incomplete_first_visit'].class.to_s == "String"
         params['incomplete_first_visit'] = params['incomplete_first_visit'].split("|")
         params['incomplete_next_visit'] = params['incomplete_next_visit'].split("|")
@@ -2347,18 +2348,19 @@ EOF
     all_visits = first_visit.concat next_visits
     all_visits = all_visits.uniq
     
-
+    ####### added "Date(e.encounter_datetime) <= '#{@end_date}'AND voided = '0'" to Query 05-Jan-2017 20:44###
     query = "
       SELECT DATE(encounter_datetime) visit_date,
         GROUP_CONCAT(DISTINCT(e.encounter_type)) AS et,
         e.patient_id,
 		(SELECT COUNT(DISTINCT(DATE(encounter_datetime))) FROM encounter
 			WHERE patient_id = e.patient_id
-        AND voided = '0'
+        AND voided = 0
 				AND DATE(encounter_datetime) <= DATE(e.encounter_datetime)
 			) visit_no
         FROM encounter e WHERE Date(e.encounter_datetime) >= '#{@start_date}'
         AND Date(e.encounter_datetime) <= '#{@end_date}'
+        AND voided = 0 
         GROUP BY e.patient_id, visit_date
       "
     visits = ActiveRecord::Base.connection.select_all(query)    

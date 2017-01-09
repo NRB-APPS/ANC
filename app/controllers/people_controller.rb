@@ -382,18 +382,12 @@ class PeopleController < GenericPeopleController
       art_concept_value2 = ConceptName.find_by_name("PMTCT to be done in another room").concept_id rescue -1
       art_concept_values = "#{art_concept_value}, #{art_concept_value2}"
       
-      first_local_npids = Encounter.find_by_sql(["SELECT pi.identifier FROM encounter e
-                                INNER JOIN obs o ON o.encounter_id = e.encounter_id AND o.concept_id IN (#{hiv_concept_id}, #{on_art_concept_id})
+      local_npids = Encounter.find_by_sql(["SELECT pi.identifier FROM encounter e
+                                INNER JOIN obs o ON o.encounter_id = e.encounter_id AND o.concept_id = #{hiv_concept_id}
                                   AND ((o.value_coded = #{positive_concept_id}) OR (o.value_text = 'Positive'))
                                 INNER JOIN patient_identifier pi ON pi.patient_id = e.patient_id AND pi.identifier_type = 3
                               WHERE e.voided = 0 AND DATE(e.encounter_datetime) BETWEEN ? AND ?",params[:start_date], params[:end_date].to_date]).map(&:identifier).uniq 
-                            
-      local_npids = Encounter.find_by_sql(["SELECT pi.identifier FROM encounter e
-                                INNER JOIN obs o ON o.encounter_id = e.encounter_id AND o.concept_id NOT IN (7010, 703, 664)
-                                INNER JOIN patient_identifier pi ON pi.patient_id = e.patient_id AND pi.identifier_type = 3
-                                WHERE e.voided = 0 AND  o.value_text NOT IN ('Positive', 'Negative')  AND DATE(e.encounter_datetime) BETWEEN ? AND ?",params[:start_date], params[:end_date].to_date]).map(&:identifier).uniq 
-
-
+                       
       sql_arr = "'" + ([-1] + local_npids).join("', '") + "'"
       remote_npids = Bart2Connection::PatientProgram.find_by_sql(["SELECT pi.identifier FROM patient_program pg
                                 INNER JOIN patient_identifier pi ON pi.patient_id = pg.patient_id
@@ -408,7 +402,14 @@ class PeopleController < GenericPeopleController
                               WHERE e.voided = 0 AND DATE(e.encounter_datetime) BETWEEN ? AND ?",params[:start_date], params[:end_date].to_date]).map(&:identifier).uniq 
 
       
-      identifiers = local_npids - (remote_npids + local_art_status_npids).uniq
+      on_art_question = Encounter.find_by_sql(["SELECT pi.identifier FROM encounter e
+                                INNER JOIN obs o ON o.encounter_id = e.encounter_id AND o.concept_id = #{on_art_concept_id }                                
+                                INNER JOIN patient_identifier pi ON pi.patient_id = e.patient_id AND pi.identifier_type = 3
+                              WHERE e.voided = 0 AND DATE(e.encounter_datetime) BETWEEN ? AND ?",
+                              params[:start_date], params[:end_date].to_date]).map(&:identifier).uniq 
+        
+
+      identifiers = local_npids - (remote_npids + local_art_status_npids + on_art_question).uniq
 
       sql_arr = "'" + ([-1] + identifiers).join("', '") + "'"
 
