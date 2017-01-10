@@ -407,10 +407,9 @@ class PeopleController < GenericPeopleController
                                 INNER JOIN patient_identifier pi ON pi.patient_id = e.patient_id AND pi.identifier_type = 3
                               WHERE e.voided = 0 AND DATE(e.encounter_datetime) BETWEEN ? AND ?",
                               params[:start_date], params[:end_date].to_date]).map(&:identifier).uniq 
-        
+       
 
       identifiers = local_npids - (remote_npids + local_art_status_npids + on_art_question).uniq
-
       sql_arr = "'" + ([-1] + identifiers).join("', '") + "'"
 
       @people = []
