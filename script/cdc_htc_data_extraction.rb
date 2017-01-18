@@ -12,7 +12,7 @@ def start
   puts "Clients who receive their results........................................................................."
   total_clients_recieved_results = clients_received_results(start_date, end_date)
   receive_results_less_1 = clients_received_results(start_date, end_date, 0, 1)
-  receive_results_between_1_and_9 = clients_received_results(start_date, end_date, 1, 9)
+  receive_results_between_1_and_9 = clients_received_results(start_date, end_date, 2, 9)
   receive_results_between_10_14_female = clients_received_results(start_date, end_date, 10, 14, 'Female')
   receive_results_between_10_14_male = clients_received_results(start_date, end_date, 10, 14, 'Male')
   receive_results_between_15_19_female = clients_received_results(start_date, end_date, 15, 19, 'Female')
@@ -31,7 +31,7 @@ def start
   puts "Clients with positive results........................................................................."
   total_clients_with_positive_results = clients_with_positive_results(start_date, end_date)
   clients_with_positive_results_less_1 = clients_with_positive_results(start_date, end_date, 0, 1)
-  clients_with_positive_results_between_1_and_9 = clients_with_positive_results(start_date, end_date, 1, 9)
+  clients_with_positive_results_between_1_and_9 = clients_with_positive_results(start_date, end_date, 2, 9)
   clients_with_positive_results_between_10_14_female = clients_with_positive_results(start_date, end_date, 10, 14, 'Female')
   clients_with_positive_results_between_10_14_male = clients_with_positive_results(start_date, end_date, 10, 14, 'Male')
   clients_with_positive_results_between_15_19_female = clients_with_positive_results(start_date, end_date, 15, 19, 'Female')
