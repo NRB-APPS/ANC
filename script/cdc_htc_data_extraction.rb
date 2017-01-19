@@ -5,7 +5,7 @@ CDCDataExtraction = 1
 def start
   facility_name = GlobalProperty.find_by_sql("select property_value from global_property where property = 'current_health_center_name'").map(&:property_value).first
 
-  start_date = "2016-01-01".to_date
+  start_date = "2016-10-01".to_date
   end_date = "2016-12-31".to_date
   puts "CDC HTC data extraction............................................................................................"
 
