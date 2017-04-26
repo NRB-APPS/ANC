@@ -272,10 +272,19 @@ class ReportsController < ApplicationController
 
       @first_visit_new_negative = report.first_visit_new_negative
       @first_visit_new_positive = report.first_visit_new_positive
-      @first_visit_hiv_not_done = @observations_total - (@first_visit_new_positive +
-          @first_visit_new_negative + @first_visit_hiv_test_result_prev_positive + @first_visit_hiv_test_result_prev_negative)
+      @first_visit_hiv_not_done = report.first_visit_hiv_not_done
+      @final_visit_hiv_test_result_prev_negative = report.final_visit_hiv_test_result_prev_negative
+      @final_visit_hiv_test_result_prev_positive = report.final_visit_hiv_test_result_prev_positive
+      @final_visit_new_negative = report.final_visit_new_negative
+      @final_visit_new_positive = report.final_visit_new_positive
+      @final_visit_hiv_not_done = report.final_visit_hiv_not_done
+    #@observations_total - (@first_visit_new_positive +
+          #@first_visit_new_negative + @first_visit_hiv_test_result_prev_positive + @first_visit_hiv_test_result_prev_negative)
 
       @total_first_visit_hiv_positive = (@first_visit_hiv_test_result_prev_positive + @first_visit_new_positive).delete_if{|p| p.blank?}
+
+      @total_final_visit_hiv_positive = (@final_visit_hiv_test_result_prev_positive + @final_visit_new_positive).delete_if{|p| p.blank?}
+
       @total_hiv_positive = @total_first_visit_hiv_positive
       @first_visit_not_on_art = report.first_visit_not_on_art
       @first_visit_on_art_zero_to_27 = report.first_visit_on_art_zero_to_27
@@ -285,11 +294,12 @@ class ReportsController < ApplicationController
         ( @first_visit_on_art_zero_to_27 +  @first_visit_on_art_28_plus + @first_visit_on_art_before)).uniq
     #>>>>>>>>>>>>>>>>>>>>>>>>NEW ADDITIONS END<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     @nvp_baby__1 = report.nvp_baby__1
-    @no_nvp_baby__1 = (@total_first_visit_hiv_positive - @nvp_baby__1)
+    @no_nvp_baby__1 = (@total_final_visit_hiv_positive - @nvp_baby__1)
     @on_cpt__1 = report.on_cpt__1
-    @no_cpt__1 = (@total_first_visit_hiv_positive - @on_cpt__1)
+    @no_cpt__1 = (@total_final_visit_hiv_positive - @on_cpt__1)
 
     #filter for cohort validation rules
+=begin
     vars = ValidationRule.rules_xy
 
     @failures = []
@@ -308,7 +318,7 @@ class ReportsController < ApplicationController
         end
       end
     end
-
+=end
     render :layout => false
   end
 
@@ -476,6 +486,9 @@ class ReportsController < ApplicationController
       @first_visit_hiv_test_result_prev_negative = report.first_visit_hiv_test_result_prev_negative
       @first_visit_hiv_test_result_prev_positive = report.first_visit_hiv_test_result_prev_positive
 
+      @final_visit_hiv_test_result_prev_negative = report.final_visit_hiv_test_result_prev_negative
+
+
       @first_visit_new_negative = report.first_visit_new_negative
       @first_visit_new_positive = report.first_visit_new_positive
       @first_visit_hiv_not_done = report.first_visit_hiv_not_done
@@ -489,7 +502,7 @@ class ReportsController < ApplicationController
 
     #>>>>>>>>>>>>>>>>>>>>>>>>NEW ADDITIONS END<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     @nvp_baby__1 = report.nvp_baby__1
-    @no_nvp_baby__1 = (@total_first_visit_hiv_positive - @nvp_baby__1)
+    @no_nvp_baby__1 = (@total_final_visit_hiv_positive - @nvp_baby__1)
     @on_cpt__1 = report.on_cpt__1
     @no_cpt__1 = (@total_first_visit_hiv_positive - @on_cpt__1)
     #raise @fansida__sp___number_of_tablets_given_more_than_2.to_yaml

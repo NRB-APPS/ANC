@@ -83,9 +83,9 @@
     </style>
   </head>
   <body>
-  <% if @failures.length > 0 %>
+  <% #if @failures.length > 0 %>
       <table style="width: 100%;" id="consistency-section"></table>
-  <% end %>
+  <% #end %>
 
   <div id="contentt">
 
@@ -882,14 +882,14 @@
                                 18
                               </td>
                               <td style="border-top: 1px solid #999; border-left: 1px solid #999; width: 60%;">
-                                <form id="hiv_test_result_prev_neg" method="post" action="decompose">
-                                  <input type="hidden" value="<%= @first_visit_hiv_test_result_prev_negative.join(",") %>" name="patients" />
+                                <form id="hiv_final_test_result_prev_neg" method="post" action="decompose">
+                                  <input type="hidden" value="<%= @final_visit_hiv_test_result_prev_negative.join(",") %>" name="patients" />
                                   Prev. Negative
                                 </form>
                               </td>
                               <td class="valueCell">
-                                <a href="javascript:document.getElementById('hiv_test_result_prev_neg').submit()">
-                                  <%= @first_visit_hiv_test_result_prev_negative.length %>
+                                <a href="javascript:document.getElementById('hiv_final_test_result_prev_neg').submit()">
+                                  <%= @final_visit_hiv_test_result_prev_negative.length %>
                                 </a>
                               </td>
                             </tr>
@@ -898,14 +898,14 @@
                                 19
                               </td>
                               <td style="border-left: 1px solid #999;">
-                                <form id="hiv_test_result_prev_pos" method="post" action="decompose">
-                                  <input type="hidden" value="<%= @first_visit_hiv_test_result_prev_positive.join(",") %>" name="patients" />
+                                <form id="hiv_final_test_result_prev_pos" method="post" action="decompose">
+                                  <input type="hidden" value="<%= @final_visit_hiv_test_result_prev_positive.join(",") %>" name="patients" />
                                   Prev. Positive
                                 </form>
                               </td>
                               <td class="valueCell" style="border-top: 0px;">
-                                <a href="javascript:document.getElementById('hiv_test_result_prev_pos').submit()">
-                                  <%= @first_visit_hiv_test_result_prev_positive.length %>
+                                <a href="javascript:document.getElementById('hiv_final_test_result_prev_pos').submit()">
+                                  <%= @final_visit_hiv_test_result_prev_positive.length %>
                                 </a>
                               </td>
                             </tr>
@@ -914,14 +914,14 @@
                                 20
                               </td>
                               <td style="border-left: 1px solid #999; width: 60%;">
-                                <form id="hiv_test_result_neg" method="post" action="decompose">
-                                  <input type="hidden" value="<%= @first_visit_new_negative.join(",") %>" name="patients" />
+                                <form id="hiv_final_test_result_neg" method="post" action="decompose">
+                                  <input type="hidden" value="<%= @final_visit_new_negative.join(",") %>" name="patients" />
                                   New Negative
                                 </form>
                               </td>
                               <td class="valueCell" style="border-top: 0px;">
-                                <a href="javascript:document.getElementById('hiv_test_result_neg').submit()">
-                                  <%= @first_visit_new_negative.length %>
+                                <a href="javascript:document.getElementById('hiv_final_test_result_neg').submit()">
+                                  <%= @final_visit_new_negative.length %>
                                 </a>
                               </td>
                             </tr>
@@ -936,14 +936,14 @@
                                 21
                               </td>
                               <td style="border-left: 1px solid #999;">
-                                <form id="hiv_test_result_pos" method="post" action="decompose">
-                                  <input type="hidden" value="<%= @first_visit_new_positive.join(",") %>" name="patients" />
+                                <form id="hiv_final_test_result_pos" method="post" action="decompose">
+                                  <input type="hidden" value="<%= @final_visit_new_positive.join(",") %>" name="patients" />
                                   New Positive
                                 </form>
                               </td>
                               <td  class="valueCell">
-                                <a href="javascript:document.getElementById('hiv_test_result_pos').submit()">
-                                  <%= @first_visit_new_positive.length %>
+                                <a href="javascript:document.getElementById('hiv_final_test_result_pos').submit()">
+                                  <%= @final_visit_new_positive.length %>
                                 </a>
                               </td>
                             </tr>
@@ -953,28 +953,28 @@
                                 22
                               </td>
                               <td style="border-left: 1px solid #999; border-bottom: 1px solid #999;">
-                                <form id="hiv_test_result_unk" method="post" action="decompose">
-                                  <input type="hidden" value="<%= @first_visit_hiv_not_done.join(",") %>" name="patients" />
+                                <form id="hiv_final_test_result_unk" method="post" action="decompose">
+                                  <input type="hidden" value="<%= @final_visit_hiv_not_done.join(",") %>" name="patients" />
                                   Not Done
                                 </form>
                               </td>
                               <td  class="valueCell" style="border-top: 0px;">
-                                <a href="javascript:document.getElementById('hiv_test_result_unk').submit()">
-                                  <%= @first_visit_hiv_not_done.length %>
+                                <a href="javascript:document.getElementById('hiv_final_test_result_unk').submit()">
+                                  <%= @final_visit_hiv_not_done.length %>
                                 </a>
                               </td>
                             </tr>
                             <tr>
                               <td></td>
                               <td style="font-style:italic;">
-                                <form id="total_hiv_positive" method="post" action="decompose">
-                                  <input type="hidden" value="<%= @total_first_visit_hiv_positive.join(",") %>" name="patients" />
+                                <form id="total_final_hiv_positive" method="post" action="decompose">
+                                  <input type="hidden" value="<%= @total_final_visit_hiv_positive.join(",") %>" name="patients" />
                                   TotalHIV+ (19+21)
                                 </form>
                               </td>
                               <td  class="valueCell" style="border-top: 0px;">
-                                <a href="javascript:document.getElementById('total_hiv_positive').submit()">
-                                  <%= @total_first_visit_hiv_positive.length %>
+                                <a href="javascript:document.getElementById('total_final_hiv_positive').submit()">
+                                  <%= @total_final_visit_hiv_positive.length %>
                                 </a>
                               </td>
                             </tr>
