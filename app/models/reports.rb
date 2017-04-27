@@ -44,7 +44,7 @@ class Reports
     @lmp = "(SELECT (max_patient_lmp(encounter.patient_id, '#{e_date.to_s}', '#{min_date.to_s}')))"
 
     @monthlylmp = "(select DATE(MAX(lmp)) from last_menstraul_period_date where person_id in (#{@monthlypatients})"+
-      "and obs_datetime between #{@today.to_date.beginning_of_month} and #{@today.to_date.end_of_month}"
+      "and obs_datetime between #{@today.to_date.beginning_of_month} and #{@today.to_date.end_of_month})"
 
     lmp_concept = ConceptName.find_by_name("DATE OF LAST MENSTRUAL PERIOD").concept_id
 
@@ -118,6 +118,20 @@ class Reports
               encounter_types, concept_ids,
               (@startdate.to_date + @preg_range), art_answers]
            ).map(&:patient_id) rescue []
+
+    @extra_art_checks_for_new_pats = Encounter.find_by_sql(['SELECT e.patient_id
+                  FROM encounter e
+                  INNER JOIN obs o on o.encounter_id = e.encounter_id
+                  WHERE e.voided = 0 AND
+                  e.patient_id IN (?) AND
+                  e.encounter_type IN (?) AND o.concept_id IN (?) AND
+                  DATE(e.encounter_datetime) < ?
+                  AND COALESCE((SELECT name FROM concept_name WHERE concept_id = o.value_coded LIMIT 1), o.value_text) IN (?)
+                  ',
+                                               ([0] + @monthlypatients),
+                                               encounter_types, concept_ids,
+                                               @today.to_date.beginning_of_month, art_answers]
+    ).map(&:patient_id) rescue []
   end
 
   def registrations(start_dt, end_dt)
@@ -920,7 +934,7 @@ class Reports
   def first_visit_not_on_art
     first_visit_no_art =  @first_visit_no_art.split(",").collect { |id|
       PatientIdentifier.find_by_identifier(id).patient_id }.uniq rescue []
-    return (first_visit_no_art -  @extra_art_checks)
+    return (first_visit_no_art -  @extra_art_checks_for_new_pats)
   end
 
   def on_art_before
@@ -932,7 +946,7 @@ class Reports
   def first_visit_on_art_before
     first_visit_on_art = @first_visit_on_art_before.split(",").collect { |id|
       PatientIdentifier.find_by_identifier(id).patient_id }.uniq rescue []
-    return ( @extra_art_checks + first_visit_on_art).uniq
+    return ( @extra_art_checks_for_new_pats + first_visit_on_art).uniq
   end
 
   def on_art_zero_to_27
@@ -967,8 +981,8 @@ class Reports
 			JOIN patient_identifier p ON p.patient_id = o.person_id
       JOIN encounter ON o.encounter_id = encounter.encounter_id
 			WHERE o.concept_id = (SELECT concept_id FROM concept_name WHERE name = 'LAST MENSTRUAL PERIOD')
-			AND p.patient_id IN (?) AND DATE(o.obs_datetime) BETWEEN #{@lmp} AND ?",
-                                      @first_visit_positive_patients,  (@startdate.to_date + @preg_range)]).collect { |ob|
+			AND p.patient_id IN (?) AND DATE(o.obs_datetime) BETWEEN #{@monthlylmp} AND ?",
+                                      @first_visit_positive_patients,  @today.to_date.beginning_of_month]).collect { |ob|
       ident = ob.identifier
       if (!ob.value_datetime.blank? && @bart_patients_first_visit["#{ident}"])
         start_date = @bart_patients_first_visit["#{ident}"].to_date
@@ -982,7 +996,7 @@ class Reports
     }# rescue []
 
     remote = [] if remote.to_s.blank?
-    return (remote - @extra_art_checks)
+    return (remote - @extra_art_checks_for_new_pats)
   end
 
   def on_art_28_plus
@@ -1015,8 +1029,8 @@ class Reports
 			JOIN patient_identifier p ON p.patient_id = o.person_id
       JOIN encounter ON o.encounter_id = encounter.encounter_id
 			WHERE o.concept_id = (SELECT concept_id FROM concept_name WHERE name = 'LAST MENSTRUAL PERIOD')
-			AND p.patient_id IN (?) AND DATE(o.obs_datetime) BETWEEN #{@lmp} AND ?",
-                                        @first_visit_positive_patients, (@startdate.to_date + @preg_range)]).each { |ob|
+			AND p.patient_id IN (?) AND DATE(o.obs_datetime) BETWEEN #{@monthlylmp} AND ?",
+                                        @first_visit_positive_patients, @today.to_date.beginning_of_month]).each { |ob|
       ident = ob.identifier
       if (!ob.value_datetime.blank? && @bart_patients_first_visit["#{ident}"])
         start_date = @bart_patients_first_visit["#{ident}"].to_date
@@ -1030,7 +1044,7 @@ class Reports
     } rescue []
 
     remote = [] if remote.to_s.blank?
-    return (remote -  @extra_art_checks)
+    return (remote -  @extra_art_checks_for_new_pats)
 
   end
 
@@ -1053,33 +1067,7 @@ class Reports
       PatientIdentifier.find_by_identifier(id).patient_id }.uniq rescue []
     return ( @extra_art_checks + final_visit_on_art).uniq
   end
-=begin
-  def final_on_art_zero_to_27
 
-    remote = []
-    Observation.find_by_sql(["SELECT p.identifier, o.value_datetime, o.person_id FROM obs o
-			JOIN patient_identifier p ON p.patient_id = o.person_id
-      JOIN encounter ON o.encounter_id = encounter.encounter_id
-			WHERE o.concept_id = (SELECT concept_id FROM concept_name WHERE name = 'LAST MENSTRUAL PERIOD')
-			AND p.patient_id IN (?) AND DATE(o.obs_datetime) BETWEEN #{@lmp} AND ?",
-                             @positive_patients,  ((@startdate.to_date + @preg_range) - 1.day)]).collect { |ob|
-      ident = ob.identifier
-      if (!ob.value_datetime.blank? && @bart_patients["#{ident}"])
-        start_date = @bart_patients["#{ident}"].to_date
-        lmp = ob.value_datetime.to_date
-        if  ((start_date >= lmp) && (start_date < (lmp + 28.weeks)))
-          unless remote.include?(ob.person_id)
-            remote << ob.person_id
-          end
-        end
-      end
-    }# rescue []
-
-    remote = [] if remote.to_s.blank?
-    return (remote -  @extra_art_checks)
-
-  end
-=end
   def final_visit_on_art_zero_to_27
     remote = []
     Observation.find_by_sql(["SELECT p.identifier, o.value_datetime, o.person_id FROM obs o
@@ -1103,31 +1091,7 @@ class Reports
     remote = [] if remote.to_s.blank?
     return (remote - @extra_art_checks)
   end
-=begin
-  def final_on_art_28_plus
-    remote = []
-    Observation.find_by_sql(["SELECT p.identifier, o.value_datetime, o.person_id FROM obs o
-			JOIN patient_identifier p ON p.patient_id = o.person_id
-      JOIN encounter ON o.encounter_id = encounter.encounter_id
-			WHERE o.concept_id = (SELECT concept_id FROM concept_name WHERE name = 'LAST MENSTRUAL PERIOD')
-			AND p.patient_id IN (?) AND DATE(o.obs_datetime) BETWEEN #{@lmp} AND ?",
-                             @positive_patients, (@startdate.to_date + @preg_range)]).each { |ob|
-      ident = ob.identifier
-      if (!ob.value_datetime.blank? && @bart_patients["#{ident}"])
-        start_date = @bart_patients["#{ident}"].to_date
-        lmp = ob.value_datetime.to_date
-        if  (start_date >= (lmp + 28.weeks))
-          unless remote.include?(ob.person_id)
-            remote << ob.person_id
-          end
-        end
-      end
-    } rescue []
 
-    remote = [] if remote.to_s.blank?
-    return (remote -  @extra_art_checks)
-  end
-=end
   def final_visit_on_art_28_plus
     remote = []
     Observation.find_by_sql(["SELECT p.identifier, o.value_datetime, o.person_id FROM obs o
@@ -1260,8 +1224,8 @@ class Reports
         date = Observation.find_by_sql(["SELECT value_datetime FROM obs
                                         JOIN encounter ON obs.encounter_id = encounter.encounter_id
                                         WHERE person_id = ?
-                                        AND DATE(obs_datetime) BETWEEN #{@lmp} AND ? AND concept_id = ?",
-                                       patient_id,  (@startdate.to_date + @preg_range),
+                                        AND DATE(obs_datetime) BETWEEN #{@monthlylmp} AND ? AND concept_id = ?",
+                                       patient_id,  (@today.to_date.beginning_of_month),
                                        ConceptName.find_by_name("DATE OF LAST MENSTRUAL PERIOD").concept_id]).first.value_datetime.strftime("%Y-%m-%d") rescue nil
 
         value = "" + id + "|" + date if !date.nil?
@@ -1272,8 +1236,8 @@ class Reports
 
     paramz = Hash.new
     paramz["ids"] = patient_ids
-    paramz["start_date"] = @startdate.to_date
-    paramz["end_date"] = @startdate.to_date + @preg_range
+    paramz["start_date"] = @today.to_date.beginning_of_month
+    paramz["end_date"] = @today.to_date.end_of_month
     paramz["id_visit_map"] = id_visit_map.join(",")
 
     server = CoreService.get_global_property_value("art_link")
