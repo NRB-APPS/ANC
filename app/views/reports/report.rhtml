@@ -1081,14 +1081,14 @@
                                 25
                               </td>
                               <td style="border-top: 1px solid #999; border-left: 1px solid #999; width: 60%;">
-                                <form id="not_on_art" method="post" action="decompose">
-                                  <input type="hidden" value="<%= @first_visit_not_on_art.join(",") %>" name="patients" />
+                                <form id="final_not_on_art" method="post" action="decompose">
+                                  <input type="hidden" value="<%= @final_visit_not_on_art.join(",") %>" name="patients" />
                                   Not on ART
                                 </form>
                               </td>
                               <td class="valueCell">
-                                <a href="javascript:document.getElementById('not_on_art').submit()">
-                                  <%= @first_visit_not_on_art.length%>
+                                <a href="javascript:document.getElementById('final_not_on_art').submit()">
+                                  <%= @final_visit_not_on_art.length%>
                                 </a>
                               </td>
                             </tr>

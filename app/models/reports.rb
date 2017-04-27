@@ -43,6 +43,9 @@ class Reports
 
     @lmp = "(SELECT (max_patient_lmp(encounter.patient_id, '#{e_date.to_s}', '#{min_date.to_s}')))"
 
+    @monthlylmp = "(select DATE(MAX(lmp)) from last_menstraul_period_date where person_id in (#{@monthlypatients})"+
+      "and obs_datetime between #{@today.to_date.beginning_of_month} and #{@today.to_date.end_of_month}"
+
     lmp_concept = ConceptName.find_by_name("DATE OF LAST MENSTRUAL PERIOD").concept_id
 
     lmp = "(SELECT DATE(MAX(o.value_datetime)) FROM obs o WHERE o.person_id = enc.patient_id
@@ -77,6 +80,8 @@ class Reports
     @bart_patients.delete("no_art")
     @bart_patient_identifiers = @bart_patients.keys
 
+    @final_visit_positive_patients = (final_visit_hiv_test_result_prev_positive.uniq + final_visit_new_positive.uniq).delete_if { |p| p.blank? }
+
     @bart_patients_first_visit = on_art_in_bart_first_visit
 
     @first_visit_on_cpt = @bart_patients_first_visit['on_cpt']
@@ -87,6 +92,15 @@ class Reports
     @bart_patients_first_visit.delete("arv_before_visit_one")
     @bart_patients_first_visit.delete("no_art")
     @bart_patients_first_visit_identifiers = @bart_patients_first_visit.keys
+
+    @bart_patients_final_visit = on_art_in_bart_final_visit
+
+    @final_visit_no_art = @bart_patients_final_visit['no_art']
+    @final_visit_on_art_before = @bart_patients_final_visit['arv_before_visit_one']
+
+    @bart_patients_final_visit.delete("no_art")
+    @bart_patients_final_visit.delete("arv_before_visit_one")
+    @bart_patients_final_visit_identifiers = @bart_patients_final_visit.keys
 
     concept_ids = ["Reason for exiting care", "On ART"].collect{|c| ConceptName.find_by_name(c).concept_id}
     encounter_types = ["LAB RESULTS", "ART_FOLLOWUP"].collect{|t| EncounterType.find_by_name(t).id}
@@ -785,7 +799,7 @@ class Reports
     select = Encounter.find(:all, :joins => [:observations], :group => ["patient_id"],
                             :select => ["patient_id, MAX(encounter_datetime) encounter_datetime, (obs_id + 1) form_id"],
                             :conditions => ["concept_id = ? AND (value_coded = ? OR value_text = ?) AND (DATE(encounter_datetime) >=
-(select DATE(MAX(lmp)) from last_menstraul_period_date
+                              (select DATE(MAX(lmp)) from last_menstraul_period_date
                               where person_id in (?) and obs_datetime between ? and ?) AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)",
                                             ConceptName.find_by_name("HIV status").concept_id,
                                             ConceptName.find_by_name("Not done").concept_id, "Not Done",
@@ -1020,6 +1034,126 @@ class Reports
 
   end
 
+
+  #booking cohort women on/not on art
+  def final_visit_not_on_art
+    final_visit_no_art =  @final_visit_no_art.split(",").collect { |id|
+      PatientIdentifier.find_by_identifier(id).patient_id }.uniq rescue []
+    return (final_visit_no_art -  @extra_art_checks)
+  end
+=begin
+  def final_on_art_before
+    ids =  @on_art_before.split(",").collect { |id|
+      PatientIdentifier.find_by_identifier(id).patient_id }.uniq rescue []
+    return ( @extra_art_checks + ids).uniq
+  end
+=end
+  def final_visit_on_art_before
+    final_visit_on_art = @final_visit_on_art_before.split(",").collect { |id|
+      PatientIdentifier.find_by_identifier(id).patient_id }.uniq rescue []
+    return ( @extra_art_checks + final_visit_on_art).uniq
+  end
+=begin
+  def final_on_art_zero_to_27
+
+    remote = []
+    Observation.find_by_sql(["SELECT p.identifier, o.value_datetime, o.person_id FROM obs o
+			JOIN patient_identifier p ON p.patient_id = o.person_id
+      JOIN encounter ON o.encounter_id = encounter.encounter_id
+			WHERE o.concept_id = (SELECT concept_id FROM concept_name WHERE name = 'LAST MENSTRUAL PERIOD')
+			AND p.patient_id IN (?) AND DATE(o.obs_datetime) BETWEEN #{@lmp} AND ?",
+                             @positive_patients,  ((@startdate.to_date + @preg_range) - 1.day)]).collect { |ob|
+      ident = ob.identifier
+      if (!ob.value_datetime.blank? && @bart_patients["#{ident}"])
+        start_date = @bart_patients["#{ident}"].to_date
+        lmp = ob.value_datetime.to_date
+        if  ((start_date >= lmp) && (start_date < (lmp + 28.weeks)))
+          unless remote.include?(ob.person_id)
+            remote << ob.person_id
+          end
+        end
+      end
+    }# rescue []
+
+    remote = [] if remote.to_s.blank?
+    return (remote -  @extra_art_checks)
+
+  end
+=end
+  def final_visit_on_art_zero_to_27
+    remote = []
+    Observation.find_by_sql(["SELECT p.identifier, o.value_datetime, o.person_id FROM obs o
+			JOIN patient_identifier p ON p.patient_id = o.person_id
+      JOIN encounter ON o.encounter_id = encounter.encounter_id
+			WHERE o.concept_id = (SELECT concept_id FROM concept_name WHERE name = 'LAST MENSTRUAL PERIOD')
+			AND p.patient_id IN (?) AND DATE(o.obs_datetime) BETWEEN #{@lmp} AND ?",
+                             @final_visit_positive_patients,  (@startdate.to_date + @preg_range)]).collect { |ob|
+      ident = ob.identifier
+      if (!ob.value_datetime.blank? && @bart_patients_final_visit["#{ident}"])
+        start_date = @bart_patients_final_visit["#{ident}"].to_date
+        lmp = ob.value_datetime.to_date
+        if  ((start_date >= lmp) && (start_date < (lmp + 28.weeks)))
+          unless remote.include?(ob.person_id)
+            remote << ob.person_id
+          end
+        end
+      end
+    }# rescue []
+
+    remote = [] if remote.to_s.blank?
+    return (remote - @extra_art_checks)
+  end
+=begin
+  def final_on_art_28_plus
+    remote = []
+    Observation.find_by_sql(["SELECT p.identifier, o.value_datetime, o.person_id FROM obs o
+			JOIN patient_identifier p ON p.patient_id = o.person_id
+      JOIN encounter ON o.encounter_id = encounter.encounter_id
+			WHERE o.concept_id = (SELECT concept_id FROM concept_name WHERE name = 'LAST MENSTRUAL PERIOD')
+			AND p.patient_id IN (?) AND DATE(o.obs_datetime) BETWEEN #{@lmp} AND ?",
+                             @positive_patients, (@startdate.to_date + @preg_range)]).each { |ob|
+      ident = ob.identifier
+      if (!ob.value_datetime.blank? && @bart_patients["#{ident}"])
+        start_date = @bart_patients["#{ident}"].to_date
+        lmp = ob.value_datetime.to_date
+        if  (start_date >= (lmp + 28.weeks))
+          unless remote.include?(ob.person_id)
+            remote << ob.person_id
+          end
+        end
+      end
+    } rescue []
+
+    remote = [] if remote.to_s.blank?
+    return (remote -  @extra_art_checks)
+  end
+=end
+  def final_visit_on_art_28_plus
+    remote = []
+    Observation.find_by_sql(["SELECT p.identifier, o.value_datetime, o.person_id FROM obs o
+			JOIN patient_identifier p ON p.patient_id = o.person_id
+      JOIN encounter ON o.encounter_id = encounter.encounter_id
+			WHERE o.concept_id = (SELECT concept_id FROM concept_name WHERE name = 'LAST MENSTRUAL PERIOD')
+			AND p.patient_id IN (?) AND DATE(o.obs_datetime) BETWEEN #{@lmp} AND ?",
+                             @final_visit_positive_patients, (@startdate.to_date + @preg_range)]).each { |ob|
+      ident = ob.identifier
+      if (!ob.value_datetime.blank? && @bart_patients_final_visit["#{ident}"])
+        start_date = @bart_patients_final_visit["#{ident}"].to_date
+        lmp = ob.value_datetime.to_date
+        if  (start_date >= (lmp + 28.weeks))
+          unless remote.include?(ob.person_id)
+            remote << ob.person_id
+          end
+        end
+      end
+    } rescue []
+
+    remote = [] if remote.to_s.blank?
+    return (remote -  @extra_art_checks)
+
+  end
+  #########################################################################
+
   def on_cpt__1
     ids = @on_cpt.split(",").collect { |id| PatientIdentifier.find_by_identifier(id.gsub(/\-|\s+/, "")).patient_id }.uniq rescue []
 
@@ -1158,5 +1292,56 @@ class Reports
 													))
     return patient_identifiers
   end
+
+
+  # for booking cohort: bart patients on art
+
+  def on_art_in_bart_final_visit
+    national_id = PatientIdentifierType.find_by_name("National id").id
+    patient_ids = PatientIdentifier.find(:all, :select => ['identifier, identifier_type'],
+                                         :conditions => ["identifier_type = ? AND patient_id IN (?)", national_id,
+                                                         @final_visit_positive_patients]).collect { |ident|
+      ident.identifier }.join(",")
+    id_visit_map = []
+    patient_ids.split(",").each do |id|
+      next if id.nil?
+      patient_id = PatientIdentifier.find_by_identifier(id).patient_id
+      if patient_id
+        date = Observation.find_by_sql(["SELECT value_datetime FROM obs
+                                        JOIN encounter ON obs.encounter_id = encounter.encounter_id
+                                        WHERE person_id = ?
+                                        AND DATE(obs_datetime) BETWEEN #{@lmp} AND ? AND concept_id = ?",
+                                        patient_id,  (@startdate.to_date + @preg_range),
+                                        ConceptName.find_by_name("DATE OF LAST MENSTRUAL PERIOD").concept_id]).first.value_datetime.strftime("%Y-%m-%d") rescue nil
+
+        value = "" + id + "|" + date if !date.nil?
+        id_visit_map << value if !date.nil?
+      end
+
+    end
+
+    paramz = Hash.new
+    paramz["ids"] = patient_ids
+    paramz["start_date"] = @startdate.to_date
+    paramz["end_date"] = @startdate.to_date + @preg_range
+    paramz["id_visit_map"] = id_visit_map.join(",")
+
+    server = CoreService.get_global_property_value("art_link")
+
+    login = CoreService.get_global_property_value("remote_bart.username").split(/,/) rescue ""
+    password = CoreService.get_global_property_value("remote_bart.password").split(/,/) rescue ""
+
+    uri = "http://#{login}:#{password}@#{server}/encounters/export_on_art_patients"
+
+    #patient_identifiers = JSON.parse(RestClient.post(uri, paramz))
+    patient_identifiers = JSON.parse(RestClient::Request.execute(:method => :post,
+                                                                 :url => uri,
+                                                                 :timeout => 90000000,
+                                                                 :open_timeout => 90000000,
+                                                                 :payload => paramz
+    ))
+    return patient_identifiers
+  end
+  ####################################################
 
 end

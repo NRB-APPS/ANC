@@ -283,8 +283,6 @@ class ReportsController < ApplicationController
 
       @total_first_visit_hiv_positive = (@first_visit_hiv_test_result_prev_positive + @first_visit_new_positive).delete_if{|p| p.blank?}
 
-      @total_final_visit_hiv_positive = (@final_visit_hiv_test_result_prev_positive + @final_visit_new_positive).delete_if{|p| p.blank?}
-
       @total_hiv_positive = @total_first_visit_hiv_positive
       @first_visit_not_on_art = report.first_visit_not_on_art
       @first_visit_on_art_zero_to_27 = report.first_visit_on_art_zero_to_27
@@ -292,6 +290,17 @@ class ReportsController < ApplicationController
       @first_visit_on_art_before = report.first_visit_on_art_before
       @first_visit_not_on_art =  (@total_first_visit_hiv_positive + @first_visit_not_on_art -
         ( @first_visit_on_art_zero_to_27 +  @first_visit_on_art_28_plus + @first_visit_on_art_before)).uniq
+
+      @total_final_visit_hiv_positive = (@final_visit_hiv_test_result_prev_positive + @final_visit_new_positive).delete_if{|p| p.blank?}
+
+      @total_final_hiv_positive = @total_final_visit_hiv_positive
+      @final_visit_not_on_art = report.final_visit_not_on_art
+      @final_visit_on_art_zero_to_27 = report.final_visit_on_art_zero_to_27
+      @final_visit_on_art_28_plus = report.final_visit_on_art_28_plus
+      @final_visit_on_art_before = report.final_visit_on_art_before
+      @final_visit_not_on_art = (@total_final_visit_hiv_positive + @final_visit_not_on_art -
+          ( @final_visit_on_art_zero_to_27 + @final_visit_on_art_28_plus + @final_visit_on_art_before)).uniq
+
     #>>>>>>>>>>>>>>>>>>>>>>>>NEW ADDITIONS END<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     @nvp_baby__1 = report.nvp_baby__1
     @no_nvp_baby__1 = (@total_final_visit_hiv_positive - @nvp_baby__1)
