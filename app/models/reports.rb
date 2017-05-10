@@ -43,7 +43,7 @@ class Reports
 
     @lmp = "(SELECT (max_patient_lmp(encounter.patient_id, '#{e_date.to_s}', '#{min_date.to_s}')))"
 
-    @monthlylmp = "(select DATE(MAX(lmp)) from last_menstraul_period_date where person_id in (#{@monthlypatients})"+
+    @monthlylmp = "(select DATE(MAX(lmp)) from last_menstraul_period_date where person_id in ('#{@monthlypatients}')"+
       "and obs_datetime between #{@today.to_date.beginning_of_month} and #{@today.to_date.end_of_month})"
 
     lmp_concept = ConceptName.find_by_name("DATE OF LAST MENSTRUAL PERIOD").concept_id
