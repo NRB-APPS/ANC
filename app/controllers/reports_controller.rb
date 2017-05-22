@@ -601,7 +601,7 @@ class ReportsController < ApplicationController
 
 
   def decompose
-
+    #raise params.inspect
     @facility = Location.current_health_center.name rescue ''
 
     @data = []
@@ -613,10 +613,18 @@ class ReportsController < ApplicationController
       patients.each do |p|
         patient = ANCService::ANC.new(p)
         enc = Encounter.find_by_sql(["SELECT encounter_id FROM encounter WHERE patient_id = ?", p.id]).map(&:encounter_id)
+        #raise patient.patient.date_registered(session[:report_start_date], session[:report_end_date]).strftime("%d/%b/%Y").inspect
+        if params[:block] == "new registered women"
+          start_date = session[:report_start_date].to_date + 6.months
+          end_date = session[:report_end_date].to_date + 6.months
+        else
+          start_date = session[:report_start_date].to_date
+          end_date = session[:report_end_date].to_date
+        end
+#raise patient.patient.date_registered1.strftime("%d/%b/%Y").inspect
         @data << [patient.national_id,
           (patient.name rescue "&nbsp"),
-          (patient.patient.date_registered(session[:report_start_date],
-          session[:report_end_date]).strftime("%d/%b/%Y") rescue "&nbsp"),
+          (patient.patient.date_registered1.strftime("%d/%b/%Y") rescue "&nbsp"),
           (patient.birthdate_formatted rescue "&nbsp"),
           enc,
           p.id]

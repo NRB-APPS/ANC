@@ -187,6 +187,7 @@
                               <td>
                                 <form id="new_reg" method="post" action="decompose">
                                   <input type="hidden" value="<%= @new_women_registered.join(",") %>" name="patients" />
+                                  <input type="hidden" value="new registered women" name="block">
                                 </form>
                               </td>
                               <td style="width: 60%; border-left: 1px solid #999;
@@ -217,6 +218,7 @@
                                 <form id="week_of_first_visit_1" method="post" action="decompose">
                                   <input type="hidden" value="<%= @week_of_first_visit_1.join(",") %>" name="patients" />
                                   Week 0-12
+                                  <input type="hidden" value="new registered women" name="block">
                                 </form>
                               </td>
                               <td class="valueCell">
@@ -233,6 +235,7 @@
                               <td style="border-left: 1px solid #999; border-bottom: 1px solid #999;">
                                 <form id="week_of_first_visit_2" method="post" action="decompose">
                                   <input type="hidden" value="<%= @week_of_first_visit_2.join(",") %>" name="patients" />
+                                  <input type="hidden" value="new registered women" name="block">
                                   <span  style="color:gray">Week 13+</span>
                                 </form>
                               </td>
@@ -259,6 +262,7 @@
                                 <form id="hiv_test_result_prev_neg" method="post" action="decompose">
                                   <input type="hidden" value="<%= @first_visit_hiv_test_result_prev_negative.join(",") %>" name="patients" />
                                   Prev. Negative
+                                  <input type="hidden" value="new registered women" name="block">
                                 </form>
                               </td>
                               <td class="valueCell">
@@ -275,6 +279,7 @@
                                 <form id="hiv_test_result_prev_pos" method="post" action="decompose">
                                   <input type="hidden" value="<%= @first_visit_hiv_test_result_prev_positive.join(",") %>" name="patients" />
                                   Prev. Positive
+                                  <input type="hidden" value="new registered women" name="block">
                                 </form>
                               </td>
                               <td class="valueCell" style="border-top: 0px">
@@ -291,6 +296,7 @@
                                 <form id="hiv_test_result_neg" method="post" action="decompose">
                                   <input type="hidden" value="<%= @first_visit_new_negative.join(",") %>" name="patients" />
                                   New Negative
+                                  <input type="hidden" value="new registered women" name="block">
                                 </form>
                               </td>
                               <td class="valueCell" style="border-top: 0px">
@@ -307,6 +313,7 @@
                                 <form id="hiv_test_result_pos" method="post" action="decompose">
                                   <input type="hidden" value="<%= @first_visit_new_positive.join(",") %>" name="patients" />
                                   New Positive
+                                  <input type="hidden" value="new registered women" name="block">
                                 </form>
                               </td>
                               <td class="valueCell" style="border-top: 0px">
@@ -323,6 +330,7 @@
                                 <form id="hiv_test_result_unk" method="post" action="decompose">
                                   <input type="hidden" value="<%= @first_visit_hiv_not_done.join(",") %>" name="patients" />
                                   Not Done
+                                  <input type="hidden" value="new registered women" name="block">
                                 </form>
                               </td>
                               <td class="valueCell" style="border-top: 0px; border-bottom: 0px;">
