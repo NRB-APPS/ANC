@@ -289,7 +289,7 @@ class ReportsController < ApplicationController
       @first_visit_on_art_28_plus = report.first_visit_on_art_28_plus
       @first_visit_on_art_before = report.first_visit_on_art_before
       @first_visit_not_on_art =  (@total_first_visit_hiv_positive + @first_visit_not_on_art -
-        ( @first_visit_on_art_zero_to_27 +  @first_visit_on_art_28_plus + @first_visit_on_art_before)).uniq
+        (@first_visit_on_art_zero_to_27 +  @first_visit_on_art_28_plus + @first_visit_on_art_before)).uniq
 
       @total_final_visit_hiv_positive = (@final_visit_hiv_test_result_prev_positive + @final_visit_new_positive).delete_if{|p| p.blank?}
 

@@ -24,8 +24,14 @@ class Reports
     min_date = @startdate.to_date - 10.months
 
     @cohortpatients = []
+    @monthlypatients = []
+
     if @type == "cohort"
+
+      # women registered in that cohort
       @cohortpatients = registrations(@startdate.to_date.beginning_of_month, @enddate.to_date.end_of_month)
+
+      # women registered in that reporting month
       @monthlypatients = registrations(@today.beginning_of_month, @today.end_of_month)
 
     else
@@ -39,18 +45,20 @@ class Reports
                                                        @startdate, @enddate]).collect { |e| e.patient_id }.uniq
     end
 
-    lmp_concept = ConceptName.find_by_name("DATE OF LAST MENSTRUAL PERIOD").concept_id
-
     @lmp = "(SELECT (max_patient_lmp(encounter.patient_id, '#{e_date.to_s}', '#{min_date.to_s}')))"
 
-    @monthlylmp = "(select DATE(MAX(lmp)) from last_menstraul_period_date where person_id in ('#{@monthlypatients}')"+
-      "and obs_datetime between #{@today.to_date.beginning_of_month} and #{@today.to_date.end_of_month})"
-
+    @monthlylmp = "(SELECT (max_patient_lmp(encounter.patient_id, '#{@today.to_date.end_of_month}', '#{@today.to_date.beginning_of_month - 10.months}')))"
+#raise @monthlylmp.inspect
     lmp_concept = ConceptName.find_by_name("DATE OF LAST MENSTRUAL PERIOD").concept_id
 
     lmp = "(SELECT DATE(MAX(o.value_datetime)) FROM obs o WHERE o.person_id = enc.patient_id
             AND o.concept_id = #{lmp_concept} AND DATE(o.obs_datetime) <= '#{e_date.to_s}'
             AND DATE(o.obs_datetime) >= '#{min_date.to_s}')"
+=begin
+    monthlylmp = "(SELECT DATE(MAX(o.value_datetime)) FROM obs o WHERE o.person_id = enc.patient_id
+            AND o.concept_id = #{lmp_concept} AND DATE(o.obs_datetime) <= '#{@today.to_date.end_of_month}'
+            AND DATE(o.obs_datetime) >= '#{@today.to_date.beginning_of_month - 10.months}')"
+=end
 
     @anc_visits = Encounter.find_by_sql(["SELECT #{lmp} lmp, enc.patient_id patient_id, MAX(ob.value_numeric) form_id FROM encounter enc
                                         INNER JOIN obs ob ON ob.encounter_id = enc.encounter_id
@@ -63,12 +71,28 @@ class Reports
                                          ConceptName.find_by_name("Reason for visit").concept_id,
                                          e_date
                                         ]).collect { |e| [e.patient_id, e.form_id] }
+=begin
+    @monthly_anc_visit = Encounter.find_by_sql(["SELECT #{monthlylmp} lmp, enc.patient_id patient_id, MAX(ob.value_numeric) form_id FROM encounter enc
+                                        INNER JOIN obs ob ON ob.encounter_id = enc.encounter_id
+                                        WHERE enc.patient_id IN (?) AND enc.encounter_type = ?
+                                        AND ob.concept_id = ? AND DATE(enc.encounter_datetime) <= ?
+                                        AND DATE(enc.encounter_datetime) >= #{monthlylmp}
+                                        GROUP BY enc.patient_id",
+                                                @monthlypatients,
+                                                EncounterType.find_by_name("ANC VISIT TYPE").id,
+                                                ConceptName.find_by_name("Reason for visit").concept_id,
+                                                @today.to_date.end_of_month]).collect { |e| [e.patient_id, e.form_id] }
+=end
+    @cohortpatients = observations_total # uniq cohort patient ids
+    #@monthlypatients = observations_monthly_total # uniq monthly patient ids
 
-
-    @cohortpatients = observations_total
-
+    # positive women for the cohort
     @positive_patients = (hiv_test_result_pos.uniq + hiv_test_result_prev_pos.uniq).delete_if { |p| p.blank? }
+
+    # positive women for the reporting month
     @first_visit_positive_patients = (first_visit_hiv_test_result_prev_positive.uniq + first_visit_new_positive.uniq).delete_if { |p| p.blank? }
+
+    # registered women in bart
     @bart_patients = on_art_in_bart
 
     @on_cpt = @bart_patients['on_cpt']
@@ -87,6 +111,8 @@ class Reports
     @first_visit_on_cpt = @bart_patients_first_visit['on_cpt']
     @first_visit_no_art = @bart_patients_first_visit['no_art']
     @first_visit_on_art_before = @bart_patients_first_visit['arv_before_visit_one']
+
+    #raise @bart_patients_first_visit.inspect
 
     @bart_patients_first_visit.delete("on_cpt")
     @bart_patients_first_visit.delete("arv_before_visit_one")
@@ -125,13 +151,14 @@ class Reports
                   WHERE e.voided = 0 AND
                   e.patient_id IN (?) AND
                   e.encounter_type IN (?) AND o.concept_id IN (?) AND
-                  DATE(e.encounter_datetime) < ?
+                  DATE(e.encounter_datetime) > ?
                   AND COALESCE((SELECT name FROM concept_name WHERE concept_id = o.value_coded LIMIT 1), o.value_text) IN (?)
                   ',
                                                ([0] + @monthlypatients),
                                                encounter_types, concept_ids,
                                                @today.to_date.beginning_of_month, art_answers]
     ).map(&:patient_id) rescue []
+    #raise @extra_art_checks_for_new_pats.inspect
   end
 
   def registrations(start_dt, end_dt)
@@ -157,6 +184,10 @@ class Reports
 
     end
 
+  end
+
+  def observations_monthly_total
+    @monthly_anc_visit.collect { |x, y| x if y.present? }.uniq
   end
 
   def observations_total
@@ -932,9 +963,10 @@ class Reports
   end
 
   def first_visit_not_on_art
+    #raise @extra_art_checks_for_new_pats.uniq.inspect
     first_visit_no_art =  @first_visit_no_art.split(",").collect { |id|
       PatientIdentifier.find_by_identifier(id).patient_id }.uniq rescue []
-    return (first_visit_no_art -  @extra_art_checks_for_new_pats)
+    return (first_visit_no_art -  @extra_art_checks_for_new_pats.uniq)
   end
 
   def on_art_before
@@ -944,9 +976,10 @@ class Reports
   end
 
   def first_visit_on_art_before
+    #raise @first_visit_on_art_before.inspect
     first_visit_on_art = @first_visit_on_art_before.split(",").collect { |id|
       PatientIdentifier.find_by_identifier(id).patient_id }.uniq rescue []
-    return ( @extra_art_checks_for_new_pats + first_visit_on_art).uniq
+    return (@extra_art_checks_for_new_pats + first_visit_on_art).uniq
   end
 
   def on_art_zero_to_27
@@ -977,13 +1010,14 @@ class Reports
 
   def first_visit_on_art_zero_to_27
     remote = []
-    Observation.find_by_sql(["SELECT p.identifier, o.value_datetime, o.person_id FROM obs o
+    obs = Observation.find_by_sql(["SELECT p.identifier, o.value_datetime, o.person_id FROM obs o
 			JOIN patient_identifier p ON p.patient_id = o.person_id
       JOIN encounter ON o.encounter_id = encounter.encounter_id
 			WHERE o.concept_id = (SELECT concept_id FROM concept_name WHERE name = 'LAST MENSTRUAL PERIOD')
 			AND p.patient_id IN (?) AND DATE(o.obs_datetime) BETWEEN #{@monthlylmp} AND ?",
-                                      @first_visit_positive_patients,  @today.to_date.beginning_of_month]).collect { |ob|
+                                      @first_visit_positive_patients,  @today.to_date.end_of_month]).collect { |ob|
       ident = ob.identifier
+      #raise ident.inspect
       if (!ob.value_datetime.blank? && @bart_patients_first_visit["#{ident}"])
         start_date = @bart_patients_first_visit["#{ident}"].to_date
         lmp = ob.value_datetime.to_date
@@ -994,7 +1028,6 @@ class Reports
         end
       end
     }# rescue []
-
     remote = [] if remote.to_s.blank?
     return (remote - @extra_art_checks_for_new_pats)
   end
@@ -1030,7 +1063,7 @@ class Reports
       JOIN encounter ON o.encounter_id = encounter.encounter_id
 			WHERE o.concept_id = (SELECT concept_id FROM concept_name WHERE name = 'LAST MENSTRUAL PERIOD')
 			AND p.patient_id IN (?) AND DATE(o.obs_datetime) BETWEEN #{@monthlylmp} AND ?",
-                                        @first_visit_positive_patients, @today.to_date.beginning_of_month]).each { |ob|
+                                        @first_visit_positive_patients, @today.to_date.end_of_month]).each { |ob|
       ident = ob.identifier
       if (!ob.value_datetime.blank? && @bart_patients_first_visit["#{ident}"])
         start_date = @bart_patients_first_visit["#{ident}"].to_date
@@ -1225,7 +1258,7 @@ class Reports
                                         JOIN encounter ON obs.encounter_id = encounter.encounter_id
                                         WHERE person_id = ?
                                         AND DATE(obs_datetime) BETWEEN #{@monthlylmp} AND ? AND concept_id = ?",
-                                       patient_id,  (@today.to_date.beginning_of_month),
+                                       patient_id,  (@today.to_date.end_of_month),
                                        ConceptName.find_by_name("DATE OF LAST MENSTRUAL PERIOD").concept_id]).first.value_datetime.strftime("%Y-%m-%d") rescue nil
 
         value = "" + id + "|" + date if !date.nil?
@@ -1233,6 +1266,8 @@ class Reports
       end
 
     end
+
+      #raise id_visit_map.inspect
 
     paramz = Hash.new
     paramz["ids"] = patient_ids
