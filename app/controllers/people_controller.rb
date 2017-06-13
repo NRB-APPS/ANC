@@ -10,7 +10,7 @@ class PeopleController < GenericPeopleController
   end
 
   def create
-    success = false
+
     Person.session_datetime = session[:datetime].to_date rescue Date.today
     identifier = params[:identifier] rescue nil
     if identifier.blank?
@@ -18,28 +18,16 @@ class PeopleController < GenericPeopleController
     end rescue nil
 
     if create_from_dde_server
-      unless identifier.blank?
-        params[:person].merge!({"identifiers" => {"National id" => identifier}})
-        success = true
-        person = PatientService.create_from_form(params[:person])
-        if identifier.length != 6
-          patient = DDEService::Patient.new(person.patient)
-          national_id_replaced = patient.check_old_national_id(identifier)
-        end
+      formatted_demographics = DDE2Service.format_params(params, Person.session_datetime)
+      raise formatted_demographics.to_yaml
+
+      if DDE2Service.is_valid?(formatted_demographics)
+        response = DD2Service.create_from_dde2(formatted_demographics)
       else
-        person = PatientService.create_patient_from_dde(params)
-        success = true
+        flash[:error] = "Invalid demographics format posted to DDE2"
+        redirect_to "/" and return
       end
 
-      #If we are creating from DDE then we must create a footprint of the just created patient to
-      #enable future
-      DDEService.create_footprint(PatientService.get_patient(person).national_id, "ANC") rescue nil
-
-
-
-      #for now BART2 will use BART1 for patient/person creation until we upgrade BART1 to 2
-      #if GlobalProperty.find_by_property('create.from.remote') and property_value == 'yes'
-      #then we create person from remote machine
     elsif create_from_remote
       person_from_remote = PatientService.create_remote_person(params)
       person = PatientService.create_from_form(person_from_remote["person"]) unless person_from_remote.blank?
@@ -66,34 +54,6 @@ class PeopleController < GenericPeopleController
       params[:person].merge!({"identifiers" => {"National id" => identifier}}) unless identifier.blank?
       person = PatientService.create_from_form(params[:person])
     end
-
-    ######## Push details for de-duplication indexes ###########
-
-    record= [{'first_name' => person.names.last.given_name,
-              'last_name' => person.names.last.family_name,
-              'birth_date' => person.birthdate,
-              'date_created' => (session[:datetime].to_date rescue Date.today),
-              "national_id" => person.patient.national_id,
-              'id' => person.id,
-              'patient_id' => person.id,
-              'home_district' => person.addresses.last.state_province}]
-
-    url = "http://#{CoreService.get_global_property_value('duplicates_check_url')}" rescue nil
-    RestClient.post("#{url}/write", record.to_json, :content_type => "application/json", :accept => 'json') rescue nil
-
-    response = RestClient.post("#{url}/read", record.to_json, :content_type => "application/json", :accept => 'json') rescue nil
-
-    if !response.blank?
-      response = response.first
-      response = response["#{person.id}"]['ids']
-
-      indexes = YAML.load_file "dup_index.yml"
-      file = File.open("dup_index.yml", "w")
-      indexes["#{person.id}"]['count'] = response.count
-      file.write indexes.to_yaml
-    end
-
-    ######## End ###############################################
 
     if params[:person][:patient] && success
 
