@@ -94,7 +94,7 @@ class Reports
 
     # registered women in bart
     @bart_patients = on_art_in_bart
-
+    #raise @bart_patients.inspect
     @on_cpt = @bart_patients['on_cpt']
     @no_art = @bart_patients['no_art']
     @on_art_before = @bart_patients['arv_before_visit_one']
@@ -130,7 +130,7 @@ class Reports
 
     concept_ids = ["Reason for exiting care", "On ART"].collect{|c| ConceptName.find_by_name(c).concept_id}
     encounter_types = ["LAB RESULTS", "ART_FOLLOWUP"].collect{|t| EncounterType.find_by_name(t).id}
-    art_answers = ["Yes", "Already on ART at another facility", "PMTCT to be done in another room"]
+    art_answers = ["Yes", "Already on ART at another facility"]
     @extra_art_checks = Encounter.find_by_sql(["SELECT e.patient_id
                  FROM encounter e
             INNER JOIN obs o on o.encounter_id = e.encounter_id
@@ -332,12 +332,13 @@ class Reports
 
     select =Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
                        :select => ["encounter.patient_id"],
-                       :conditions => ["drug.name = ?  AND (DATE(encounter_datetime) >= #{@lmp}" +
+                       :conditions => ["drug.name = ?  AND (DATE(encounter_datetime) >= ? " +
                                            "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "SP (3 tablets)",
-                                       ((@startdate.to_date + @preg_range) - 1.day), @cohortpatients]).map(&:patient_id).uniq
+                                       @lmp,((@startdate.to_date + @preg_range) - 1.day), @cohortpatients]).map(&:patient_id).uniq
     @cohortpatients - select
-  end
 
+  end
+=begin
   def fansida__sp___number_of_tablets_given_1
 
     Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
@@ -348,7 +349,7 @@ class Reports
           [o.patient_id, o.encounter_id]
         }.delete_if { |x, y| y.to_i != 1 }.collect { |p, c| p }.uniq
   end
-
+=end
   def fansida__sp
     fansida = {}
     single = []
@@ -373,9 +374,12 @@ class Reports
         end
       }
 
-      return single, twice, plus_3
+      return single, (twice + plus_3)
   end
 
+  # THESE FUNCTIONS ARE NOT BEING USED ANY MORE #
+
+=begin
   def fansida__sp___number_of_tablets_given_2
 
     Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
@@ -399,6 +403,7 @@ class Reports
       }.delete_if { |x, y| y.to_i < 3 }.collect { |p, c| p }
 
   end
+=end
 
   def fefo
     fefol = {}
@@ -423,11 +428,12 @@ class Reports
         }
 
         return minus_120, plus_120
-  end
+    end
 
+=begin
   def fansida__sp___number_of_tablets_given_3
 
-    Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
+    p = Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
                :select => ["encounter.patient_id, count(*) encounter_id, drug.name instructions"],
                :group => [:patient_id], :conditions => ["drug.name = ? " +
                                                             "AND DATE(encounter_datetime) <= ? AND encounter.patient_id IN (?)", "SP (3 tablets)",
@@ -436,6 +442,7 @@ class Reports
     }.delete_if { |x, y| y != 3 }.collect { |p, c| p }
 
   end
+
 
   def fefo__number_of_tablets_given_1
 
@@ -462,7 +469,7 @@ class Reports
 
   end
 
-
+=end
   def syphilis_result_pos
 
     Encounter.find(:all, :joins => [:observations], :select => ["DISTINCT patient_id"],
