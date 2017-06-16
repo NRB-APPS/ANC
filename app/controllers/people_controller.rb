@@ -19,10 +19,9 @@ class PeopleController < GenericPeopleController
 
     if create_from_dde_server
       formatted_demographics = DDE2Service.format_params(params, Person.session_datetime)
-      raise formatted_demographics.to_yaml
 
       if DDE2Service.is_valid?(formatted_demographics)
-        response = DD2Service.create_from_dde2(formatted_demographics)
+        response = DDE2Service.create_from_dde2(formatted_demographics)
       else
         flash[:error] = "Invalid demographics format posted to DDE2"
         redirect_to "/" and return
@@ -173,32 +172,31 @@ class PeopleController < GenericPeopleController
     @search_results = {}
     @patients = []
 
-	  (PatientService.search_from_remote(params) || []).each do |data|
-      national_id = data["person"]["data"]["patient"]["identifiers"]["National id"] rescue nil
+    remote_results = []
+    if create_from_dde_server
+      remote_results = DDE2Service.search_from_remote(params)
+    end
+
+	  (remote_results || []).each do |data|
+      national_id = data["identifiers"]["National id"] rescue nil
       national_id = data["person"]["value"] if national_id.blank? rescue nil
       national_id = data["npid"]["value"] if national_id.blank? rescue nil
-      national_id = data["person"]["data"]["patient"]["identifiers"]["old_identification_number"] if national_id.blank? rescue nil
+      national_id = data["identifiers"]["old_identification_number"] if national_id.blank? rescue nil
 
       next if national_id.blank?
       results = PersonSearch.new(national_id)
       results.national_id = national_id
 
-      unless data["person"]["data"]["addresses"]["city_village"].match(/hashwithindifferentaccess/i)
-        results.current_residence =data["person"]["data"]["addresses"]["city_village"]
-      else
-        results.current_residence = nil
-      end
-      
+      results.current_residence = data["addresses"]["current_residence"]
       results.person_id = 0
-      results.home_district = data["person"]["data"]["addresses"]["address2"]
-      results.traditional_authority =  data["person"]["data"]["addresses"]["county_district"]
-      results.name = data["person"]["data"]["names"]["given_name"] + " " + data["person"]["data"]["names"]["family_name"]
-      gender = data["person"]["data"]["gender"]
-      results.occupation = data["person"]["data"]["occupation"]
-      results.sex = (gender == 'M' ? 'Male' : 'Female')
-      results.birthdate_estimated = (data["person"]["data"]["birthdate_estimated"]).to_i
-      results.birth_date = birthdate_formatted((data["person"]["data"]["birthdate"]).to_date , results.birthdate_estimated)
-      results.birthdate = (data["person"]["data"]["birthdate"]).to_date
+      results.home_district = data["addresses"]["address2"]
+      results.traditional_authority =  data["addresses"]["county_district"]
+      results.name = data["names"]["given_name"] + " " + data["names"]["family_name"]
+      results.occupation = data["occupation"]
+      results.sex = data["gender"]
+      results.birthdate_estimated = data["birthdate_estimated"]
+      results.birth_date = birthdate_formatted((data["birthdate"]).to_date , results.birthdate_estimated)
+      results.birthdate = (data["birthdate"]).to_date
       results.age = cul_age(results.birthdate.to_date , results.birthdate_estimated)
       @search_results[results.national_id] = results
     end if create_from_dde_server

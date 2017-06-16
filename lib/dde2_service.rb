@@ -169,9 +169,9 @@ module DDE2Service
     }
 
     result['attributes'].each do |k, v|
-        if v.blank?
-          result['attributes'].delete(k)
-        end
+      if v.blank?
+        result['attributes'].delete(k)
+      end
     end
 
     result['identifiers'].each do |k, v|
@@ -212,6 +212,35 @@ module DDE2Service
     end
 
     valid
+  end
+
+  def self.create_from_dde2(params)
+    token = self.authenticate
+    return false if !token || token.blank?
+
+    params['token'] = token
+    url = "#{self.dde2_url}/v1/add_patient"
+
+    result = JSON.parse(RestClient.post(url, params, "headers" => {"Content-Type" => 'application/json'}))
+    result
+  end
+
+  def self.search_from_remote(params)
+    return [] if params[:given_name].blank? || params[:family_name].blank? || params[:gender].blank?
+
+    url = "#{self.dde2_url}/v1/search_by_name_and_gender"
+
+    response = JSON.parse(RestClient.post(url,
+                                      {'given_name' => params['given_name'],
+                                      'family_name' => params['family_name'],
+                                      'gender' => params['gender']}
+                      ))
+
+    if response['status'] == 200
+      return response['data']
+    else
+      return []
+    end
   end
 
 end
