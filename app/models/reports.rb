@@ -121,6 +121,9 @@ class Reports
 
     @bart_patients_final_visit = on_art_in_bart_final_visit
 
+    #raise @bart_patients_final_visit.inspect
+
+    @final_visit_on_cpt = @bart_patients_final_visit['on_cpt']
     @final_visit_no_art = @bart_patients_final_visit['no_art']
     @final_visit_on_art_before = @bart_patients_final_visit['arv_before_visit_one']
 
@@ -375,11 +378,10 @@ class Reports
       }
 
       return single, (twice + plus_3)
+
   end
 
-  # THESE FUNCTIONS ARE NOT BEING USED ANY MORE #
 
-=begin
   def fansida__sp___number_of_tablets_given_2
 
     Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
@@ -403,7 +405,7 @@ class Reports
       }.delete_if { |x, y| y.to_i < 3 }.collect { |p, c| p }
 
   end
-=end
+
 
   def fefo
     fefol = {}
@@ -430,7 +432,7 @@ class Reports
         return minus_120, plus_120
     end
 
-=begin
+
   def fansida__sp___number_of_tablets_given_3
 
     p = Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
@@ -442,7 +444,7 @@ class Reports
     }.delete_if { |x, y| y != 3 }.collect { |p, c| p }
 
   end
-
+=begin
 
   def fefo__number_of_tablets_given_1
 
@@ -1159,7 +1161,7 @@ class Reports
   #########################################################################
 
   def on_cpt__1
-    ids = @on_cpt.split(",").collect { |id| PatientIdentifier.find_by_identifier(id.gsub(/\-|\s+/, "")).patient_id }.uniq rescue []
+    ids = @final_visit_on_cpt.split(",").collect { |id| PatientIdentifier.find_by_identifier(id.gsub(/\-|\s+/, "")).patient_id }.uniq rescue []
 
     return ids
   end
