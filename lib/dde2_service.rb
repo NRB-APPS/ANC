@@ -205,6 +205,24 @@ module DDE2Service
 
     if valid && !params['birthdate'].match(/\d{4}-\d{1,2}-\d{1,2}/)
       valid = false
+      result = JSON.parse(RestClient.post(url, params, "headers" => {"Content-Type" => 'application/json'}))
+      result
+    end
+
+    def self.search_from_dde2(params)
+      return [] if params[:given_name].blank? || params[:family_name].blank? || params[:gender].blank?
+
+      url = "#{self.dde2_url}/v1/search_by_name_and_gender"
+
+      response = JSON.parse(RestClient.post(url,
+                                            {'given_name' => params['given_name'],
+                                             'family_name' => params['family_name'],
+                                             'gender' => params['gender']}
+                            ))
+
+      if response['status'] == 200
+        return response['data']
+      else
     end
 
     if valid && !['Female', 'Male'].include?(params['gender'])
@@ -221,24 +239,6 @@ module DDE2Service
     params['token'] = token
     url = "#{self.dde2_url}/v1/add_patient"
 
-    result = JSON.parse(RestClient.post(url, params, "headers" => {"Content-Type" => 'application/json'}))
-    result
-  end
-
-  def self.search_from_remote(params)
-    return [] if params[:given_name].blank? || params[:family_name].blank? || params[:gender].blank?
-
-    url = "#{self.dde2_url}/v1/search_by_name_and_gender"
-
-    response = JSON.parse(RestClient.post(url,
-                                      {'given_name' => params['given_name'],
-                                      'family_name' => params['family_name'],
-                                      'gender' => params['gender']}
-                      ))
-
-    if response['status'] == 200
-      return response['data']
-    else
       return []
     end
   end

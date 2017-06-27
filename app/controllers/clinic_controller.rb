@@ -113,5 +113,39 @@ class ClinicController < GenericClinicController
   def data_cleaning_tools
     render :layout => false
   end
-  
+
+  def configurations
+    render :layout => false
+  end
+
+  def enable_dde2
+    if request.post?
+      global_properties = {
+          'create.from.dde.server' => params[:create_from_dde2] == 'Yes' ? 'true' : 'false',
+          'dde_server_ip' => params[:create_from_dde2] == 'Yes' ? "#{params[:dde_server_ip]}:#{params[:dde_server_port]}" : "",
+          'dde_server_protocol' => params[:dde_server_protocol],
+          'dde_server_username' => params[:dde_server_username],
+          'dde_server_password' => params[:dde_server_password]
+      }
+
+      global_properties.each do |property, property_value|
+        global_property = GlobalProperty.find_by_property(property)
+        if global_property.blank?
+          global_property = GlobalProperty.new
+          global_property.description = 'DDE2 parameter'
+        end
+
+        global_property.property = property
+        global_property.property_value = property_value
+        global_property.save
+      end
+
+      redirect_to '/' and return
+    else
+
+    end
+
+    render :layout => "application"
+  end
+
 end

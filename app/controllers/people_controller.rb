@@ -174,7 +174,7 @@ class PeopleController < GenericPeopleController
 
     remote_results = []
     if create_from_dde_server
-      remote_results = DDE2Service.search_from_remote(params)
+      remote_results = DDE2Service.search_from_dde2(params)
     end
 
 	  (remote_results || []).each do |data|
