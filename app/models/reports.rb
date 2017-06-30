@@ -1173,7 +1173,7 @@ class Reports
                 "SUM(DATEDIFF(auto_expire_date, start_date)) orderer"], :group => [:patient_id],
                 :conditions => ["(drug.name REGEXP ? OR drug.name REGEXP ?) AND (DATE(encounter_datetime) >= #{@lmp} " +
                 "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "NVP", "Nevirapine syrup",
-                 (@startdate.to_date + @preg_range), @first_visit_positive_patients]).collect { |o| o.patient_id }
+                 (@startdate.to_date + @preg_range), @final_visit_positive_patients]).collect { |o| o.patient_id }
     return nvp.uniq rescue []
   end
 
