@@ -189,7 +189,7 @@ class ReportsController < ApplicationController
 
     @week_of_first_visit_2 = report.week_of_first_visit_2
 
-    @week_of_first_visit_unknown = @observations_total - (@week_of_first_visit_1 + @week_of_first_visit_2)
+    @week_of_first_visit_unknown = @new_women_registered - (@week_of_first_visit_1 + @week_of_first_visit_2)
 
     @pre_eclampsia_1 = report.pre_eclampsia_1
 

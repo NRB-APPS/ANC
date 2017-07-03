@@ -234,7 +234,8 @@ class Reports
                               AND (?) AND patient_id IN (?)
                               GROUP BY patient_id HAVING wk < 13",
                                             ConceptName.find_by_name("WEEK OF FIRST VISIT").concept_id,
-                                    @monthlypatients,@today.to_date.beginning_of_month, @today.to_date.end_of_month,
+                                    @monthlypatients,@today.to_date.beginning_of_month.strftime("%Y-%m-%d 00:00:00"),
+                                    @today.to_date.end_of_month.strftime("%Y-%m-%d 23:59:59"),
                                     @today.to_date, @monthlypatients]
                             ).collect { |e| e.patient_id }.uniq
 
@@ -249,7 +250,8 @@ class Reports
                               where person_id in (?) and obs_datetime between ? and ?) AND (?) AND patient_id IN (?)
                               GROUP BY patient_id HAVING wk >= 13",
                              ConceptName.find_by_name("WEEK OF FIRST VISIT").concept_id,
-                                    @monthlypatients,@today.to_date.beginning_of_month, @today.to_date.end_of_month,
+                                    @monthlypatients,@today.to_date.beginning_of_month.strftime("%Y-%m-%d 00:00:00"),
+                                    @today.to_date.end_of_month.strftime("%Y-%m-%d 23:59:59"),
                              @today.to_date, @monthlypatients]
     ).collect { |e| e.patient_id }.uniq
     @cases
