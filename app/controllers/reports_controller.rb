@@ -526,7 +526,8 @@ class ReportsController < ApplicationController
           session[:clicked] = nil
           year = session[:appointments_year] = params[:observations][0][:value_text]
      
-          month = params[:observations][1][:value_text]          
+          month = params[:observations][1][:value_text]
+
           case month
              when "January"
                 session[:appointments_month] = "01"
