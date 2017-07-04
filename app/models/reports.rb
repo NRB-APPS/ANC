@@ -723,6 +723,8 @@ class Reports
     first_visit_patient_ids = @anc_visits.reject { |x, y| y <= 1 }.collect { |x, y| x }.uniq
     first_visit_patient_ids = [0] if first_visit_patient_ids.blank?
 
+    #raise (@today.to_date - 1.day).inspect
+
     select = Encounter.find_by_sql([
                 "SELECT
                 e.patient_id,
@@ -776,7 +778,7 @@ class Reports
                 GROUP BY e.patient_id
                 HAVING DATE(date) > DATE(test_date)
                 ",
-                @monthlypatients, (@today.to_date - 1.day), (@today.to_date - 1.day)
+                @monthlypatients, @today.to_date, @today.to_date
                 ]).map(&:patient_id)
     return select
   end
@@ -807,7 +809,7 @@ class Reports
                 GROUP BY e.patient_id
                 HAVING DATE(date) = DATE(test_date)
                 ",
-                @monthlypatients, (@today.to_date - 1.day), (@today.to_date - 1.day)
+                @monthlypatients, @today.to_date, @today.to_date
                 ]).map(&:patient_id)
 
     return select
@@ -856,11 +858,11 @@ class Reports
                             :select => ["patient_id, MAX(encounter_datetime) encounter_datetime, (obs_id + 1) form_id"],
                             :conditions => ["concept_id = ? AND (value_coded = ? OR value_text = ?) AND (DATE(encounter_datetime) >=
                               (select DATE(MAX(lmp)) from last_menstraul_period_date
-                              where person_id in (?) and obs_datetime between ? and ?) AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)",
+                              where person_id in (?) and DATE(obs_datetime) between ? and ?) AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)",
                                             ConceptName.find_by_name("HIV status").concept_id,
                                             ConceptName.find_by_name("Not done").concept_id, "Not Done",
                                             @monthlypatients,@today.to_date.beginning_of_month, @today.to_date.end_of_month,
-                                            (@today.to_date - 1.day), @monthlypatients]).collect { |e| e.patient_id }
+                                            @today.to_date, @monthlypatients]).collect { |e| e.patient_id }
 
     return select
   end

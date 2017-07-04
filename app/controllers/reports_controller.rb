@@ -267,10 +267,12 @@ class ReportsController < ApplicationController
     #>>>>>>>>>>>>>>>>>>>>>>>>NEW ADDITIONS START<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
       @first_visit_hiv_test_result_prev_negative = report.first_visit_hiv_test_result_prev_negative
       @first_visit_hiv_test_result_prev_positive = report.first_visit_hiv_test_result_prev_positive
-
       @first_visit_new_negative = report.first_visit_new_negative
       @first_visit_new_positive = report.first_visit_new_positive
-      @first_visit_hiv_not_done = report.first_visit_hiv_not_done
+      #@first_visit_hiv_not_done = report.first_visit_hiv_not_done
+      @first_visit_hiv_not_done = (@new_women_registered - @first_visit_hiv_test_result_prev_negative -
+          @first_visit_hiv_test_result_prev_positive - @first_visit_new_negative - @first_visit_new_positive)
+
       @final_visit_hiv_test_result_prev_negative = report.final_visit_hiv_test_result_prev_negative
       @final_visit_hiv_test_result_prev_positive = report.final_visit_hiv_test_result_prev_positive
       @final_visit_new_negative = report.final_visit_new_negative
