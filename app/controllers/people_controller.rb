@@ -21,9 +21,9 @@ class PeopleController < GenericPeopleController
       formatted_demographics = DDE2Service.format_params(params, Person.session_datetime)
 
       if DDE2Service.is_valid?(formatted_demographics)
-        response = DDE2Service.create_from_dde2(formatted_demographics)
+        response = DDE2Service.create_from_dde2(formatted_demographics, session[:dde2_token])
       else
-        flash[:error] = "Invalid demographics format posted to DDE2"
+        flash[:error] = "Invalid demographics format"
         redirect_to "/" and return
       end
 

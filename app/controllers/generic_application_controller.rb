@@ -214,10 +214,17 @@ class GenericApplicationController < ActionController::Base
 
     def set_current_user
       User.current = current_user
+
+      if create_from_dde_server
+        if session['dde2_token'].blank?
+          session['dde2_token'] = DDE2Service.authenticate
+        else
+          session['dde2_token'] = DDE2Service.validate_token(session['dde2_token'])
+        end
+      end
     end
 
-
-private
+  private
 
   def find_patient
     @patient = Patient.find(params[:patient_id] || session[:patient_id] || params[:id]) rescue nil

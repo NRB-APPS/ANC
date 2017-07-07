@@ -13,6 +13,8 @@
 			E. Any other DDE2 related functionality to arise
 =end
 
+require 'rest-client'
+
 module DDE2Service
 
   class Patient
@@ -121,7 +123,43 @@ module DDE2Service
     if (res['status'] && res['status'] == 200)
       token = res['data']['token']
     end
+
     token
+  end
+
+  def self.add_user(token)
+    dde2_configs = self.dde2_configs
+    url = "#{self.dde2_url}/v1/add_user"
+
+    params = {
+        "username" => dde2_configs["dde_username"],
+        "password" => dde2_configs["dde_password"],
+        "application" => dde2_configs["application_name"],
+        "site_code" => dde2_configs["site_code"],
+        "token" => token,
+        "description" => "Ante-Natal Clinic User For DDE2 API authentication"
+    }
+
+    response = JSON.parse(RestClient.post(url, params))
+
+    if response['status'] == 201
+      puts "DDE2 user created successfully"
+      return response['data']
+    else
+      puts "Failed with response code #{response['status']}"
+      return false
+    end
+  end
+
+  def self.validate_token(token)
+    url = "#{self.dde2_url}/v1/authenticated/#{token}"
+    response = JSON.parse(RestClient.get(url))
+
+    if response['status'] == 200
+      return token
+    else
+      return self.authenticate
+    end
   end
 
   def self.format_params(params, date)
@@ -209,22 +247,6 @@ module DDE2Service
       result
     end
 
-    def self.search_from_dde2(params)
-      return [] if params[:given_name].blank? || params[:family_name].blank? || params[:gender].blank?
-
-      url = "#{self.dde2_url}/v1/search_by_name_and_gender"
-
-      response = JSON.parse(RestClient.post(url,
-                                            {'given_name' => params['given_name'],
-                                             'family_name' => params['family_name'],
-                                             'gender' => params['gender']}
-                            ))
-
-      if response['status'] == 200
-        return response['data']
-      else
-    end
-
     if valid && !['Female', 'Male'].include?(params['gender'])
       valid = false
     end
@@ -232,15 +254,69 @@ module DDE2Service
     valid
   end
 
-  def self.create_from_dde2(params)
-    token = self.authenticate
+  def self.search_from_dde2(params)
+    token = self.validate_token(token)
+    return [] if params[:given_name].blank? ||  params[:family_name].blank? ||
+        params[:gender].blank? || !token || token.blank?
+
+    url = "#{self.dde2_url}/v1/search_by_name_and_gender"
+
+    response = JSON.parse(RestClient.post(url,
+                                          {'given_name' => params['given_name'],
+                                           'family_name' => params['family_name'],
+                                           'gender' => params['gender'],
+                                           'token' => token}))
+
+    if response['status'] == 200
+      return response['data']
+    else
+      return false
+    end
+  end
+
+  def self.create_from_dde2(params, token)
+    token = self.validate_token(token)
     return false if !token || token.blank?
 
     params['token'] = token
     url = "#{self.dde2_url}/v1/add_patient"
 
-      return []
+    response = JSON.parse(RestClient.post(url, params))
+
+    if response['status'] == 201
+      return true
+    elsif response['status'] == 409
+      return response['data']
     end
   end
 
+  def self.search_by_identifier(npid, token)
+    return false if npid.blank?
+    token = self.validate_token(token)
+    return false if !token || token.blank?
+
+    url = "#{self.dde2_url}/v1/search_by_identifier/#{npid}/#{token}"
+    response = JSON.parse(RestClient.get(url))
+
+    if [200, 204].include?(response['status'])
+      return response['data']
+    else
+      return false
+    end
+  end
+
+  def self.mark_duplicate(npid, token)
+    return false if npid.blank?
+    token = self.validate_token(token)
+    return false if !token || token.blank?
+
+    url = "#{self.dde2_url}/v1/void_patient/#{npid}/#{token}"
+    response = JSON.parse(RestClient.get(url))
+
+    if response['status'] == 200
+      return response['data']
+    else
+      return false
+    end
+  end
 end
