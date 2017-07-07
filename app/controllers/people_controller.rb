@@ -20,8 +20,8 @@ class PeopleController < GenericPeopleController
     if create_from_dde_server
       formatted_demographics = DDE2Service.format_params(params, Person.session_datetime)
 
-      if DDE2Service.is_valid?(formatted_demographics)
-        response = DDE2Service.create_from_dde2(formatted_demographics, session[:dde2_token])
+     if DDE2Service.is_valid?(formatted_demographics)
+        response = DDE2Service.create_from_dde2(formatted_demographics)
       else
         flash[:error] = "Invalid demographics format"
         redirect_to "/" and return
@@ -98,23 +98,17 @@ class PeopleController < GenericPeopleController
   
 	def search
 		found_person = nil
-		if params[:identifier]    
-			local_results = PatientService.search_by_identifier(params[:identifier])
+
+		if params[:identifier]
+      params[:identifier] = params[:identifier].strip
+			local_results = DDE2Service.search_all_by_identifier(params[:identifier])
 			if local_results.length > 1
 				redirect_to :action => 'duplicates' ,:search_params => params
         return
-				#@people = PatientService.person_search(params)
-			elsif local_results.length == 1
+			elsif local_results.length <= 1
 
 				if create_from_dde_server
-
-          dde_server = CoreService.get_global_property_value("dde_server_ip") rescue ""
-          dde_server_username = CoreService.get_global_property_value("dde_server_username") rescue ""
-          dde_server_password = CoreService.get_global_property_value("dde_server_password") rescue ""
-          uri = "http://#{dde_server_username}:#{dde_server_password}@#{dde_server}/people/find.json"
-          uri += "?value=#{params[:identifier]}"
-          output = RestClient.get(uri)
-          p = JSON.parse(output)
+          p = DDE2Service.search_by_identifier(params[:identifier])
           if p.count > 1
 						redirect_to :action => 'duplicates' ,:search_params => params
 						return
@@ -122,11 +116,11 @@ class PeopleController < GenericPeopleController
 				end
 
 				found_person = local_results.first
-        
+
         if (found_person.gender rescue "") == "M"
           redirect_to "/clinic/no_males" and return
         end
-      
+
 			else
 				# TODO - figure out how to write a test for this
 				# This is sloppy - creating something as the result of a GET
@@ -138,22 +132,19 @@ class PeopleController < GenericPeopleController
 			end
 
       found_person = local_results.first if !found_person.blank?
-	
+
       if (found_person.gender rescue "") == "M"
         redirect_to "/clinic/no_males" and return
       end
      
       if found_person
         if create_from_dde_server
+          patient = found_person.patient
+          old_npid = params[:identifier].gsub(/\-/, '').upcase.strip
+          new_npid = patient.national_id.gsub(/\-/, '').upcase.strip
 
-          patient = DDEService::Patient.new(found_person.patient)
-          
-          DDEService.create_footprint(found_person.patient.national_id, "ANC") rescue nil
-
-          national_id_replaced = patient.check_old_national_id(params[:identifier])
-
-          if national_id_replaced.to_s == "true" || params[:identifier] != found_person.patient.national_id
-            print_and_redirect("/patients/national_id_label?patient_id=#{found_person.id}", next_task(found_person.patient)) and return
+          if old_npid != new_npid
+            print_and_redirect("/patients/national_id_label?patient_id=#{patient.id}", next_task(patient)) and return
           end
 
         end
@@ -164,36 +155,33 @@ class PeopleController < GenericPeopleController
           redirect_to next_task(found_person.patient) and return
           # redirect_to :action => 'confirm', :found_person_id => found_person.id, :relation => params[:relation] and return
 				end
-			end
+      end
 		end
     
 		@relation = params[:relation]
-		@people = PatientService.person_search(params)
+    @people = []
+		@people = PatientService.person_search(params) if !params[:given_name].blank?
     @search_results = {}
     @patients = []
 
     remote_results = []
     if create_from_dde_server
-      remote_results = DDE2Service.search_from_dde2(params)
+      remote_results = DDE2Service.search_from_dde2(params) if !params[:given_name].blank?
     end
 
 	  (remote_results || []).each do |data|
-      national_id = data["identifiers"]["National id"] rescue nil
-      national_id = data["person"]["value"] if national_id.blank? rescue nil
-      national_id = data["npid"]["value"] if national_id.blank? rescue nil
-      national_id = data["identifiers"]["old_identification_number"] if national_id.blank? rescue nil
-
+      national_id = data["npid"] rescue nil
       next if national_id.blank?
       results = PersonSearch.new(national_id)
       results.national_id = national_id
 
       results.current_residence = data["addresses"]["current_residence"]
       results.person_id = 0
-      results.home_district = data["addresses"]["address2"]
-      results.traditional_authority =  data["addresses"]["county_district"]
+      results.home_district = data["addresses"]["home_district"]
+      results.traditional_authority =  data["addresses"]["home_ta"]
       results.name = data["names"]["given_name"] + " " + data["names"]["family_name"]
       results.occupation = data["occupation"]
-      results.sex = data["gender"]
+      results.sex = data["gender"].match('F') ? 'Female' : 'Male'
       results.birthdate_estimated = data["birthdate_estimated"]
       results.birth_date = birthdate_formatted((data["birthdate"]).to_date , results.birthdate_estimated)
       results.birthdate = (data["birthdate"]).to_date

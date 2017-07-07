@@ -112,15 +112,36 @@ module DDE2Service
     "#{protocol}://#{dde2_configs['dde_server']}"
   end
 
+  def self.dde2_url_with_auth
+    dde2_configs = self.dde2_configs
+    protocol = dde2_configs['secure_connection'].to_s == 'true' ? 'https' : 'http'
+    "#{protocol}://#{dde2_configs['dde_username']}:#{dde2_configs['dde_password']}@#{dde2_configs['dde_server']}"
+  end
+
   def self.authenticate
     dde2_configs = self.dde2_configs
     url = "#{self.dde2_url}/v1/authenticate"
-    params = dde2_configs.reject{|k, v| !['dde_password', 'dde_username'].include?(k)}
 
-    res = JSON.parse(RestClient.post(url, params.to_json, "headers" => {"Content-Type" => 'application/json'}))
-
+    res = JSON.parse(RestClient.post(url, {'username' => dde2_configs['dde_username'],
+                                           'password' => dde2_configs['dde_password']}.to_json, :content_type => 'application/json'))
     token = nil
-    if (res['status'] && res['status'] == 200)
+    if (res.present? && res['status'] && res['status'] == 200)
+      token = res['data']['token']
+    end
+
+    File.open("#{Rails.root}/tmp/token", 'w') {|f| f.write(token) } if token.present?
+    token
+  end
+
+  def self.authenticate_by_admin
+    dde2_configs = self.dde2_configs
+    url = "#{self.dde2_url}/v1/authenticate"
+
+    params = {'username' => 'admin', 'password' => 'admin'}
+
+    res = JSON.parse(RestClient.post(url, params.to_json, :content_type => 'application/json'))
+    token = nil
+    if (res.present? && res['status'] && res['status'] == 200)
       token = res['data']['token']
     end
 
@@ -130,32 +151,31 @@ module DDE2Service
   def self.add_user(token)
     dde2_configs = self.dde2_configs
     url = "#{self.dde2_url}/v1/add_user"
-
-    params = {
-        "username" => dde2_configs["dde_username"],
-        "password" => dde2_configs["dde_password"],
-        "application" => dde2_configs["application_name"],
-        "site_code" => dde2_configs["site_code"],
-        "token" => token,
-        "description" => "Ante-Natal Clinic User For DDE2 API authentication"
-    }
-
-    response = JSON.parse(RestClient.post(url, params))
+    url = url.gsub(/\/\//, "//admin:admin@")
+    puts url
+    response = RestClient.put(url,{
+                  "username" => dde2_configs["dde_username"],  "password" => dde2_configs["dde_password"],
+                  "application" => dde2_configs["application_name"], "site_code" => dde2_configs["site_code"],
+                  "description" => "AnteNatal Clinic"
+              }.to_json, :content_type => 'application/json')
 
     if response['status'] == 201
-      puts "DDE2 user created successfully"
       return response['data']
     else
-      puts "Failed with response code #{response['status']}"
       return false
     end
   end
 
+  def self.token
+    self.validate_token(File.read("#{Rails.root}/tmp/token"))
+  end
+
   def self.validate_token(token)
     url = "#{self.dde2_url}/v1/authenticated/#{token}"
-    response = JSON.parse(RestClient.get(url))
+    response = nil
+    response = JSON.parse(RestClient.get(url)) rescue nil if !token.blank?
 
-    if response['status'] == 200
+    if !response.blank? && response['status'] == 200
       return token
     else
       return self.authenticate
@@ -182,9 +202,9 @@ module DDE2Service
         params['person']['addresses']['state_province'] : nil
 
     result = {
-        "family_name"=> params['person']['names']['given_name'],
-        "given_name"=> params['person']['names']['family_name'],
-        "middle_name"=> params['person']['names']['given_name'],
+        "family_name"=> params['person']['names']['family_name'],
+        "given_name"=> params['person']['names']['given_name'],
+        "middle_name"=> (params['person']['names']['middle_name'] || "N/A"),
         "gender"=> gender,
         "attributes"=> {
           "occupation"=> params['person']['occupation'],
@@ -193,6 +213,7 @@ module DDE2Service
           "country_of_residence" => country_of_residence
         },
         "birthdate"=> birthdate,
+        "birthdate_estimated" => ((params['birthdate_estimated'].blank? || params['birthdate_estimated'].to_s == 'false') ? false : true),
         "identifiers"=> {
         },
         "birthdate_estimated"=> (params['person']['age_estimate'].present?),
@@ -202,8 +223,7 @@ module DDE2Service
         "current_district"=> params['person']['addresses']['state_province'],
         "home_village"=> params['person']['addresses']['neighborhood_cell'],
         "home_ta"=> params['person']['addresses']['county_district'],
-        "home_district"=> params['person']['addresses']['address2'],
-        "token"=> "fdc2d5b14f7711e7af26d07e358088a6"
+        "home_district"=> params['person']['addresses']['address2']
     }
 
     result['attributes'].each do |k, v|
@@ -235,16 +255,13 @@ module DDE2Service
 
   def self.is_valid?(params)
     valid = true
-    ['family_name', 'given_name', 'gender', 'birthdate', 'birthdate_estimated', 'home_district', 'token'].each do |key|
+    ['family_name', 'given_name', 'gender', 'birthdate', 'home_district'].each do |key|
       if params[key].blank? || params[key].to_s.strip.match(/^N\/A$|^null$|^undefined$|^nil$/i)
         valid = false
       end
     end
-
     if valid && !params['birthdate'].match(/\d{4}-\d{1,2}-\d{1,2}/)
       valid = false
-      result = JSON.parse(RestClient.post(url, params, "headers" => {"Content-Type" => 'application/json'}))
-      result
     end
 
     if valid && !['Female', 'Male'].include?(params['gender'])
@@ -255,53 +272,150 @@ module DDE2Service
   end
 
   def self.search_from_dde2(params)
-    token = self.validate_token(token)
     return [] if params[:given_name].blank? ||  params[:family_name].blank? ||
-        params[:gender].blank? || !token || token.blank?
+        params[:gender].blank?
 
-    url = "#{self.dde2_url}/v1/search_by_name_and_gender"
 
-    response = JSON.parse(RestClient.post(url,
-                                          {'given_name' => params['given_name'],
-                                           'family_name' => params['family_name'],
-                                           'gender' => params['gender'],
-                                           'token' => token}))
+    url = "#{self.dde2_url_with_auth}/v1/search_by_name_and_gender"
+    params = {'given_name' => params['given_name'],
+              'family_name' => params['family_name'],
+              'gender' => ({'F' => 'Female', 'M' => 'Male'}[params['gender']] || params['gender'])
+    }
 
-    if response['status'] == 200
-      return response['data']
+    response = JSON.parse(RestClient.post(url, params.to_json, :content_type => 'application/json')) rescue nil
+
+    if response.present?
+      return response['data']['hits']
     else
       return false
     end
   end
 
-  def self.create_from_dde2(params, token)
-    token = self.validate_token(token)
-    return false if !token || token.blank?
+  def self.create_from_dde2(params)
+    url = "#{self.dde2_url_with_auth}/v1/add_patient"
+    response = RestClient.put(url, params.to_json, :content_type => 'application/json')
 
-    params['token'] = token
-    url = "#{self.dde2_url}/v1/add_patient"
-
-    response = JSON.parse(RestClient.post(url, params))
-
-    if response['status'] == 201
+    if response.present? && response['status'] == 201
       return true
     elsif response['status'] == 409
       return response['data']
     end
   end
 
-  def self.search_by_identifier(npid, token)
-    return false if npid.blank?
-    token = self.validate_token(token)
-    return false if !token || token.blank?
+  def self.search_by_identifier(npid)
 
-    url = "#{self.dde2_url}/v1/search_by_identifier/#{npid}/#{token}"
-    response = JSON.parse(RestClient.get(url))
+    url = "#{self.dde2_url}/v1/search_by_identifier/#{npid.strip}/#{self.token}"
+    response = JSON.parse(RestClient.get(url)) rescue nil
 
-    if [200, 204].include?(response['status'])
-      return response['data']
+    if response.present? && [200, 204].include?(response['status'])
+      return response['data']['hits']
     else
-      return false
+      return []
+    end
+  end
+
+  def self.search_all_by_identifier(npid)
+    identifier = npid.gsub(/\-/, '').strip
+    people = PatientIdentifier.find_all_by_identifier_and_identifier_type(identifier, 3).map{|id|
+      id.patient.person
+    } unless identifier.blank?
+
+    return people unless people.blank?
+
+    p = DDE2Service.search_by_identifier(identifier)
+    return [] if p.blank?
+    return "found duplicate identifiers" if p.count > 1
+
+    p = p.first
+    passed_national_id = p["npid"]
+
+    unless passed_national_id.blank?
+      patient = PatientIdentifier.find(:first,
+                                       :conditions =>["voided = 0 AND identifier = ? AND identifier_type = 3",passed_national_id]).patient rescue nil
+      return [patient.person] unless patient.blank?
+    end
+
+    birthdate_year = p["birthdate"].to_date.year
+    birthdate_month = p["birthdate"].to_date.month
+    birthdate_day = p["birthdate"].to_date.day
+    birthdate_estimated = p["birthdate_estimated"]
+    gender = p["gender"].match(/F/i) ? "Female" : "Male"
+    passed = {
+        "person"  =>{
+                   "occupation"        =>p['attributes']["occupation"],
+                   "age_estimate"      => birthdate_estimated,
+                   "cell_phone_number" =>p["attributes"]["cell_phone_number"],
+                   "citizenship"       => p['attributes']["citizenship"],
+                   "birth_month"       => birthdate_month ,
+                   "addresses"         =>{"address1"=>p['addresses']["current_residence"],
+                                         'township_division' => p['current_ta'],
+                                         "address2"=>p['addresses']["home_district"],
+                                         "city_village"=>p['addresses']["current_village"],
+                                         "state_province"=>p['addresses']["current_district"],
+                                         "neighborhood_cell"=>p['addresses']["home_village"],
+                                         "county_district"=>p['addresses']["home_ta"]},
+                   "gender"            => gender ,
+                   "patient"           =>{"identifiers"=>{"National id" => p["npid"]}},
+                   "birth_day"         =>birthdate_day,
+                   "names"             =>{"family_name"=>p['names']["family_name"],
+                                         "given_name"=>p['names']["given_name"],
+                                         "middle_name"=> (p['names']["middle_name"] || "")},
+                   "birth_year"        =>birthdate_year
+                      },
+        "filter_district"=>"",
+        "filter"=>{"region"=>"",
+                   "t_a"=>""},
+        "relation"=>""
+    }
+
+    passed["person"].merge!("identifiers" => {"National id" => passed_national_id})
+
+    return [PatientService.create_from_form(passed["person"])]
+    return people
+  end
+
+  def self.update_demographics(patient_bean)
+
+    result = {
+        "npid" => patient_bean.national_id,
+        "family_name"=> patient_bean.last_name,
+        "given_name"=> patient_bean.first_name,
+        "gender"=> patient_bean.sex,
+        "attributes"=> {
+            "occupation"=> (patient_bean.occupation rescue ""),
+            "cell_phone_number"=> (patient_bean.cell_phone_number rescue ""),
+            "citizenship" => (patient_bean.citizenship rescue ""),
+        },
+        "birthdate"=> patient_bean.birth_date.to_date.strftime("%Y-%m-%d"),
+        "birthdate_estimated" => (patient_bean.birthdate_estimated == '0' ? false : true),
+        "current_residence"=> patient_bean.landmark,
+        "current_village"=> patient_bean.current_residence,
+        "current_district"=> patient_bean.current_district,
+        "home_village"=> patient_bean.home_village,
+        "home_ta"=> patient_bean.traditional_authority,
+        "home_district"=> patient_bean.home_district
+    }
+
+    result['attributes'].each do |k, v|
+      if v.blank? || v.to_s.match(/^N\/A$|^null$|^undefined$|^nil$/i)
+        result['attributes'].delete(k)
+      end
+    end
+
+    result.each do |k, v|
+      if v.blank? || v.to_s.match(/^N\/A$|^null$|^undefined$|^nil$/i)
+        result.delete(k)
+      end
+    end
+
+    #raise result.to_yaml
+    url = "#{self.dde2_url_with_auth}/v1/update_patient"
+    response = RestClient.post(url, result.to_json, :content_type => 'application/json')
+
+    if response.present? && response['status'] == 201
+      return true
+    elsif response['status'] == 409
+      return response['data']['hits']
     end
   end
 
