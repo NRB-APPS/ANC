@@ -62,9 +62,7 @@ class ReportsController < ApplicationController
 
     @ttv__total_previous_doses_2 = report.ttv__total_previous_doses_2
 
-    @fansida__sp___number_of_tablets_given_1 = report.fansida__sp___number_of_tablets_given_1
-
-    @fansida__sp___number_of_tablets_given_2 = report.fansida__sp___number_of_tablets_given_2
+    @fansida__sp___number_of_tablets_given_1, @fansida__sp___number_of_tablets_given_2 = report.fansida__sp
 
     @fefo__number_of_tablets_given_1 = report.fefo__number_of_tablets_given_1
 
@@ -191,7 +189,7 @@ class ReportsController < ApplicationController
 
     @week_of_first_visit_2 = report.week_of_first_visit_2
 
-    @week_of_first_visit_unknown = @observations_total - (@week_of_first_visit_1 + @week_of_first_visit_2)
+    @week_of_first_visit_unknown = @new_women_registered - (@week_of_first_visit_1 + @week_of_first_visit_2)
 
     @pre_eclampsia_1 = report.pre_eclampsia_1
 
@@ -205,9 +203,9 @@ class ReportsController < ApplicationController
 
     @fansida__sp___number_of_tablets_given_0 = report.fansida__sp___number_of_tablets_given_0.uniq
 
-    @fansida__sp___number_of_tablets_given_1, @fansida__sp___number_of_tablets_given_2, @fansida__sp___number_of_tablets_given_more_than_2 = report.fansida__sp
+    @fansida__sp___number_of_tablets_given_1, @fansida__sp___number_of_tablets_given_6 = report.fansida__sp
 
-    #@fansida__sp___number_of_tablets_given_2 = report.fansida__sp___number_of_tablets_given_2
+    @fansida__sp___number_of_tablets_given_2 = @observations_total - (@fansida__sp___number_of_tablets_given_0 + @fansida__sp___number_of_tablets_given_1)
 
     #@fefo__number_of_tablets_given_2 = report.fefo__number_of_tablets_given_2
 
@@ -217,10 +215,10 @@ class ReportsController < ApplicationController
     #@fansida__sp___number_of_tablets_given_more_than_2 = @observations_total - (@fansida__sp___number_of_tablets_given_0 + @fansida__sp___number_of_tablets_given_1 + @fansida__sp___number_of_tablets_given_2)
 
     @fefo__number_of_tablets_given_1 = @observations_total - @fefo__number_of_tablets_given_2 #report.fefo__number_of_tablets_given_1
-
-    @albendazole = report.albendazole(1)
-
     @albendazole_more_than_1 = report.albendazole(">1")
+
+    @albendazole = report.albendazole(1) + @albendazole_more_than_1
+
     @albendazole_none = @observations_total - (@albendazole + @albendazole_more_than_1)
 
     @bed_net = report.bed_net
@@ -269,15 +267,18 @@ class ReportsController < ApplicationController
     #>>>>>>>>>>>>>>>>>>>>>>>>NEW ADDITIONS START<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
       @first_visit_hiv_test_result_prev_negative = report.first_visit_hiv_test_result_prev_negative
       @first_visit_hiv_test_result_prev_positive = report.first_visit_hiv_test_result_prev_positive
-
       @first_visit_new_negative = report.first_visit_new_negative
       @first_visit_new_positive = report.first_visit_new_positive
-      @first_visit_hiv_not_done = report.first_visit_hiv_not_done
+      #@first_visit_hiv_not_done = report.first_visit_hiv_not_done
+      @first_visit_hiv_not_done = (@new_women_registered - @first_visit_hiv_test_result_prev_negative -
+          @first_visit_hiv_test_result_prev_positive - @first_visit_new_negative - @first_visit_new_positive)
+
       @final_visit_hiv_test_result_prev_negative = report.final_visit_hiv_test_result_prev_negative
       @final_visit_hiv_test_result_prev_positive = report.final_visit_hiv_test_result_prev_positive
       @final_visit_new_negative = report.final_visit_new_negative
       @final_visit_new_positive = report.final_visit_new_positive
-      @final_visit_hiv_not_done = report.final_visit_hiv_not_done
+      @final_visit_hiv_not_done = (report.final_visit_hiv_not_done - @final_visit_hiv_test_result_prev_negative -
+          @final_visit_hiv_test_result_prev_positive - @final_visit_new_negative - @final_visit_new_positive)
     #@observations_total - (@first_visit_new_positive +
           #@first_visit_new_negative + @first_visit_hiv_test_result_prev_positive + @first_visit_hiv_test_result_prev_negative)
 
@@ -525,7 +526,8 @@ class ReportsController < ApplicationController
           session[:clicked] = nil
           year = session[:appointments_year] = params[:observations][0][:value_text]
      
-          month = params[:observations][1][:value_text]          
+          month = params[:observations][1][:value_text]
+
           case month
              when "January"
                 session[:appointments_month] = "01"
@@ -605,7 +607,7 @@ class ReportsController < ApplicationController
     @facility = Location.current_health_center.name rescue ''
 
     @data = []
-
+    # raise params[:patients].inspect
     if params[:patients]
       new_women = params[:patients].split(",")
       new_women = [-1] if new_women.blank?
