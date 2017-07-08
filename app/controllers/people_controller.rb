@@ -21,6 +21,17 @@ class PeopleController < GenericPeopleController
       formatted_demographics = DDE2Service.format_params(params, Person.session_datetime)
      if DDE2Service.is_valid?(formatted_demographics)
         response = DDE2Service.create_from_dde2(formatted_demographics)
+        if !response.blank? && response['npid']
+          person = PatientService.create_from_form(params[:person])
+          PatientIdentifier.create(:identifier =>  response['npid'],
+                                   :patient_id => person.person_id,
+                                   :creator => User.current.id,
+                                   :location_id => session[:location_id],
+                                   :identifier_type => PatientIdentifierType.find_by_name("National id").id
+          )
+        end
+
+       success = true
       else
         flash[:error] = "Invalid demographics format"
         redirect_to "/" and return
