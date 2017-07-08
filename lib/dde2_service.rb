@@ -197,7 +197,7 @@ module DDE2Service
     citizenship = [
                     params['person']['citizenship'],
                     params['person']['race']
-                  ].delete_if{|d| d.blank?}.last
+                  ].delete_if{|d| d.blank?}.first
     country_of_residence = District.find_by_name(params['person']['addresses']['state_province']).blank? ?
         params['person']['addresses']['state_province'] : nil
 
