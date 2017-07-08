@@ -19,7 +19,6 @@ class PeopleController < GenericPeopleController
 
     if create_from_dde_server
       formatted_demographics = DDE2Service.format_params(params, Person.session_datetime)
-
      if DDE2Service.is_valid?(formatted_demographics)
         response = DDE2Service.create_from_dde2(formatted_demographics)
       else
@@ -97,8 +96,8 @@ class PeopleController < GenericPeopleController
   end
   
 	def search
-		found_person = nil
 
+    found_person = nil
 		if params[:identifier]
       params[:identifier] = params[:identifier].strip
 			local_results = DDE2Service.search_all_by_identifier(params[:identifier])
@@ -156,8 +155,9 @@ class PeopleController < GenericPeopleController
           # redirect_to :action => 'confirm', :found_person_id => found_person.id, :relation => params[:relation] and return
 				end
       end
+
 		end
-    
+
 		@relation = params[:relation]
     @people = []
 		@people = PatientService.person_search(params) if !params[:given_name].blank?
@@ -262,6 +262,7 @@ class PeopleController < GenericPeopleController
   end
 
   def create_person_from_dde
+
     person = DDEService.get_remote_person(params[:remote_person_id])
 
     print_and_redirect("/patients/national_id_label?patient_id=#{person.id}", next_task(person.patient))

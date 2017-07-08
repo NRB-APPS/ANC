@@ -213,10 +213,9 @@ module DDE2Service
           "country_of_residence" => country_of_residence
         },
         "birthdate"=> birthdate,
-        "birthdate_estimated" => ((params['birthdate_estimated'].blank? || params['birthdate_estimated'].to_s == 'false') ? false : true),
+        "birthdate_estimated" => (params['person']['age_estimate'].blank? ? false : true),
         "identifiers"=> {
         },
-        "birthdate_estimated"=> (params['person']['age_estimate'].present?),
         "current_residence"=> params['person']['addresses']['address1'],
         "current_village"=> params['person']['addresses']['city_village'],
         "current_ta"=> params['person']['addresses']['neighborhood_cell'],
@@ -225,9 +224,8 @@ module DDE2Service
         "home_ta"=> params['person']['addresses']['county_district'],
         "home_district"=> params['person']['addresses']['address2']
     }
-
     result['attributes'].each do |k, v|
-      if v.blank?
+      if v.blank? || v.match(/^N\/A$|^null$|^undefined$|^nil$/i)
         result['attributes'].delete(k)
       end
     end
@@ -235,6 +233,12 @@ module DDE2Service
     result['identifiers'].each do |k, v|
       if v.blank? || v.match(/^N\/A$|^null$|^undefined$|^nil$/i)
         result['identifiers'].delete(k)
+      end
+    end
+
+    result.each do |k, v|
+      if v.blank? || v.to_s.match(/^null$|^undefined$|^nil$/i)
+        result.delete(k)
       end
     end
 
@@ -293,12 +297,12 @@ module DDE2Service
 
   def self.create_from_dde2(params)
     url = "#{self.dde2_url_with_auth}/v1/add_patient"
-    response = RestClient.put(url, params.to_json, :content_type => 'application/json')
+    response = JSON.parse(RestClient.put(url, params.to_json, :content_type => 'application/json')) rescue nil
 
-    if response.present? && response['status'] == 201
-      return true
-    elsif response['status'] == 409
+    if response.present?
       return response['data']
+    else
+      return []
     end
   end
 
@@ -374,6 +378,68 @@ module DDE2Service
     return people
   end
 
+  def self.push_to_dde2(patient_bean)
+
+    from_dde2 = self.search_by_identifier(patient_bean.national_id)
+
+    if from_dde2.length > 0
+      self.update_local_demographics(from_dde2[0])
+    else
+      result = {
+          "family_name"=> patient_bean.last_name,
+          "given_name"=> patient_bean.first_name,
+          "gender"=> patient_bean.sex,
+          "attributes"=> {
+              "occupation"=> (patient_bean.occupation rescue ""),
+              "cell_phone_number"=> (patient_bean.cell_phone_number rescue ""),
+              "citizenship" => (patient_bean.citizenship rescue "")
+          },
+          "birthdate" => patient_bean.birth_date,
+          "birthdate_estimated" => (patient_bean.birthdate_estimated.to_s == '0' ? false : true),
+          "identifiers"=> {
+              'Old Identification Number' => patient_bean.national_id
+          },
+          "current_residence"=> patient_bean.landmark,
+          "current_village"=> patient_bean.current_residence,
+          "current_district"=>  patient_bean.current_district,
+          "home_village"=> patient_bean.home_village,
+          "home_ta"=> patient_bean.traditional_authority,
+          "home_district"=> patient_bean.home_district
+      }
+
+      data = self.create_from_dde2(result)
+
+      if !data.blank?
+        npid_type = PatientIdentifierType.find_by_name('National id').id
+        npid = PatientIdentifier.find_by_identifier_and_identifier_type(patient_bean.national_id,
+                npid_type)
+
+        npid.update_attributes(
+            :voided => true,
+            :voided_by => User.current.id,
+            :void_reason => 'Reassigned NPID',
+            :date_voided => Time.now
+        )
+
+        PatientIdentifier.create(
+            :patient_id => npid.patient_id,
+            :creator => User.current.id,
+            :identifier => npid.identifier,
+            :identifier_type => PatientIdentifierType.find_by_name('Old Identification Number').id
+        )
+
+        PatientIdentifier.create(
+            :patient_id => npid.patient_id,
+            :creator => User.current.id,
+            :identifier =>  data['npid'],
+            :identifier_type => npid_type
+        )
+      end
+
+      data
+    end
+  end
+
   def self.update_demographics(patient_bean)
 
     result = {
@@ -386,14 +452,15 @@ module DDE2Service
             "cell_phone_number"=> (patient_bean.cell_phone_number rescue ""),
             "citizenship" => (patient_bean.citizenship rescue ""),
         },
-        "birthdate"=> patient_bean.birth_date.to_date.strftime("%Y-%m-%d"),
+        "birthdate"=> (patient_bean.birth_date.to_date.strftime("%Y-%m-%d") rescue patient_bean.birth_date),
         "birthdate_estimated" => (patient_bean.birthdate_estimated == '0' ? false : true),
         "current_residence"=> patient_bean.landmark,
         "current_village"=> patient_bean.current_residence,
         "current_district"=> patient_bean.current_district,
         "home_village"=> patient_bean.home_village,
         "home_ta"=> patient_bean.traditional_authority,
-        "home_district"=> patient_bean.home_district
+        "home_district"=> patient_bean.home_district,
+        "token" => self.token
     }
 
     result['attributes'].each do |k, v|
@@ -408,9 +475,8 @@ module DDE2Service
       end
     end
 
-    #raise result.to_yaml
     url = "#{self.dde2_url_with_auth}/v1/update_patient"
-    response = RestClient.post(url, result.to_json, :content_type => 'application/json')
+    response = JSON.parse(RestClient.post(url, result.to_json, :content_type => 'application/json')) rescue nil
 
     if response.present? && response['status'] == 201
       return true

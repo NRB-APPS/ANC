@@ -153,36 +153,19 @@ class Bart2Connection::PatientIdentifier < ActiveRecord::Base
     return people.first unless people.blank?
 
     create_from_dde_server = CoreService.get_global_property_value('create.from.dde.server').to_s == "true"
-    create_from_dde2_server = File.exist?('config/dde_connection.yml')
 
     proceed = false
-    if create_from_dde_server && !create_from_dde2_server
-      dde_server = GlobalProperty.find_by_property("dde_server_ip").property_value rescue ""
-      dde_server_username = GlobalProperty.find_by_property("dde_server_username").property_value rescue ""
-      dde_server_password = GlobalProperty.find_by_property("dde_server_password").property_value rescue ""
-      uri = "http://#{dde_server_username}:#{dde_server_password}@#{dde_server}/people/find.json"
-      uri += "?value=#{identifier}"
-      p = JSON.parse(RestClient.get(uri)).first rescue nil
-
-      national_id = p['person']["value"] rescue nil
-      old_national_id = (p["person"]["data"]["patient"]["identifiers"]["old_identification_number"] || p["person"]["old_identification_number"]) rescue nil
-
-    elsif create_from_dde2_server
+    if create_from_dde_server
 
       @settings = YAML.load_file("#{Rails.root}/config/dde_connection.yml")[Rails.env] # rescue {}
-      uri = "http://#{(@settings["dde_username"])}:#{(@settings["dde_password"])}@#{(@settings["dde_server"])}/ajax_process_data"
-      post_data = {
-          "person" => {
-             "national_id" => identifier
-          }
-      }
+      p = DDE2Service.search_by_identifier(identifier)
 
-      p = JSON.parse(RestClient.post(uri, post_data))
+      return nil if p.blank?
 
       if p.length == 1
-        p =JSON.parse(p[0])
-        national_id = p["_id"]
-        old_national_id = p["old_identification_number"]
+        p =p[0]
+        national_id = p["npid"]
+        old_national_id = p['identifiers']["Old Identification Number"] rescue nil
       end
 
       birthdate_year = p["birthdate"].to_date.year rescue "Unknown"
@@ -192,9 +175,9 @@ class Bart2Connection::PatientIdentifier < ActiveRecord::Base
       gender = p["gender"] == "F" ? "Female" : "Male"
 
       passed = {
-          "person"=>{"occupation"=>p["person_attributes"]["occupation"],
-                     "age_estimate"=> birthdate_estimated,
-                     "cell_phone_number"=>p["person_attributes"]["cell_phone_number"],
+          "person"=>{"occupation"=>p["attributes"]["occupation"],
+                     "age_estimate"=> nil,
+                     "cell_phone_number"=>p["attributes"]["cell_phone_number"],
                      "birth_month"=> birthdate_month ,
                      "addresses"=>{"address1"=>p["addresses"]["current_residence"],
                                    "address2"=>p["addresses"]["home_district"],
@@ -205,9 +188,9 @@ class Bart2Connection::PatientIdentifier < ActiveRecord::Base
                                    "county_district"=>p["addresses"]["home_ta"]
                      },
                      "gender"=> gender ,
-                     "patient"=>{"identifiers"=>{"National id" => p["_id"]}},
+                     "patient"=>{"identifiers"=>{"National id" => p["npid"]}},
                      "birth_day"=>birthdate_day,
-                     "home_phone_number"=>p["person_attributes"]["home_phone_number"],
+                     "home_phone_number"=>p["attributes"]["home_phone_number"],
                      "names"=>{"family_name"=>p["names"]["family_name"],
                                "given_name"=>p["names"]["given_name"],
                               },
