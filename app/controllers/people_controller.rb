@@ -119,9 +119,13 @@ class PeopleController < GenericPeopleController
 
 				if create_from_dde_server
           p = DDE2Service.search_by_identifier(params[:identifier])
+
           if p.count > 1
 						redirect_to :action => 'duplicates' ,:search_params => params
 						return
+          elsif (p.blank? || p.count == 0) && local_results.count == 1
+            patient_bean = PatientService.get_patient(local_results.last)
+            DDE2Service.push_to_dde2(patient_bean)
           end
 				end
 
@@ -194,9 +198,8 @@ class PeopleController < GenericPeopleController
       results.occupation = data["occupation"]
       results.sex = data["gender"].match('F') ? 'Female' : 'Male'
       results.birthdate_estimated = data["birthdate_estimated"]
-      results.birth_date = birthdate_formatted((data["birthdate"]).to_date , results.birthdate_estimated)
-      results.birthdate = (data["birthdate"]).to_date
-      results.age = cul_age(results.birthdate.to_date , results.birthdate_estimated)
+      results.birth_date = (data["birthdate"]).to_date.strftime("%d/%b/%Y")
+      results.age = cul_age(results.birth_date.to_date , results.birthdate_estimated)
       @search_results[results.national_id] = results
     end if create_from_dde_server
 

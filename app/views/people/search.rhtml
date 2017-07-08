@@ -247,7 +247,8 @@ end -%>
 
     var pos = 1
     i = -1;
-<%(@patients).each do |data| %>
+<%
+(@patients).each do |data| %>
       i++
       people.push({});
 
@@ -259,17 +260,29 @@ end -%>
 
       people[pos]["Year"] = "<%=data.birth_date.to_date.year rescue " " %>";
       if(people[pos]["Year"] == " " ){
-        people[pos]["Year"] =  people[pos]["Birthdate"].split('/')[2].replace("??","");
+          try {
+              people[pos]["Year"] = people[pos]["Birthdate"].split('/')[2].replace("??", "");
+          }catch(exp){
+
+          }
       }
 
       people[pos]["Month"] = "<%=data.birth_date.to_date.strftime("%b") rescue "" %>";
       if(people[pos]["Month"] == "" ){
+          try {
         people[pos]["Month"] =  people[pos]["Birthdate"].split('/')[1].replace("??","");
+          }catch(exp){
+
+          }
       }
 
       people[pos]["Day"] = "<%=data.birth_date.to_date.day rescue "" %>";
       if(people[pos]["Day"] == " " ){
-        people[pos]["Day"] =  people[pos]["Birthdate"].split('/')[0].replace("??","");
+          try {
+            people[pos]["Day"] =  people[pos]["Birthdate"].split('/')[0].replace("??","");
+          }catch(exp){
+
+          }
       }
 
       people[pos]["Age"] = "<%=data.age.squish rescue nil%>";

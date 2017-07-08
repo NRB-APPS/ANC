@@ -167,7 +167,7 @@ module PatientService
     patient.home_village = person["person"]["addresses"]["neighborhood_cell"]
     patient.occupation = person["person"]["occupation"]
     patient.cell_phone_number = person["person"]["cell_phone_number"]
-    patient.cell_phone_number = person["person"]["home_phone_number"]
+    patient.home_phone_number = person["person"]["home_phone_number"]
     patient.citizenship = person["person"]["citizenship"]
     patient.race = person["person"]["race"]
     patient.old_identification_number = person["person"]["patient"]["identifiers"]["Old national id"]

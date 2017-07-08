@@ -276,8 +276,8 @@ module DDE2Service
   end
 
   def self.search_from_dde2(params)
-    return [] if params[:given_name].blank? ||  params[:family_name].blank? ||
-        params[:gender].blank?
+    return [] if params['given_name'].blank? ||  params['family_name'].blank? ||
+        params['gender'].blank?
 
 
     url = "#{self.dde2_url_with_auth}/v1/search_by_name_and_gender"
@@ -378,12 +378,16 @@ module DDE2Service
     return people
   end
 
+  def self.update_local_demographics(data)
+
+  end
+
   def self.push_to_dde2(patient_bean)
 
     from_dde2 = self.search_by_identifier(patient_bean.national_id)
 
     if from_dde2.length > 0
-      #self.update_local_demographics(from_dde2[0])
+      self.update_local_demographics(from_dde2[0])
     else
       result = {
           "family_name"=> patient_bean.last_name,
