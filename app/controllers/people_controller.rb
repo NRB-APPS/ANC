@@ -9,6 +9,22 @@ class PeopleController < GenericPeopleController
     end
   end
 
+  def conflicts
+    response = params[:response]
+    @return_path = response[:return_path]
+    @local_duplicates = [response['local_data']]
+    @remote_duplicates = response['data']
+
+    @remote_duplicates.each do |r|
+      r['return_path'] = response['return_path']
+    end
+  end
+
+  def force_create
+    data = JSON.parse(params['data'])
+    raise data.inspect
+  end
+
   def create
 
     Person.session_datetime = session[:datetime].to_date rescue Date.today
@@ -21,6 +37,10 @@ class PeopleController < GenericPeopleController
       formatted_demographics = DDE2Service.format_params(params, Person.session_datetime)
      if DDE2Service.is_valid?(formatted_demographics)
         response = DDE2Service.create_from_dde2(formatted_demographics)
+        if !response.blank? && !response['status'].blank? && !response['return_path'].blank? && response['status'] == 409
+          redirect_to :action => 'conflicts', :response => response and return
+        end
+
         if !response.blank? && response['npid']
           person = PatientService.create_from_form(params[:person])
           PatientIdentifier.create(:identifier =>  response['npid'],
@@ -72,7 +92,7 @@ class PeopleController < GenericPeopleController
         encounter.encounter_datetime = session[:datetime] unless session[:datetime].blank?
         encounter.save
       end rescue nil
-      
+
       PatientService.patient_national_id_label(person.patient)
       unless (params[:relation].blank?)
         redirect_to search_complete_url(person.id, params[:relation]) and return
@@ -190,7 +210,7 @@ class PeopleController < GenericPeopleController
       results = PersonSearch.new(national_id)
       results.national_id = national_id
 
-      results.current_residence = data["addresses"]["current_residence"]
+      results.current_residence = data["addresses"]["current_village"]
       results.person_id = 0
       results.home_district = data["addresses"]["home_district"]
       results.traditional_authority =  data["addresses"]["home_ta"]

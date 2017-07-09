@@ -296,14 +296,25 @@ module DDE2Service
   end
 
   def self.create_from_dde2(params)
+    paramz = params
     url = "#{self.dde2_url_with_auth}/v1/add_patient"
-    response = JSON.parse(RestClient.put(url, params.to_json, :content_type => 'application/json')) rescue nil
+    params['token'] = self.token
+    data = {}
 
-    if response.present?
-      return response['data']
-    else
-      return []
+    RestClient.put(url, params.to_json, :content_type => 'application/json'){|response, request, result|
+       response = JSON.parse(response) rescue response
+      if response['status'] == 201
+         data = response['data']
+      elsif response['status'] == 409
+        data = response
+      end
+    }
+
+    if !data.blank? && data['return_path']
+      data['local_data'] = paramz
     end
+
+    data
   end
 
   def self.search_by_identifier(npid)
