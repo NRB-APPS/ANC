@@ -347,6 +347,26 @@ module DDE2Service
           "home_district"=> patient_bean.home_district
       }
 
+      result['home_district'] = 'Other' if result['home_district'].blank?
+
+      (result['attributes'] || {}).each do |k, v|
+        if v.blank? || v.match(/^N\/A$|^null$|^undefined$|^nil$/i)
+          result['attributes'].delete(k)  unless [true, false].include?(v)
+        end
+      end
+
+      (result['identifiers'] || {}).each do |k, v|
+        if v.blank? || v.match(/^N\/A$|^null$|^undefined$|^nil$/i)
+          result['identifiers'].delete(k)  unless [true, false].include?(v)
+        end
+      end
+
+      result.each do |k, v|
+        if v.blank? || v.to_s.match(/^null$|^undefined$|^nil$/i)
+          result.delete(k) unless [true, false].include?(v)
+        end
+      end
+
       data = self.create_from_dde2(result)
 
       if !data.blank?
