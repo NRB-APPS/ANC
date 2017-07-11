@@ -424,7 +424,6 @@ class PeopleController < GenericPeopleController
     else
 
       local_patients = []
-
       session[:cleaning_params] = params
 
       hiv_concept_id = ConceptName.find_by_name("HIV Status").concept_id

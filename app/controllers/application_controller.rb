@@ -121,9 +121,10 @@ class ApplicationController < GenericApplicationController
       session["proceed_to_art"]["#{(session[:datetime] || Time.now()).to_date.strftime("%Y-%m-%d")}"] = {} if session["proceed_to_art"]["#{(session[:datetime] || Time.now()).to_date.strftime("%Y-%m-%d")}"].nil?
 
       if create_from_dde_server
-        @external_id = Bart2Connection::PatientIdentifier.search_by_identifier(@anc_patient.national_id).person_id# rescue nil
+        @external_id = Bart2Connection::PatientIdentifier.search_by_identifier(@anc_patient.national_id).person_id rescue nil
+        @external_id = Bart2Connection::PatientIdentifier.search_or_create(@anc_patient.national_id).person_id if @external_id.blank?
       else
-        @external_id = Bart2Connection::PatientIdentifier.search_or_create(@anc_patient.national_id).person_id #rescue nil
+        @external_id = Bart2Connection::PatientIdentifier.search_or_create(@anc_patient.national_id).person_id rescue nil
       end
       @external_user_id = Bart2Connection::User.find_by_username(current_user.username).id rescue nil
 

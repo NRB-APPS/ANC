@@ -133,7 +133,7 @@ module DDE2Service
         "identifiers"=> {
         },
         "current_residence"=> params['person']['addresses']['address1'],
-        "current_village"=> params['person']['addresses']['city_village'],
+        "current_village" => params['person']['addresses']['city_village'],
         "current_ta"=> (params['filter']['t_a']),
         "current_district"=> params['person']['addresses']['state_province'],
         "home_village"=> params['person']['addresses']['neighborhood_cell'],
