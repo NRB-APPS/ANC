@@ -12,17 +12,89 @@ class PeopleController < GenericPeopleController
   def conflicts
     response = params[:response]
     @return_path = response[:return_path]
-    @local_duplicates = [response['local_data']]
+    @local_duplicates = [params[:local_data]]
     @remote_duplicates = response['data']
 
-    @remote_duplicates.each do |r|
+    @local_duplicates.each do |r|
       r['return_path'] = response['return_path']
     end
   end
 
   def force_create
+=begin
+  When params is local, data['return_path'] is available
+=end
     data = JSON.parse(params['data'])
-    raise data.inspect
+    data['gender'] = data['gender'].match(/F/i) ? "Female" : "Male"
+    data['birthdate'] = data['birthdate'].to_date.strftime("%Y-%m-%d")
+    data['birthdate_estimated'] = ({'false' => 0, 'true' => 1}[data['birthdate_estimated']])
+    data['birthdate_estimated'] = params['data']['birthdate_estimated'] if data['birthdate_estimated'].to_s.blank?
+    person = {}, npid = nil
+
+    if !data['return_path'].blank?
+      person = {
+          "person"  =>{
+              "birthdate_estimated" => data['birthdate_estimated'],
+              "attributes"         => data["attributes"],
+              "birthdate"          => data['birthdate'],
+              "addresses"          =>{"address1"=>data["current_residence"],
+                                     'township_division' => data['current_ta'],
+                                     "address2"=>data["home_district"],
+                                     "city_village"=>data["current_village"],
+                                     "state_province"=>data["current_district"],
+                                     "neighborhood_cell"=>data["home_village"],
+                                     "county_district"=>data["home_ta"]},
+              "gender"            => data['gender'],
+              "identifiers"           => (data["identifiers"].blank? ? {} : data["identifiers"]),
+              "names"             =>{"family_name"=>  data["family_name"],
+                                     "given_name"=>   data["given_name"],
+                                     "middle_name"=> (data["middle_name"] || "")}
+          }
+      }
+
+      response = DDE2Service.force_create_from_dde2(data, data['return_path'])
+      npid = response['npid']
+      person['person']['identifiers']['National id'] = npid
+      person = DDE2Service.create_from_form(person)
+    else
+      #search from dde in case you want to replace the identifier
+      npid = data['npid']
+
+      person = {
+          "person"  =>{
+              "birthdate_estimated"      => data['birthdate_estimated'],
+              "attributes"        =>data["attributes"],
+              "birthdate"       => data['birthdate'],
+              "addresses"         =>{"address1"=>data['addresses']["current_residence"],
+                                     'township_division' => data['addresses']['current_ta'],
+                                     "address2"=>data['addresses']["home_district"],
+                                     "city_village"=>data['addresses']["current_village"],
+                                     "state_province"=>data['addresses']["current_district"],
+                                     "neighborhood_cell"=>data['addresses']["home_village"],
+                                     "county_district"=>data['addresses']["home_ta"]},
+              "gender"            => data['gender'],
+              "identifiers"           => (data["identifiers"].blank? ? {} : data["identifiers"]),
+              "names"             => {"family_name"=>data['names']["family_name"],
+                                     "given_name"=>data['names']["given_name"],
+                                     "middle_name"=> (data['names']["middle_name"] || "")}
+            }
+        }
+
+       if npid.present?
+         person['person']['identifiers']['National id'] = npid
+         person = DDE2Service.create_from_form(person)
+
+         response = DDE2Service.search_by_identifier(npid)
+         if response.present?
+
+           if response.first['npid'] != npid
+             print_and_redirect("/patients/national_id_label?patient_id=#{person.id}", next_task(person.patient)) and return
+           end
+         end
+       end
+    end
+
+    redirect_to next_task(person.patient)
   end
 
   def create
@@ -35,10 +107,11 @@ class PeopleController < GenericPeopleController
 
     if create_from_dde_server
       formatted_demographics = DDE2Service.format_params(params, Person.session_datetime)
+
      if DDE2Service.is_valid?(formatted_demographics)
         response = DDE2Service.create_from_dde2(formatted_demographics)
         if !response.blank? && !response['status'].blank? && !response['return_path'].blank? && response['status'] == 409
-          redirect_to :action => 'conflicts', :response => response and return
+          redirect_to :action => 'conflicts', :response => response, :local_data => formatted_demographics and return
         end
 
         if !response.blank? && response['npid']
@@ -170,7 +243,6 @@ class PeopleController < GenericPeopleController
       if (found_person.gender rescue "") == "M"
         redirect_to "/clinic/no_males" and return
       end
-     
       if found_person
         if create_from_dde_server
           patient = found_person.patient

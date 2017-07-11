@@ -17,91 +17,6 @@ require 'rest-client'
 
 module DDE2Service
 
-  class Patient
-
-    attr_accessor :patient, :person
-
-    def initialize(patient)
-      self.patient = patient
-      self.person = self.patient.person			
-    end
-
-    def get_full_attribute(attribute)
-      PersonAttribute.find(:first,:conditions =>["voided = 0 AND person_attribute_type_id = ? AND person_id = ?",
-          PersonAttributeType.find_by_name(attribute).id,self.person.id]) rescue nil
-    end
-
-    def set_attribute(attribute, value)
-      PersonAttribute.create(:person_id => self.person.person_id, :value => value,
-        :person_attribute_type_id => (PersonAttributeType.find_by_name(attribute).id))
-    end
-
-    def get_full_identifier(identifier)
-      PatientIdentifier.find(:first,:conditions =>["voided = 0 AND identifier_type = ? AND patient_id = ?",
-          PatientIdentifierType.find_by_name(identifier).id, self.patient.id]) rescue nil
-    end
-
-    def set_identifier(identifier, value)
-      PatientIdentifier.create(:patient_id => self.patient.patient_id, :identifier => value,
-        :identifier_type => (PatientIdentifierType.find_by_name(identifier).id))
-    end
-
-    def name
-      "#{self.person.names.first.given_name} #{self.person.names.first.family_name}".titleize rescue nil
-    end
-
-    def first_name
-      "#{self.person.names.first.given_name}".titleize rescue nil
-    end
-
-    def last_name
-      "#{self.person.names.first.family_name}".titleize rescue nil
-    end
-
-    def middle_name
-      "#{self.person.names.first.middle_name}".titleize rescue nil
-    end
-
-    def maiden_name
-      "#{self.person.names.first.family_name2}".titleize rescue nil
-    end
-
-    def current_address2
-      "#{self.person.addresses.last.city_village}" rescue nil
-    end
-
-    def current_address1
-      "#{self.person.addresses.last.address1}" rescue nil
-    end
-
-    def current_district
-      "#{self.person.addresses.last.state_province}" rescue nil
-    end
-
-    def current_address
-      "#{self.current_address1}, #{self.current_address2}, #{self.current_district}" rescue nil
-    end
-
-    def home_district
-      "#{self.person.addresses.last.address2}" rescue nil
-    end
-
-    def home_ta
-      "#{self.person.addresses.last.county_district}" rescue nil
-    end
-
-    def home_village
-      "#{self.person.addresses.last.neighborhood_cell}" rescue nil
-    end
-
-    def national_id(force = true)
-      id = self.patient.patient_identifiers.find_by_identifier_type(PatientIdentifierType.find_by_name("National id").id).identifier rescue nil
-      return id unless force
-      id ||= PatientIdentifierType.find_by_name("National id").next_identifier(:patient => self.patient).identifier
-      id
-    end
-  end
-
   def self.dde2_configs
     YAML.load_file("#{Rails.root}/config/dde_connection.yml")[Rails.env]
   end
@@ -122,8 +37,9 @@ module DDE2Service
     dde2_configs = self.dde2_configs
     url = "#{self.dde2_url}/v1/authenticate"
 
-    res = JSON.parse(RestClient.post(url, {'username' => dde2_configs['dde_username'],
-                                           'password' => dde2_configs['dde_password']}.to_json, :content_type => 'application/json'))
+    res = JSON.parse(RestClient.post(url,
+            {'username' => dde2_configs['dde_username'],
+              'password' => dde2_configs['dde_password']}.to_json, :content_type => 'application/json'))
     token = nil
     if (res.present? && res['status'] && res['status'] == 200)
       token = res['data']['token']
@@ -218,27 +134,28 @@ module DDE2Service
         },
         "current_residence"=> params['person']['addresses']['address1'],
         "current_village"=> params['person']['addresses']['city_village'],
-        "current_ta"=> params['person']['addresses']['neighborhood_cell'],
+        "current_ta"=> (params['filter']['t_a']),
         "current_district"=> params['person']['addresses']['state_province'],
         "home_village"=> params['person']['addresses']['neighborhood_cell'],
         "home_ta"=> params['person']['addresses']['county_district'],
         "home_district"=> params['person']['addresses']['address2']
     }
+
     result['attributes'].each do |k, v|
       if v.blank? || v.match(/^N\/A$|^null$|^undefined$|^nil$/i)
-        result['attributes'].delete(k)
+        result['attributes'].delete(k)  unless [true, false].include?(v)
       end
     end
 
     result['identifiers'].each do |k, v|
       if v.blank? || v.match(/^N\/A$|^null$|^undefined$|^nil$/i)
-        result['identifiers'].delete(k)
+        result['identifiers'].delete(k)  unless [true, false].include?(v)
       end
     end
 
     result.each do |k, v|
       if v.blank? || v.to_s.match(/^null$|^undefined$|^nil$/i)
-        result.delete(k)
+        result.delete(k) unless [true, false].include?(v)
       end
     end
 
@@ -296,7 +213,6 @@ module DDE2Service
   end
 
   def self.create_from_dde2(params)
-    paramz = params
     url = "#{self.dde2_url_with_auth}/v1/add_patient"
     params['token'] = self.token
     data = {}
@@ -309,11 +225,24 @@ module DDE2Service
         data = response
       end
     }
+    data
+  end
 
-    if !data.blank? && data['return_path']
-      data['local_data'] = paramz
-    end
 
+  def self.force_create_from_dde2(params, path)
+    url = "#{self.dde2_url}#{path}"
+    params['token'] = self.token
+    params['identifiers'] = {}
+
+    params.delete_if{|k,v| ['npid', 'return_path'].include?(k)}
+
+    data = {}
+    RestClient.put(url, params.to_json, :content_type => 'application/json'){|response, request, result|
+      response = JSON.parse(response) rescue response
+      if response['status'] == 201
+        data = response['data']
+      end
+    }
     data
   end
 
@@ -513,5 +442,42 @@ module DDE2Service
     else
       return false
     end
+  end
+
+  def self.create_from_form(params)
+    params = params['person']
+    return nil if params.blank?
+    address_params = params["addresses"]
+    names_params = params["names"]
+    params_to_process = params.reject{|key,value| key.match(/addresses|patient|names|attributes/) }
+    person_params = params_to_process.reject{|key,value| key.match(/identifiers|attributes/) }
+
+    if person_params["gender"].to_s == "Female"
+      person_params["gender"] = 'F'
+    elsif person_params["gender"].to_s == "Male"
+      person_params["gender"] = 'M'
+    end
+
+    person = Person.create(person_params)
+    person.birthdate_estimated = person_params['birthdate_estimated'].to_i
+    person.save
+
+    person.names.create(names_params)
+    person.addresses.create(address_params) unless address_params.empty? rescue nil
+
+    params['attributes'].each do |type, value|
+      person.person_attributes.create(
+          :person_attribute_type_id => PersonAttributeType.find_by_name(type.humanize).person_attribute_type_id,
+          :value => value) unless value.blank? rescue nil
+    end
+
+    patient = person.create_patient
+    params["identifiers"].each{|identifier_type_name, identifier|
+      next if identifier.blank?
+      identifier_type = PatientIdentifierType.find_by_name(identifier_type_name) || PatientIdentifierType.find_by_name("Unknown id")
+      patient.patient_identifiers.create("identifier" => identifier, "identifier_type" => identifier_type.patient_identifier_type_id)
+    } if params["identifiers"]
+
+    return person
   end
 end

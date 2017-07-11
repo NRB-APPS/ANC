@@ -76,7 +76,7 @@
   <h3 class="msg">Select patient to continue ....</h3>
   <table style="width: 100%; border-top: 1px solid lightgray">
     <tr>
-        <td style="width: 52%;">
+        <td style="width: 57%;">
           <div style="max-height: 600px; height: 600px; overflow: auto;width: 100%;">
   <table style="width: 100%">
     <tr class="header" style="background: darkslategray;color: white;font-weight: bold">
@@ -104,14 +104,12 @@
     %>
 
         <tr>
-          <td class="color_<%=row_number % 2 == 0 ? 'white' : 'darkslatedgray'%> row_number_<%=row_number%>"><%= patient['npid'] || '&nbsp;' %></td>
+          <td class="color_<%=row_number % 2 == 0 ? 'white' : 'darkslatedgray'%> row_number_<%=row_number%>"><%= patient['npid'] || '<span style="color: #3b5998">New</span>' %></td>
           <td class="color_<%=row_number % 2 == 0 ? 'white' : 'darkslatedgray'%> row_number_<%=row_number%>"><%= (patient['given_name'] + ' ' +  patient['family_name']) + " (#{gender})" || '&nbsp;' %></td>
           <td class="color_<%=row_number % 2 == 0 ? 'white' : 'darkslatedgray'%> row_number_<%=row_number%>" style="text-align:center;"><%= birthdate || '&nbsp;' %> </td>
           <td class="color_<%=row_number % 2 == 0 ? 'white' : 'darkslatedgray'%> row_number_<%=row_number%>" style="text-align:center;"><%= patient['current_village'] || '&nbsp;' %></td>
           <td class="color_<%=row_number % 2 == 0 ? 'white' : 'darkslatedgray'%> row_number_<%=row_number%>">
-            <% if true %>
-                <a href="#" id = '<%=patient['npid']%>' class ='merge button_row_<%=row_number%>' data = '<%= patient.to_json%>' onmousedown="view(this, true);">View</a>
-            <%end%>
+            <a href="#" id = '<%=patient['npid']%>' class ='merge button_row_<%=row_number%>' data = '<%= patient.to_json%>' onmousedown="view(this, true);">View</a>
           </td>
         </tr>
     <%end%>
@@ -139,7 +137,7 @@
           <td class="color_<%=row_number % 2 == 0 ? 'white' : 'darkslatedgray'%> row_number_<%=row_number%>" style="text-align:center;"><%= birthdate || '&nbsp;' %> </td>
           <td class="color_<%=row_number % 2 == 0 ? 'white' : 'darkslatedgray'%> row_number_<%=row_number%>" style="text-align:center;"><%= patient['addresses']['current_village'] || '&nbsp;' %></td>
           <td class="color_<%=row_number % 2 == 0 ? 'white' : 'darkslatedgray'%> row_number_<%=row_number%>">
-              <a href="#" id = '<%=patient['npid']%>' class ='merge button_row_<%=row_number%>' data = '<%= patient.to_json%>' onmousedown="view(this, false);">View</a>
+            <a href="#" id = '<%=patient['npid']%>' class ='merge button_row_<%=row_number%>' data = '<%= patient.to_json%>' onmousedown="view(this, false);">View</a>
           </td>
         </tr>
     <%end%>
@@ -166,7 +164,7 @@
 </div>
 
 <div id="footer" style="position: absolute; bottom: 1px; right: 10px;width: 99.5%;left: 0.25%;background: #333333">
-  <button id="nextButton" class="button navButton green" onclick="__$('form').submit()"><span>Finish</span></button>
+  <button id="nextButton" class="button navButton green" onclick="__$('form').submit()"><span>Select</span></button>
   <button id="cancelButton" class="button navButton red" onclick="window.location = '/'"><span>Cancel</span></button>
 </div>
 
@@ -192,6 +190,7 @@
               __$("current_district").innerHTML = data['current_district'];
               __$("current_village").innerHTML = data['current_village'];
               __$("landmark").innerHTML = data['current_residence'];
+              __$("nextButton").innerHTML = "<span>Create</span>"
 
           } else if (local == false) {
               __$("given_name").innerHTML = data['names']['given_name'];
@@ -207,6 +206,7 @@
                   __$("current_village").innerHTML = data['addresses']['current_village'];
                   __$("landmark").innerHTML = data['addresses']['current_residence'];
               }
+              __$("nextButton").innerHTML = "<span>Select</span>"
           }
 
           for (var i = 0; i < valNodes.length; i++) {
@@ -215,7 +215,7 @@
       }, 150);
 
       if (__$('form')) {
-          __$('form').parentNode.safeRemoveChild(__$('form'));
+          __$('form').parentNode.removeChild(__$('form'));
       }
 
       var form = document.createElement('form');
@@ -228,6 +228,5 @@
       form.appendChild(input);
       document.body.appendChild(form);
       form.action = "/people/force_create";
-
   }
 </script>
