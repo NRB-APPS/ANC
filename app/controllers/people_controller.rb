@@ -229,8 +229,8 @@ class PeopleController < GenericPeopleController
 						redirect_to :action => 'duplicates' ,:search_params => params
 						return
           elsif (p.blank? || p.count == 0) && local_results.count == 1
-            patient_bean = PatientService.get_patient(local_results.last)
-            res = DDE2Service.push_to_dde2(patient_bean)
+            patient_bean = PatientService.get_patient(local_results.first)
+            DDE2Service.push_to_dde2(patient_bean)
           end
 				end
 

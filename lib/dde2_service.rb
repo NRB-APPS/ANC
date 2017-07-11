@@ -334,7 +334,7 @@ module DDE2Service
               "cell_phone_number"=> (patient_bean.cell_phone_number rescue ""),
               "citizenship" => (patient_bean.citizenship rescue "")
           },
-          "birthdate" => patient_bean.birth_date.to_date.strftime('%Y-%m-%d'),
+          "birthdate" => (Person.find(patient_bean.person_id).birthdate.to_date.strftime('%Y-%m-%d') rescue nil),
           "birthdate_estimated" => (patient_bean.birthdate_estimated.to_s == '0' ? false : true),
           "identifiers"=> {
               'Old Identification Number' => patient_bean.national_id
