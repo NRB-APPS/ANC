@@ -1848,8 +1848,6 @@ module ANCService
       params['person']['addresses']['neighborhood_cell'] = ''
     end
 
-    raise params.to_yaml
-
     person = Person.find(params['person_id'])
     if params.has_key?('person')
       params = params['person']
