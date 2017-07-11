@@ -230,7 +230,7 @@ class PeopleController < GenericPeopleController
 						return
           elsif (p.blank? || p.count == 0) && local_results.count == 1
             patient_bean = PatientService.get_patient(local_results.last)
-            DDE2Service.push_to_dde2(patient_bean)
+            res = DDE2Service.push_to_dde2(patient_bean)
           end
 				end
 

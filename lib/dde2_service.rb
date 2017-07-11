@@ -214,6 +214,7 @@ module DDE2Service
 
     RestClient.put(url, params.to_json, :content_type => 'application/json'){|response, request, result|
        response = JSON.parse(response) rescue response
+
       if response['status'] == 201
          data = response['data']
       elsif response['status'] == 409
@@ -333,7 +334,7 @@ module DDE2Service
               "cell_phone_number"=> (patient_bean.cell_phone_number rescue ""),
               "citizenship" => (patient_bean.citizenship rescue "")
           },
-          "birthdate" => patient_bean.birth_date,
+          "birthdate" => patient_bean.birth_date.to_date.strftime('%Y-%m-%d'),
           "birthdate_estimated" => (patient_bean.birthdate_estimated.to_s == '0' ? false : true),
           "identifiers"=> {
               'Old Identification Number' => patient_bean.national_id
