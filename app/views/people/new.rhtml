@@ -419,6 +419,7 @@
     :allowFreeText => true,
     :ajaxURL => "/people/static_nationalities?&search_string=",
     :tt_onLoad => "$('nextButton').style.display = 'block';",
+    :tt_BeforeUnLoad => "$('person_citizenship').value = $('person_race').value",
     :condition => '($("person_citizenship").value != "Malawian")'%>
   <p><label for="region_region_name">Region of Origin</label></br>
 

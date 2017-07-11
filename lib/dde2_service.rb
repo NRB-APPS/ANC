@@ -68,7 +68,6 @@ module DDE2Service
     dde2_configs = self.dde2_configs
     url = "#{self.dde2_url}/v1/add_user"
     url = url.gsub(/\/\//, "//admin:admin@")
-    puts url
     response = RestClient.put(url,{
                   "username" => dde2_configs["dde_username"],  "password" => dde2_configs["dde_password"],
                   "application" => dde2_configs["application_name"], "site_code" => dde2_configs["site_code"],
@@ -110,12 +109,8 @@ module DDE2Service
       birthdate = "#{params['person']['birth_year']}-#{params['person']['birth_month']}-#{params['person']['birth_day']}"
     end
 
-    citizenship = [
-                    params['person']['citizenship'],
-                    params['person']['race']
-                  ].delete_if{|d| d.blank?}.first
-    country_of_residence = District.find_by_name(params['person']['addresses']['state_province']).blank? ?
-        params['person']['addresses']['state_province'] : nil
+    citizenship = params['person']['race']
+    country_of_residence = params['person']['country_of_residence']
 
     result = {
         "family_name"=> params['person']['names']['family_name'],
@@ -395,6 +390,7 @@ module DDE2Service
             "occupation"=> (patient_bean.occupation rescue ""),
             "cell_phone_number"=> (patient_bean.cell_phone_number rescue ""),
             "citizenship" => (patient_bean.citizenship rescue ""),
+            "country_of_residence" => (patient_bean.country_of_residence rescue ""),
         },
         "birthdate"=> (patient_bean.birth_date.to_date.strftime("%Y-%m-%d") rescue patient_bean.birth_date),
         "birthdate_estimated" => (patient_bean.birthdate_estimated == '0' ? false : true),
@@ -403,10 +399,23 @@ module DDE2Service
         "current_district"=> patient_bean.current_district,
         "home_village"=> patient_bean.home_village,
         "home_ta"=> patient_bean.traditional_authority,
-        "home_district"=> patient_bean.home_district,
+        "home_district"=> (patient_bean.home_district || 'Other'),
         "token" => self.token
     }
 
+    if !result['attributes']['country_of_residence'].blank? && !result['attributes']['country_of_residence'].match(/Malawi/i)
+      result['current_district'] = 'Other'
+      result['current_ta'] = 'Other'
+      result['current_village'] = 'Other'
+    end
+
+    if !result['attributes']['citizenship'].blank? && !result['attributes']['citizenship'].match(/Malawi/i)
+      result['home_district'] = 'Other'
+      result['home_ta'] = 'Other'
+      result['home_village'] = 'Other'
+    end
+
+    result['home_district'] = 'Other' if result['home_district'].blank?
     result['attributes'].each do |k, v|
       if v.blank? || v.to_s.match(/^N\/A$|^null$|^undefined$|^nil$/i)
         result['attributes'].delete(k)
@@ -419,14 +428,20 @@ module DDE2Service
       end
     end
 
-    url = "#{self.dde2_url_with_auth}/v1/update_patient"
-    response = JSON.parse(RestClient.post(url, result.to_json, :content_type => 'application/json')) rescue nil
+    data = nil
+    url = "#{self.dde2_url}/v1/update_patient"
 
-    if response.present? && response['status'] == 201
-      return true
-    elsif response['status'] == 409
-      return response['data']['hits']
-    end
+    response = RestClient.post(url, result.to_json, :content_type => 'application/json')
+    response = JSON.parse(response) rescue response
+
+    if (response['status'] == 201 rescue false)
+        data =  true
+      elsif (response['status'] == 409 rescue false)
+        data = response['data']['hits']
+      end
+
+
+    data
   end
 
   def self.mark_duplicate(npid, token)

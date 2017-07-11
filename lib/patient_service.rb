@@ -1039,6 +1039,7 @@ EOF
     patient.guardian = art_guardian(person.patient) rescue nil
     patient.race = get_attribute(person, 'Race')
     patient.citizenship = get_attribute(person, 'Citizenship')
+    patient.country_of_residence = get_attribute(person, 'Country of Residence')
     patient
   end
 
@@ -1174,7 +1175,7 @@ EOF
 		patient_params = params["patient"]
 		params_to_process = params.reject{|key,value| key.match(/addresses|patient|names|relation|cell_phone_number|home_phone_number|office_phone_number|agrees_to_be_visited_for_TB_therapy|agrees_phone_text_for_TB_therapy/) }
 		birthday_params = params_to_process.reject{|key,value| key.match(/gender/) }
-		person_params = params_to_process.reject{|key,value| key.match(/birth_|citizenship|race|age_estimate|occupation|identifiers/) }
+		person_params = params_to_process.reject{|key,value| key.match(/birth_|citizenship|country_of_residence|race|age_estimate|occupation|identifiers/) }
 
 		if person_params["gender"].to_s == "Female"
       person_params["gender"] = 'F'
@@ -1218,11 +1219,11 @@ EOF
 		  :value => params["home_phone_number"]) unless params["home_phone_number"].blank? rescue nil
 
     person.person_attributes.create(
-		  :person_attribute_type_id => PersonAttributeType.find_by_name("Citizenship").person_attribute_type_id,
-		  :value => params["citizenship"]) unless params["citizenship"].blank? rescue nil
+        :person_attribute_type_id => PersonAttributeType.find_by_name("Country of Residence").person_attribute_type_id,
+        :value => params["country_of_residence"]) unless params["country_of_residence"].blank? rescue nil
 
     person.person_attributes.create(
-		  :person_attribute_type_id => PersonAttributeType.find_by_name("Race").person_attribute_type_id,
+		  :person_attribute_type_id => PersonAttributeType.find_by_name("Citizenship").person_attribute_type_id,
 		  :value => params["race"]) unless params["race"].blank? rescue nil
     # TODO handle the birthplace attribute
 

@@ -99,6 +99,18 @@ class PeopleController < GenericPeopleController
 
   def create
 
+    if District.find_by_name(params['person']['addresses']['state_province']).blank?
+      params['person']['country_of_residence'] = params['person']['addresses']['state_province']
+      params['person']['addresses']['state_province'] = ''
+      params['person']['addresses']['city_village'] = ''
+    end
+
+    if !params['person']['race'].blank?
+      params['person']['address2'] = ''
+      params['person']['county_district'] = ''
+      params['person']['neighborhood_cell'] = ''
+    end
+
     Person.session_datetime = session[:datetime].to_date rescue Date.today
     identifier = params[:identifier] rescue nil
     if identifier.blank?

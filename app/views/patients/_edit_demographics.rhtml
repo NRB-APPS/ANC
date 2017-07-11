@@ -420,6 +420,7 @@
       {:id => "race",
       :helptext => "Specify nationality<span class='helper'> Demographics (Edit)</span>",
       :allowFreeText => true,
+      :tt_BeforeUnLoad => "$('person_attributes_citizenship').value = $('race').value",
       :ajaxURL => "/people/static_nationalities?&search_string=",
       :condition => '($("person_attributes_citizenship").value != "Malawian")' } %>
 
