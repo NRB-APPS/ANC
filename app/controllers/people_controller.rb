@@ -10,13 +10,56 @@ class PeopleController < GenericPeopleController
   end
 
   def conflicts
-    response = params[:response]
+
+    response = DDE2Service.create_from_dde2(params[:local_data])
+
     @return_path = response[:return_path]
     @local_duplicates = [params[:local_data]]
     @remote_duplicates = response['data']
 
     @local_duplicates.each do |r|
       r['return_path'] = response['return_path']
+    end
+
+    d = params[:local_data]
+    gender = d['gender'].match('F') ? 'F' : 'M'
+    @local_found = (Person.find_by_sql("SELECT * from Person p
+                                   INNER JOIN person_name pn on pn.person_id = p.person_id pn.voided != 1
+                                   INNER JOIN person_address pd ON p.person_id = pd.person_id pd.voided != 1
+                                   WHERE p.voided != 1 AND pn.given_name = '#{d['given_name']}' AND pn.family_name = '#{d['family_name']}'
+                                    AND pd.address2 = '#{d['home_district']}'
+                                    AND p.gender = '#{gender}' AND p.birthdate = #{d['birthdate'].to_date.strftime('%Y-%m-%d')}
+
+                                      ") || []).each do |p|
+      p = Person.find(p.person_id) rescue next
+      patient_bean = PatientService.get_patient(p)
+      remote_check = DDE2Service.search_by_identifier(patient_bean.national_id)
+      h = {
+          "family_name"=> patient_bean.last_name,
+          "given_name"=> patient_bean.first_name,
+          "npid" => patient_bean.national_id,
+          "gender"=> patient_bean.sex,
+          "attributes"=> {
+              "occupation"=> (patient_bean.occupation rescue ""),
+              "cell_phone_number"=> (patient_bean.cell_phone_number rescue ""),
+              "citizenship" => (patient_bean.citizenship rescue "")
+          },
+          "birthdate" => (Person.find(patient_bean.person_id).birthdate.to_date.strftime('%Y-%m-%d') rescue nil),
+          "birthdate_estimated" => (patient_bean.birthdate_estimated.to_s == '0' ? false : true),
+          "identifiers" => {},
+          "current_residence"=> patient_bean.landmark,
+          "current_village"=> patient_bean.current_residence,
+          "current_district"=>  patient_bean.current_district,
+          "home_village"=> patient_bean.home_village,
+          "home_ta"=> patient_bean.traditional_authority,
+          "home_district"=> patient_bean.home_district
+      }
+
+      if remote_check.length > 0
+        h['npid'] = remote_check[0]['npid']
+      end
+
+      @local_duplicates << h
     end
   end
 
@@ -30,7 +73,7 @@ class PeopleController < GenericPeopleController
     data['birthdate_estimated'] = ({'false' => 0, 'true' => 1}[data['birthdate_estimated']])
     data['birthdate_estimated'] = params['data']['birthdate_estimated'] if data['birthdate_estimated'].to_s.blank?
     person = {}, npid = nil
-
+    p = nil
     if !data['return_path'].blank?
       person = {
           "person"  =>{
@@ -54,8 +97,9 @@ class PeopleController < GenericPeopleController
 
       response = DDE2Service.force_create_from_dde2(data, data['return_path'])
       npid = response['npid']
+
       person['person']['identifiers']['National id'] = npid
-      person = DDE2Service.create_from_form(person)
+      p = DDE2Service.create_from_form(person)
     else
       #search from dde in case you want to replace the identifier
       npid = data['npid']
@@ -82,19 +126,19 @@ class PeopleController < GenericPeopleController
 
        if npid.present?
          person['person']['identifiers']['National id'] = npid
-         person = DDE2Service.create_from_form(person)
+         p = DDE2Service.create_from_form(person)
 
          response = DDE2Service.search_by_identifier(npid)
          if response.present?
 
            if response.first['npid'] != npid
-             print_and_redirect("/patients/national_id_label?patient_id=#{person.id}", next_task(person.patient)) and return
+             print_and_redirect("/patients/national_id_label?patient_id=#{p.id}", next_task(p.patient)) and return
            end
          end
        end
     end
 
-    redirect_to next_task(person.patient)
+    redirect_to next_task(p.patient)
   end
 
   def create
@@ -123,7 +167,7 @@ class PeopleController < GenericPeopleController
      if DDE2Service.is_valid?(formatted_demographics)
         response = DDE2Service.create_from_dde2(formatted_demographics)
         if !response.blank? && !response['status'].blank? && !response['return_path'].blank? && response['status'] == 409
-          redirect_to :action => 'conflicts', :response => response, :local_data => formatted_demographics and return
+          redirect_to :action => 'conflicts', :local_data => formatted_demographics and return
         end
 
         if !response.blank? && response['npid']
@@ -302,7 +346,7 @@ class PeopleController < GenericPeopleController
       results.occupation = data["occupation"]
       results.sex = data["gender"].match('F') ? 'Female' : 'Male'
       results.birthdate_estimated = data["birthdate_estimated"]
-      results.birth_date = (data["birthdate"]).to_date.strftime("%d/%b/%Y")
+      results.birth_date = ((data["birthdate"]).to_date.strftime("%d/%b/%Y") rescue data["birthdate"])
       results.age = cul_age(results.birth_date.to_date , results.birthdate_estimated)
       @search_results[results.national_id] = results
     end if create_from_dde_server
