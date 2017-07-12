@@ -224,6 +224,29 @@ module DDE2Service
     data
   end
 
+  def self.strip(hash)
+    result = hash
+    result['birthdate'] = result['birthdate'].to_date.strftime("%Y-%m-%d") rescue  result['birthdate']
+    (result['attributes'] || {}).each do |k, v|
+      if v.blank? || v.match(/^N\/A$|^null$|^undefined$|^nil$/i)
+        result['attributes'].delete(k)  unless [true, false].include?(v)
+      end
+    end
+
+    (result['identifiers'] || {}).each do |k, v|
+      if v.blank? || v.match(/^N\/A$|^null$|^undefined$|^nil$/i)
+        result['identifiers'].delete(k)  unless [true, false].include?(v)
+      end
+    end
+
+    result.each do |k, v|
+      if v.blank? || v.to_s.match(/^null$|^undefined$|^nil$/i)
+        result.delete(k) unless [true, false].include?(v)
+      end
+    end
+    result
+  end
+
 
   def self.force_create_from_dde2(params, path)
     url = "#{self.dde2_url}#{path}"
@@ -366,9 +389,7 @@ module DDE2Service
           result.delete(k) unless [true, false].include?(v)
         end
       end
-
       data = self.create_from_dde2(result)
-
       if !data.blank?
         npid_type = PatientIdentifierType.find_by_name('National id').id
         npid = PatientIdentifier.find_by_identifier_and_identifier_type(patient_bean.national_id,

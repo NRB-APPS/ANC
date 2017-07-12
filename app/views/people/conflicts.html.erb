@@ -113,7 +113,7 @@
     %>
 
         <tr class='row' data = '<%= patient.to_json%>' onmousedown="view(this, true);">
-          <td class="color_<%=row_number % 2 == 0 ? 'white' : 'darkslatedgray'%> row_number_<%=row_number%>"><%= (patient['given_name'] + ' ' +  patient['family_name']) + " (#{gender}) (<span style='color: green'>New</span>)" || '&nbsp;' %></td>
+          <td class="color_<%=row_number % 2 == 0 ? 'white' : 'darkslatedgray'%> row_number_<%=row_number%>"><%= (patient['given_name'] + ' ' +  patient['family_name']) + " (#{gender}) (<span style='color: green'>Local</span>)" || '&nbsp;' %></td>
           <td class="color_<%=row_number % 2 == 0 ? 'white' : 'darkslatedgray'%> row_number_<%=row_number%>"><%= patient['home_ta'] %></td>
           <td class="color_<%=row_number % 2 == 0 ? 'white' : 'darkslatedgray'%> row_number_<%=row_number%>" style="text-align:center;"><%= patient['home_village'] || '&nbsp;' %></td>
           <td class="color_<%=row_number % 2 == 0 ? 'white' : 'darkslatedgray'%> row_number_<%=row_number%>" style="text-align:center;"><%= phone || '&nbsp;' %> </td>
@@ -255,6 +255,11 @@
 
       form.appendChild(input);
       document.body.appendChild(form);
-      form.action = "/people/force_create";
+
+      if(local == true && data['npid']){
+          form.action = "/people/force_create_local";
+      }else {
+          form.action = "/people/force_create";
+      }
   }
 </script>

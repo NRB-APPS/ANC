@@ -11,33 +11,46 @@ class PeopleController < GenericPeopleController
 
   def conflicts
 
-    response = DDE2Service.create_from_dde2(params[:local_data])
+    response = DDE2Service.create_from_dde2(params[:local_data]) if params[:local_data].present?
 
-    @return_path = response[:return_path]
-    @local_duplicates = [params[:local_data]]
-    @remote_duplicates = response['data']
+    if params[:identifier].present?
+      response = DDE2Service.search_by_identifier(params['identifier'])
+    end
 
-    @local_duplicates.each do |r|
+    @return_path = response[:return_path] rescue nil
+    @local_duplicates = ([params[:local_data]] rescue []).compact
+    @remote_duplicates = response['data'] rescue []
+
+    (@local_duplicates || []).each do |r|
       r['return_path'] = response['return_path']
     end
 
     d = params[:local_data]
+    if d.blank?
+      @local_found = PatientIdentifier.find_by_sql("SELECT *, patient_id AS person_id FROM patient_identifier
+                      WHERE identifier = '#{params[:identifier]}' AND identifier_type = 3 AND voided = 0")
+
+    else
     gender = d['gender'].match('F') ? 'F' : 'M'
-    @local_found = (Person.find_by_sql("SELECT * from Person p
-                                   INNER JOIN person_name pn on pn.person_id = p.person_id pn.voided != 1
-                                   INNER JOIN person_address pd ON p.person_id = pd.person_id pd.voided != 1
+    @local_found = Person.find_by_sql("SELECT * from person p
+                                   INNER JOIN person_name pn on pn.person_id = p.person_id AND pn.voided != 1
+                                   INNER JOIN person_address pd ON p.person_id = pd.person_id AND pd.voided != 1
                                    WHERE p.voided != 1 AND pn.given_name = '#{d['given_name']}' AND pn.family_name = '#{d['family_name']}'
                                     AND pd.address2 = '#{d['home_district']}'
                                     AND p.gender = '#{gender}' AND p.birthdate = #{d['birthdate'].to_date.strftime('%Y-%m-%d')}
 
-                                      ") || []).each do |p|
+                                      ")
+    end
+
+    (@local_found || []).each do |p|
       p = Person.find(p.person_id) rescue next
       patient_bean = PatientService.get_patient(p)
-      remote_check = DDE2Service.search_by_identifier(patient_bean.national_id)
-      h = {
+
+      @local_duplicates << {
           "family_name"=> patient_bean.last_name,
           "given_name"=> patient_bean.first_name,
           "npid" => patient_bean.national_id,
+          "patient_id" => patient_bean.patient_id,
           "gender"=> patient_bean.sex,
           "attributes"=> {
               "occupation"=> (patient_bean.occupation rescue ""),
@@ -54,12 +67,21 @@ class PeopleController < GenericPeopleController
           "home_ta"=> patient_bean.traditional_authority,
           "home_district"=> patient_bean.home_district
       }
+    end
 
-      if remote_check.length > 0
-        h['npid'] = remote_check[0]['npid']
-      end
+  end
 
-      @local_duplicates << h
+  def force_create_local
+    data = JSON.parse(params['data'])
+    person = Person.find(data['patient_id'])
+    patient_bean = PatientService.get_patient(person)
+
+    data = DDE2Service.push_to_dde2(patient_bean)
+
+    if !data.blank?
+      redirect_to next_task(person.patient)
+    else
+      redirect_to "/"
     end
   end
 
@@ -262,7 +284,7 @@ class PeopleController < GenericPeopleController
       params[:identifier] = params[:identifier].strip
 			local_results = DDE2Service.search_all_by_identifier(params[:identifier])
 			if local_results.length > 1
-				redirect_to :action => 'duplicates' ,:search_params => params
+				redirect_to :action => 'conflicts' ,:identifier => params['identifier']
         return
 			elsif local_results.length <= 1
 
@@ -270,7 +292,7 @@ class PeopleController < GenericPeopleController
           p = DDE2Service.search_by_identifier(params[:identifier])
 
           if p.count > 1
-						redirect_to :action => 'duplicates' ,:search_params => params
+            redirect_to :action => 'conflicts' ,:identifier => params['identifier']
 						return
           elsif (p.blank? || p.count == 0) && local_results.count == 1
             patient_bean = PatientService.get_patient(local_results.first)
