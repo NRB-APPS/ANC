@@ -345,7 +345,7 @@ module DDE2Service
 
     from_dde2 = self.search_by_identifier(patient_bean.national_id)
 
-    if from_dde2.length > 0
+    if from_dde2.length > 0 && !patient_bean.national_id.match(/^P/) && patient_bean.national_id.strip.length == 6
       self.update_local_demographics(from_dde2[0])
     else
       result = {
@@ -389,11 +389,17 @@ module DDE2Service
           result.delete(k) unless [true, false].include?(v)
         end
       end
+
       data = self.create_from_dde2(result)
+
+      if data.present? && data['return_path']
+        data = self.force_create_from_dde2(result, data['return_path'])
+      end
+
       if !data.blank?
         npid_type = PatientIdentifierType.find_by_name('National id').id
-        npid = PatientIdentifier.find_by_identifier_and_identifier_type(patient_bean.national_id,
-                npid_type)
+        npid = PatientIdentifier.find_by_identifier_and_identifier_type_and_patient_id(patient_bean.national_id,
+                npid_type, patient_bean.patient_id)
 
         npid.update_attributes(
             :voided => true,
@@ -401,7 +407,6 @@ module DDE2Service
             :void_reason => 'Reassigned NPID',
             :date_voided => Time.now
         )
-
         PatientIdentifier.create(
             :patient_id => npid.patient_id,
             :creator => User.current.id,

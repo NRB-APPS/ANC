@@ -77,9 +77,8 @@ class PeopleController < GenericPeopleController
     patient_bean = PatientService.get_patient(person)
 
     data = DDE2Service.push_to_dde2(patient_bean)
-
     if !data.blank?
-      redirect_to next_task(person.patient)
+      print_and_redirect("/patients/national_id_label?patient_id=#{person.id}", next_task(person.patient))
     else
       redirect_to "/"
     end
