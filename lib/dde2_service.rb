@@ -285,11 +285,21 @@ module DDE2Service
 
     return people unless people.blank?
 
-    p = DDE2Service.search_by_identifier(identifier)
-    return [] if p.blank?
-    return "found duplicate identifiers" if p.count > 1
+    remote = DDE2Service.search_by_identifier(identifier)
+    return [] if remote.blank?
+    return "found duplicate identifiers" if remote.count > 1
 
-    p = p.first
+    p = nil
+    remote.each do |x|
+      next if x['gender'] == 'M'
+      p = x
+      break
+    end
+
+    p = remote.first if p.blank?
+
+    return [] if p.blank?
+
     passed_national_id = p["npid"]
 
     unless passed_national_id.blank?
@@ -303,6 +313,8 @@ module DDE2Service
     birthdate_day = p["birthdate"].to_date.day
     birthdate_estimated = p["birthdate_estimated"]
     gender = p["gender"].match(/F/i) ? "Female" : "Male"
+    p['attributes'] = {} if p['attributes'].blank?
+
     passed = {
         "person"  =>{
                    "occupation"        =>p['attributes']["occupation"],
@@ -332,9 +344,9 @@ module DDE2Service
     }
 
     passed["person"].merge!("identifiers" => {"National id" => passed_national_id})
-
-    return [PatientService.create_from_form(passed["person"])]
-    return people
+    result = [p]
+    result = [PatientService.create_from_form(passed["person"])] if gender == 'Female'
+    return result
   end
 
   def self.update_local_demographics(data)

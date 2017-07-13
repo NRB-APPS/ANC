@@ -336,11 +336,15 @@ class PeopleController < GenericPeopleController
 			end
 
       found_person = local_results.first if !found_person.blank?
+      gender = found_person.gender rescue nil
+      gender = found_person['gender'] if gender.blank?
 
-      if (found_person.gender rescue "") == "M"
+      if gender == "M"
         redirect_to "/clinic/no_males" and return
       end
+
       if found_person
+
         if create_from_dde_server
           patient = found_person.patient
           old_npid = params[:identifier].gsub(/\-/, '').upcase.strip
