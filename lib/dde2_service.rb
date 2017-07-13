@@ -111,6 +111,9 @@ module DDE2Service
 
     citizenship = params['person']['race']
     country_of_residence = params['person']['country_of_residence']
+    ids = params['identifier'].present?  ? {
+        'National id' => params['identifier']
+    } : {}
 
     result = {
         "family_name"=> params['person']['names']['family_name'],
@@ -125,8 +128,7 @@ module DDE2Service
         },
         "birthdate"=> birthdate,
         "birthdate_estimated" => (params['person']['age_estimate'].blank? ? false : true),
-        "identifiers"=> {
-        },
+        "identifiers"=> ids,
         "current_residence"=> params['person']['addresses']['address1'],
         "current_village" => params['person']['addresses']['city_village'],
         "current_ta"=> (params['filter']['t_a']),
@@ -251,8 +253,6 @@ module DDE2Service
   def self.force_create_from_dde2(params, path)
     url = "#{self.dde2_url}#{path}"
     params['token'] = self.token
-    params['identifiers'] = {}
-
     params.delete_if{|k,v| ['npid', 'return_path'].include?(k)}
 
     data = {}

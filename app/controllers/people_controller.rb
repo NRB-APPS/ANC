@@ -170,7 +170,6 @@ class PeopleController < GenericPeopleController
   end
 
   def create
-
     if District.find_by_name(params['person']['addresses']['state_province']).blank?
       params['person']['country_of_residence'] = params['person']['addresses']['state_province']
       params['person']['addresses']['state_province'] = ''
@@ -212,6 +211,7 @@ class PeopleController < GenericPeopleController
         end
 
         if !response.blank? && response['npid']
+
           person = PatientService.create_from_form(params[:person])
           PatientIdentifier.create(:identifier =>  response['npid'],
                                    :patient_id => person.person_id,
