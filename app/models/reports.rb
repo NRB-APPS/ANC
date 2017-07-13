@@ -94,7 +94,7 @@ class Reports
 
     # registered women in bart
     @bart_patients = on_art_in_bart
-
+    #raise @bart_patients.inspect
     @on_cpt = @bart_patients['on_cpt']
     @no_art = @bart_patients['no_art']
     @on_art_before = @bart_patients['arv_before_visit_one']
@@ -121,6 +121,9 @@ class Reports
 
     @bart_patients_final_visit = on_art_in_bart_final_visit
 
+    #raise @bart_patients_final_visit.inspect
+
+    @final_visit_on_cpt = @bart_patients_final_visit['on_cpt']
     @final_visit_no_art = @bart_patients_final_visit['no_art']
     @final_visit_on_art_before = @bart_patients_final_visit['arv_before_visit_one']
 
@@ -130,7 +133,7 @@ class Reports
 
     concept_ids = ["Reason for exiting care", "On ART"].collect{|c| ConceptName.find_by_name(c).concept_id}
     encounter_types = ["LAB RESULTS", "ART_FOLLOWUP"].collect{|t| EncounterType.find_by_name(t).id}
-    art_answers = ["Yes", "Already on ART at another facility", "PMTCT to be done in another room"]
+    art_answers = ["Yes", "Already on ART at another facility"]
     @extra_art_checks = Encounter.find_by_sql(["SELECT e.patient_id
                  FROM encounter e
             INNER JOIN obs o on o.encounter_id = e.encounter_id
@@ -231,7 +234,8 @@ class Reports
                               AND (?) AND patient_id IN (?)
                               GROUP BY patient_id HAVING wk < 13",
                                             ConceptName.find_by_name("WEEK OF FIRST VISIT").concept_id,
-                                    @monthlypatients,@today.to_date.beginning_of_month, @today.to_date.end_of_month,
+                                    @monthlypatients,@today.to_date.beginning_of_month.strftime("%Y-%m-%d 00:00:00"),
+                                    @today.to_date.end_of_month.strftime("%Y-%m-%d 23:59:59"),
                                     @today.to_date, @monthlypatients]
                             ).collect { |e| e.patient_id }.uniq
 
@@ -246,7 +250,8 @@ class Reports
                               where person_id in (?) and obs_datetime between ? and ?) AND (?) AND patient_id IN (?)
                               GROUP BY patient_id HAVING wk >= 13",
                              ConceptName.find_by_name("WEEK OF FIRST VISIT").concept_id,
-                                    @monthlypatients,@today.to_date.beginning_of_month, @today.to_date.end_of_month,
+                                    @monthlypatients,@today.to_date.beginning_of_month.strftime("%Y-%m-%d 00:00:00"),
+                                    @today.to_date.end_of_month.strftime("%Y-%m-%d 23:59:59"),
                              @today.to_date, @monthlypatients]
     ).collect { |e| e.patient_id }.uniq
     @cases
@@ -332,12 +337,13 @@ class Reports
 
     select =Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
                        :select => ["encounter.patient_id"],
-                       :conditions => ["drug.name = ?  AND (DATE(encounter_datetime) >= #{@lmp}" +
+                       :conditions => ["drug.name = ?  AND (DATE(encounter_datetime) >= ? " +
                                            "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "SP (3 tablets)",
-                                       ((@startdate.to_date + @preg_range) - 1.day), @cohortpatients]).map(&:patient_id).uniq
+                                       @lmp,((@startdate.to_date + @preg_range) - 1.day), @cohortpatients]).map(&:patient_id).uniq
     @cohortpatients - select
-  end
 
+  end
+=begin
   def fansida__sp___number_of_tablets_given_1
 
     Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
@@ -348,7 +354,7 @@ class Reports
           [o.patient_id, o.encounter_id]
         }.delete_if { |x, y| y.to_i != 1 }.collect { |p, c| p }.uniq
   end
-
+=end
   def fansida__sp
     fansida = {}
     single = []
@@ -373,8 +379,10 @@ class Reports
         end
       }
 
-      return single, twice, plus_3
+      return single, (twice + plus_3)
+
   end
+
 
   def fansida__sp___number_of_tablets_given_2
 
@@ -400,6 +408,7 @@ class Reports
 
   end
 
+
   def fefo
     fefol = {}
     minus_120 = []
@@ -423,11 +432,12 @@ class Reports
         }
 
         return minus_120, plus_120
-  end
+    end
+
 
   def fansida__sp___number_of_tablets_given_3
 
-    Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
+    p = Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
                :select => ["encounter.patient_id, count(*) encounter_id, drug.name instructions"],
                :group => [:patient_id], :conditions => ["drug.name = ? " +
                                                             "AND DATE(encounter_datetime) <= ? AND encounter.patient_id IN (?)", "SP (3 tablets)",
@@ -436,6 +446,7 @@ class Reports
     }.delete_if { |x, y| y != 3 }.collect { |p, c| p }
 
   end
+=begin
 
   def fefo__number_of_tablets_given_1
 
@@ -462,7 +473,7 @@ class Reports
 
   end
 
-
+=end
   def syphilis_result_pos
 
     Encounter.find(:all, :joins => [:observations], :select => ["DISTINCT patient_id"],
@@ -712,6 +723,8 @@ class Reports
     first_visit_patient_ids = @anc_visits.reject { |x, y| y <= 1 }.collect { |x, y| x }.uniq
     first_visit_patient_ids = [0] if first_visit_patient_ids.blank?
 
+    #raise (@today.to_date - 1.day).inspect
+
     select = Encounter.find_by_sql([
                 "SELECT
                 e.patient_id,
@@ -765,7 +778,7 @@ class Reports
                 GROUP BY e.patient_id
                 HAVING DATE(date) > DATE(test_date)
                 ",
-                @monthlypatients, (@today.to_date - 1.day), (@today.to_date - 1.day)
+                @monthlypatients, @today.to_date, @today.to_date
                 ]).map(&:patient_id)
     return select
   end
@@ -796,7 +809,7 @@ class Reports
                 GROUP BY e.patient_id
                 HAVING DATE(date) = DATE(test_date)
                 ",
-                @monthlypatients, (@today.to_date - 1.day), (@today.to_date - 1.day)
+                @monthlypatients, @today.to_date, @today.to_date
                 ]).map(&:patient_id)
 
     return select
@@ -845,11 +858,11 @@ class Reports
                             :select => ["patient_id, MAX(encounter_datetime) encounter_datetime, (obs_id + 1) form_id"],
                             :conditions => ["concept_id = ? AND (value_coded = ? OR value_text = ?) AND (DATE(encounter_datetime) >=
                               (select DATE(MAX(lmp)) from last_menstraul_period_date
-                              where person_id in (?) and obs_datetime between ? and ?) AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)",
+                              where person_id in (?) and DATE(obs_datetime) between ? and ?) AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)",
                                             ConceptName.find_by_name("HIV status").concept_id,
                                             ConceptName.find_by_name("Not done").concept_id, "Not Done",
                                             @monthlypatients,@today.to_date.beginning_of_month, @today.to_date.end_of_month,
-                                            (@today.to_date - 1.day), @monthlypatients]).collect { |e| e.patient_id }
+                                            @today.to_date, @monthlypatients]).collect { |e| e.patient_id }
 
     return select
   end
@@ -1152,7 +1165,7 @@ class Reports
   #########################################################################
 
   def on_cpt__1
-    ids = @on_cpt.split(",").collect { |id| PatientIdentifier.find_by_identifier(id.gsub(/\-|\s+/, "")).patient_id }.uniq rescue []
+    ids = @final_visit_on_cpt.split(",").collect { |id| PatientIdentifier.find_by_identifier(id.gsub(/\-|\s+/, "")).patient_id }.uniq rescue []
 
     return ids
   end
@@ -1164,7 +1177,7 @@ class Reports
                 "SUM(DATEDIFF(auto_expire_date, start_date)) orderer"], :group => [:patient_id],
                 :conditions => ["(drug.name REGEXP ? OR drug.name REGEXP ?) AND (DATE(encounter_datetime) >= #{@lmp} " +
                 "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "NVP", "Nevirapine syrup",
-                 (@startdate.to_date + @preg_range), @first_visit_positive_patients]).collect { |o| o.patient_id }
+                 (@startdate.to_date + @preg_range), @final_visit_positive_patients]).collect { |o| o.patient_id }
     return nvp.uniq rescue []
   end
 
