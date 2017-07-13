@@ -338,15 +338,15 @@ module DDE2Service
   end
 
   def self.update_local_demographics(data)
-
+    data
   end
 
   def self.push_to_dde2(patient_bean)
 
     from_dde2 = self.search_by_identifier(patient_bean.national_id)
 
-    if from_dde2.length > 0 && !patient_bean.national_id.match(/^P/) && patient_bean.national_id.strip.length == 6
-      self.update_local_demographics(from_dde2[0])
+    if from_dde2.length > 0 && !patient_bean.national_id.strip.match(/^P\d+$/)
+      return self.update_local_demographics(from_dde2[0])
     else
       result = {
           "family_name"=> patient_bean.last_name,

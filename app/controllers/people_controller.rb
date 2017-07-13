@@ -37,9 +37,10 @@ class PeopleController < GenericPeopleController
                                    INNER JOIN person_address pd ON p.person_id = pd.person_id AND pd.voided != 1
                                    WHERE p.voided != 1 AND pn.given_name = '#{d['given_name']}' AND pn.family_name = '#{d['family_name']}'
                                     AND pd.address2 = '#{d['home_district']}'
-                                    AND p.gender = '#{gender}' AND p.birthdate = #{d['birthdate'].to_date.strftime('%Y-%m-%d')}
+                                    AND p.gender = '#{gender}' AND p.birthdate = '#{d['birthdate'].to_date.strftime('%Y-%m-%d')}'
 
                                       ")
+
     end
 
     (@local_found || []).each do |p|
@@ -78,7 +79,11 @@ class PeopleController < GenericPeopleController
 
     data = DDE2Service.push_to_dde2(patient_bean)
     if !data.blank?
-      print_and_redirect("/patients/national_id_label?patient_id=#{person.id}", next_task(person.patient))
+      if patient_bean.national_id != data['npid']
+        print_and_redirect("/patients/national_id_label?patient_id=#{person.id}", next_task(person.patient))
+      else
+        redirect_to next_task(person.patient)
+      end
     else
       redirect_to "/"
     end
@@ -121,6 +126,8 @@ class PeopleController < GenericPeopleController
 
       person['person']['identifiers']['National id'] = npid
       p = DDE2Service.create_from_form(person)
+
+      print_and_redirect("/patients/national_id_label?patient_id=#{p.id}", next_task(p.patient)) and return
     else
       #search from dde in case you want to replace the identifier
       npid = data['npid']
@@ -186,6 +193,19 @@ class PeopleController < GenericPeopleController
       formatted_demographics = DDE2Service.format_params(params, Person.session_datetime)
 
      if DDE2Service.is_valid?(formatted_demographics)
+       d = formatted_demographics
+       local_duplicates = Person.find_by_sql("SELECT * from person p
+                                   INNER JOIN person_name pn on pn.person_id = p.person_id AND pn.voided != 1
+                                   INNER JOIN person_address pd ON p.person_id = pd.person_id AND pd.voided != 1
+                                   WHERE p.voided != 1 AND pn.given_name = '#{d['given_name']}' AND pn.family_name = '#{d['family_name']}'
+                                    AND pd.address2 = '#{d['home_district']}'
+                                    AND p.gender = 'F' AND p.birthdate = #{d['birthdate'].to_date.strftime('%Y-%m-%d')}
+                         ")
+
+        if local_duplicates.length > 0
+          redirect_to :action => 'conflicts', :local_data => formatted_demographics and return
+        end
+
         response = DDE2Service.create_from_dde2(formatted_demographics)
         if !response.blank? && !response['status'].blank? && !response['return_path'].blank? && response['status'] == 409
           redirect_to :action => 'conflicts', :local_data => formatted_demographics and return
