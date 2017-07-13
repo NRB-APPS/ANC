@@ -495,10 +495,9 @@ module DDE2Service
 
     if (response['status'] == 201 rescue false)
         data =  true
-      elsif (response['status'] == 409 rescue false)
-        data = response['data']['hits']
-      end
-
+    elsif (response['status'] == 409 rescue false)
+      data = response['data']['hits']
+    end
 
     data
   end

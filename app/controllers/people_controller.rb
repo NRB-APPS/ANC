@@ -45,7 +45,7 @@ class PeopleController < GenericPeopleController
 
     (@local_found || []).each do |p|
       p = Person.find(p.person_id) rescue next
-      patient_bean = PatientService.get_patient(p)
+      patient_bean = PatientService.get_patient(p) rescue next
 
       @local_duplicates << {
           "family_name"=> patient_bean.last_name,
@@ -320,7 +320,6 @@ class PeopleController < GenericPeopleController
 				end
 
 				found_person = local_results.first
-
         if (found_person.gender rescue "") == "M"
           redirect_to "/clinic/no_males" and return
         end
