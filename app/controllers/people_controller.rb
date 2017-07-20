@@ -336,7 +336,7 @@ class PeopleController < GenericPeopleController
 
       found_person = local_results.first if !found_person.blank?
       gender = found_person.gender rescue nil
-      gender = found_person['gender'] if gender.blank?
+      gender = found_person['gender'] if gender.blank? && found_person.class == {}.class
 
       if gender == "M"
         redirect_to "/clinic/no_males" and return
@@ -381,6 +381,7 @@ class PeopleController < GenericPeopleController
       next if national_id.blank?
       results = PersonSearch.new(national_id)
       results.national_id = national_id
+      next if data["birthdate"].blank?
 
       results.current_residence = data["addresses"]["current_village"]
       results.person_id = 0
