@@ -94,7 +94,7 @@
           {
           :id => "visit",
           :helptext => "ANC visit number <span class='helper'> ANC Visit</span>",
-          :tt_onLoad => "document.forms[0].reset(); disablePastVisits();",
+          :tt_onLoad => "document.forms[0].reset();"#" disablePastVisits();",
           :tt_pageStyleClass => "NumbersOnly",
           :max => 7,
           :min => 1
