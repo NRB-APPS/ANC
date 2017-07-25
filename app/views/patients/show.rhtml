@@ -227,6 +227,7 @@
                       "visit_type" : "current_visit") %>/?patient_id=<%= @patient.id  %>'>Current Visit</option>
           <% end %>
 
+
           <% if current_user.activities.include?("Registration") %>
               <option value='/patients/demographics?patient_id=<%= @patient.id %>'>Demographics</option>
           <% end %>
@@ -293,9 +294,7 @@
 
 
           <% else %>
-
-              <option link="/patients/outcome/?patient_id=<%= @patient.id %>" ttSize = "160px">Update Outcome</option>
-
+                <option link="/patients/outcome/?patient_id=<%= @patient.id %>" ttSize = "155px">Update Outcome</option>
           <%end%>
           <% if session[:datetime].blank?%>
             <option link="/patients/set_datetime/<%= @patient.id %>" ttSize = "120px">Set Date</option>
