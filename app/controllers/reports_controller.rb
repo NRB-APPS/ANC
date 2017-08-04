@@ -623,13 +623,17 @@ class ReportsController < ApplicationController
           start_date = session[:report_start_date].to_date
           end_date = session[:report_end_date].to_date
         end
-#raise patient.patient.date_registered1.strftime("%d/%b/%Y").inspect
+
+        patient_name = patient.name rescue nil
+        date_registered = patient.patient.date_registered1.strftime("%d/%b/%Y") rescue nil
+        birthdate = patient.birthdate_formatted rescue nil
+
         @data << [patient.national_id,
-          (patient.name rescue "&nbsp"),
-          (patient.patient.date_registered1.strftime("%d/%b/%Y") rescue "&nbsp"),
-          (patient.birthdate_formatted rescue "&nbsp"),
+          (patient_name),
+          (date_registered),
+          (birthdate),
           enc,
-          p.id]
+          p.id] unless enc.blank?
         end
       end
 
