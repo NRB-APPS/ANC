@@ -611,11 +611,12 @@ class ReportsController < ApplicationController
     if params[:patients]
       new_women = params[:patients].split(",")
       new_women = [-1] if new_women.blank?
+
       patients =  Patient.find_by_sql(["SELECT * FROM patient WHERE patient_id IN (?)", new_women])
       patients.each do |p|
         patient = ANCService::ANC.new(p)
-        enc = Encounter.find_by_sql(["SELECT encounter_id FROM encounter WHERE patient_id = ?", p.id]).map(&:encounter_id)
-        #raise patient.patient.date_registered(session[:report_start_date], session[:report_end_date]).strftime("%d/%b/%Y").inspect
+        enc = Encounter.find_by_sql(["SELECT encounter_id FROM encounter WHERE patient_id = ? and voided = 0", p.id]).map(&:encounter_id)
+
         if params[:block] == "new registered women"
           start_date = session[:report_start_date].to_date + 6.months
           end_date = session[:report_end_date].to_date + 6.months
