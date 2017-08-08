@@ -159,11 +159,11 @@ class Reports
                                     AND DATE(encounter_datetime) >= ?
                                     AND DATE(encounter_datetime) <= ?
                                     AND encounter.voided = 0',
-                                   CURRENT_PREGNANCY_ENCOUNTER.id,
-                                   LMP_CONCEPT.concept_id,
-                                   start_dt.to_date,
-                                   end_dt.to_date]
-    ).collect { |e| e.patient_id }.uniq
+                                    CURRENT_PREGNANCY_ENCOUNTER.id,
+                                    LMP_CONCEPT.concept_id,
+                                    start_dt.to_date,
+                                    end_dt.to_date]
+                    ).collect { |e| e.patient_id }.uniq
 
   end
 

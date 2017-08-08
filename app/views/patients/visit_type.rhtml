@@ -45,7 +45,7 @@ session_date = session[:datetime]? session[:datetime] : Date.today
     buildConceptsHash();
     setTimeout(function(){ readableMessage()}, 50);
   }
-  
+
   function disablePastVisits(){
     for(var i = 0; i < anc_visits.length; i++){
       if(__$(anc_visits[i])){
@@ -54,7 +54,7 @@ session_date = session[:datetime]? session[:datetime] : Date.today
       }
     }
   }
-  
+
   setTimeout("disablePastVisits()", 200);
   //-->
 </script>
