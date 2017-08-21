@@ -207,7 +207,7 @@
           :tt_onLoad => "jQuery('#clearButton').css('display', 'none');parsedConceptName = ''; loadInputWindow();",
           :tt_BeforeUnLoad => "buildParams()",
           :optional => "true",
-          :condition => "__$('enter_gravida').value > 1"
+          :condition => "__$('enter_gravida').value > 1 && __$('enter_number_of_deliveries').value !== 'Unknown' "
         } %>
 
         <%= touch_text_field_tag "", @patient, nil,
