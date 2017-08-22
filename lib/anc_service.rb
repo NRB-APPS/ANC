@@ -1573,6 +1573,17 @@ module ANCService
       }.flatten rescue []
     end
 
+    def last_visit(session_date = Date.today)
+      last_lmp = self.patient.encounters.last(:joins => [:observations],
+                                              :conditions => ['encounter_type = ? AND obs.concept_id = ?',
+                                              EncounterType.find_by_name('Current pregnancy').id,
+                                              ConceptName.find_by_name('Last Menstrual Period').concept_id]
+      )
+
+      date_diff = (session_date.to_date - last_lmp['encounter_datetime'].to_date).to_i
+      number_of_months = date_diff.days/30.days
+    end
+
   end
 
   def self.create_remote(received_params)

@@ -320,11 +320,16 @@ function stringfy(hash){
 }
 
 function disablePastVisits(){
-    for(var i = 0; i < anc_visits.length; i++){
-        if(__$(anc_visits[i])){
-            __$(anc_visits[i]).className = "keyboardButton gray";
-            __$(anc_visits[i]).onmousedown = function(){}
+    if (last_visit < 7){
+        for(var i = 0; i < anc_visits.length; i++){
+            if(__$(anc_visits[i])){
+                __$(anc_visits[i]).className = "keyboardButton gray";
+                __$(anc_visits[i]).onmousedown = function(){}
+            }
         }
+    }else{
+        __$(anc_visits[anc_visits.length - 1]).className = "keyboardButton gray";
+        __$(anc_visits[anc_visits.length - 1]).onmousedown = function(){}
     }
 }
 

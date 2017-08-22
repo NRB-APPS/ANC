@@ -15,6 +15,7 @@
 
 <%session_date = session[:datetime]? session[:datetime] : Date.today%>
   var anc_visits = <%= @anc_patient.anc_visits(session_date).to_json%>;
+  var last_visit = <%= @anc_patient.last_visit(session_date)%>;
   var birth_year = <%= @birth_year.to_i%>;
   var max_birth_year = <%= @max_birth_year.to_i%>;
   var min_birth_year = <%= @min_birth_year.to_i%>;
