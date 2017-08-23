@@ -1577,11 +1577,12 @@ module ANCService
       last_lmp = self.patient.encounters.last(:joins => [:observations],
                                               :conditions => ['encounter_type = ? AND obs.concept_id = ?',
                                               EncounterType.find_by_name('Current pregnancy').id,
-                                              ConceptName.find_by_name('Last Menstrual Period').concept_id]
-      )
+                                              ConceptName.find_by_name('Last menstrual period').concept_id]
+      ).observations.collect { |o| o.value_datetime }.compact.last.to_date
 
-      date_diff = (session_date.to_date - last_lmp['encounter_datetime'].to_date).to_i
-      number_of_months = date_diff.days/30.days
+      day_diff = (session_date.to_date - last_lmp.to_date).to_i
+      number_of_months = day_diff.days/30.days
+      return number_of_months
     end
 
   end

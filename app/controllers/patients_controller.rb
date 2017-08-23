@@ -536,7 +536,8 @@ class PatientsController < ApplicationController
   def tab_visit_summary
     session_date = session[:datetime].to_date rescue Date.today
     @data = []
-    @encounters = @patient.encounters.all(:conditions => [" DATE(encounter_datetime) <= ? ", session_date],
+    @encounters = @patient.encounters.all(:conditions => [" DATE(encounter_datetime) <= ? ",
+                                                          session_date],
                                           :order => "encounter_datetime DESC") rescue []
 
     @external_encounters = []
