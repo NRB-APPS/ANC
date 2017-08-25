@@ -1578,7 +1578,9 @@ module ANCService
                                               :conditions => ['encounter_type = ? AND obs.concept_id = ?',
                                               EncounterType.find_by_name('Current pregnancy').id,
                                               ConceptName.find_by_name('Last menstrual period').concept_id]
-      ).observations.collect { |o| o.value_datetime }.compact.last.to_date
+      ).observations.collect { |o| o.value_datetime }.compact.last.to_date rescue nil
+
+      return 0 if last_lmp.blank?
 
       day_diff = (session_date.to_date - last_lmp.to_date).to_i
       number_of_months = day_diff.days/30.days
