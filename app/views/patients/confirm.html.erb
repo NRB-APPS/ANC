@@ -269,7 +269,7 @@
     <%session_date = session[:datetime]? session[:datetime] : Date.today%>
 
 
-    <%if !@data.present? && @anc_patient.last_visit(session_date) > 7 %>
+    <%if @anc_patient.last_visit(session_date) > 7  %> <!-- #&& !@data.present? -->
       <button onclick="window.location = '<%= params[:url] %>';" class="button navButton blue"
               id="backButton" style="margin-top: 10px;" ><span>New pregnancy</span>
       </button>
