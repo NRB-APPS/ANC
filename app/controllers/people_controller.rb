@@ -372,6 +372,7 @@ class PeopleController < GenericPeopleController
 		@people = PatientService.person_search(params) if !params[:given_name].blank?
     @search_results = {}
     @patients = []
+		session_date = session[:datetime].to_date rescue Date.today
 
     remote_results = []
     if create_from_dde_server
@@ -384,6 +385,7 @@ class PeopleController < GenericPeopleController
       results = PersonSearch.new(national_id)
       results.national_id = national_id
       next if data["birthdate"].blank?
+			next if (session_date.to_date - data["birthdate"].to_date)/356 < 13
 
       results.current_residence = data["addresses"]["current_village"]
       results.person_id = 0
