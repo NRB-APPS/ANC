@@ -323,7 +323,7 @@ module DDE2Service
                    "citizenship"       => p['attributes']["citizenship"],
                    "birth_month"       => birthdate_month ,
                    "addresses"         =>{"address1"=>p['addresses']["current_residence"],
-                                         'township_division' => p['current_ta'],
+                                         'township_division' => p['addresses']['current_ta'],
                                          "address2"=>p['addresses']["home_district"],
                                          "city_village"=>p['addresses']["current_village"],
                                          "state_province"=>p['addresses']["current_district"],
@@ -348,6 +348,47 @@ module DDE2Service
     result = [PatientService.create_from_form(passed["person"])] if gender == 'Female'
     return result
   end
+
+	def self.update_local_from_dde2(data, person)
+		name = person.names.last
+		address = person.addresses.last
+		
+		name.update_attributes(
+			:given_name => data['names']['given_name'],
+			:middle_name => data['names']['middle_name'],
+			:family_name => data['names']['family_name']
+		)
+		
+		person.update_attributes(
+			:gender => data['gender'],
+			:birthdate => data['birthdate'],
+			:birthdate_estimated => data['birthdate_estimated']
+		)
+
+		address.update_attributes(
+			{"address1"=> data['addresses']["current_residence"],
+       'township_division' => data['addresses']['current_ta'],
+       "address2"=> data['addresses']["home_district"],
+       "city_village"=> data['addresses']["current_village"],
+       "state_province"=> data['addresses']["current_district"],
+       "neighborhood_cell"=> data['addresses']["home_village"],
+       "county_district"=> data['addresses']["home_ta"]}
+		) 
+		
+		(data['attributes'] || {}).each {|k, v|
+			next if v.blank? 
+			type = PersonAttributeType.find_by_name(k.humanize).id rescue nil 
+			next if type.blank?
+			attribute = PersonAttribute.find_by_person_id_and_person_attribute_type_id(person.id, type)
+			attribute = PersonAttribute.new if attribute.blank? 
+
+			attribute.person_attribute_type_id = type
+			attribute.person_id = person.id
+			attribute.value = v
+			attribute.save
+		}
+		true
+	end 
 
   def self.update_local_demographics(data)
     data
