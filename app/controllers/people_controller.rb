@@ -326,6 +326,11 @@ class PeopleController < GenericPeopleController
           redirect_to "/clinic/no_males" and return
         end
 
+				session_date = session[:datetime].to_date rescue Date.today
+			  if ((session_date.to_date - found_person.birthdate.to_date)/356 < 13)
+					redirect_to "/clinic/no_minors" and return
+				end 
+
 			else
 				# TODO - figure out how to write a test for this
 				# This is sloppy - creating something as the result of a GET
@@ -372,7 +377,6 @@ class PeopleController < GenericPeopleController
 		@people = PatientService.person_search(params) if !params[:given_name].blank?
     @search_results = {}
     @patients = []
-		session_date = session[:datetime].to_date rescue Date.today
 
     remote_results = []
     if create_from_dde_server
@@ -385,7 +389,6 @@ class PeopleController < GenericPeopleController
       results = PersonSearch.new(national_id)
       results.national_id = national_id
       next if data["birthdate"].blank?
-			next if (session_date.to_date - data["birthdate"].to_date)/356 < 13
 
       results.current_residence = data["addresses"]["current_village"]
       results.person_id = 0
@@ -403,6 +406,8 @@ class PeopleController < GenericPeopleController
     (@people || []).each do | person |
       patient = PatientService.get_patient(person) rescue nil
       next if patient.blank?
+			next if @search_results.keys.include?(patient.national_id)
+
       results = PersonSearch.new(patient.national_id || patient.patient_id)
       results.national_id = patient.national_id
       results.birth_date = patient.birth_date
@@ -420,7 +425,7 @@ class PeopleController < GenericPeopleController
       results.name = patient.name
       results.sex = patient.sex
       results.age = patient.age
-      @search_results.delete_if{|x,y| x == results.national_id }
+      #@search_results.delete_if{|x,y| x == results.national_id }			
       @patients << results
     end
 

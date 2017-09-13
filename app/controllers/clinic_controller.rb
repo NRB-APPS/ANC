@@ -110,6 +110,10 @@ class ClinicController < GenericClinicController
     render :layout => "menu"
   end
 
+	def no_minors
+    render :layout => "menu"
+  end
+
   def data_cleaning_tools
     render :layout => false
   end
