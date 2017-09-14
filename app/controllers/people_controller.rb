@@ -314,7 +314,7 @@ class PeopleController < GenericPeopleController
             redirect_to :action => 'conflicts' ,:identifier => params['identifier']
 						return
 					elsif (p.present? && p.length == 1) && local_results.length == 1
-						DDE2Service.update_local_from_dde2(p.first, local_results.first)
+						DDE2Service.update_local_from_dde2(p.first, local_results.first) if local_results.first.class != Hash
           elsif (p.blank? || p.count == 0) && local_results.count == 1
             patient_bean = PatientService.get_patient(local_results.first)
             DDE2Service.push_to_dde2(patient_bean)
@@ -327,7 +327,7 @@ class PeopleController < GenericPeopleController
         end
 
 				session_date = session[:datetime].to_date rescue Date.today
-			  if ((session_date.to_date - found_person.birthdate.to_date)/356 < 13)
+			  if (((session_date.to_date - found_person.birthdate.to_date)/356 < 13) rescue false)
 					redirect_to "/clinic/no_minors" and return
 				end 
 
