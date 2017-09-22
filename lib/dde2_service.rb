@@ -579,14 +579,14 @@ module DDE2Service
     person.names.create(names_params)
     person.addresses.create(address_params) unless address_params.empty? rescue nil
 
-    params['attributes'].each do |type, value|
+    (params['attributes'] || []).each do |type, value|
       person.person_attributes.create(
           :person_attribute_type_id => PersonAttributeType.find_by_name(type.humanize).person_attribute_type_id,
           :value => value) unless value.blank? rescue nil
     end
 
     patient = person.create_patient
-    params["identifiers"].each{|identifier_type_name, identifier|
+    (params["identifiers"] || []).each{|identifier_type_name, identifier|
 
       next if identifier.blank?
       identifier_type = PatientIdentifierType.find_by_name(identifier_type_name) || PatientIdentifierType.find_by_name("Unknown id")
