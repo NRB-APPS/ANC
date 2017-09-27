@@ -90,11 +90,23 @@ class PeopleController < GenericPeopleController
   end
 
   def force_create
+
 =begin
   When params is local, data['return_path'] is available
 =end
+
     data = JSON.parse(params['data'])
     data['gender'] = data['gender'].match(/F/i) ? "Female" : "Male"
+
+		if data['gender'] == 'Male'
+			redirect_to "/clinic/no_males" and return
+		end 
+
+		session_date = session[:datetime].to_date rescue Date.today
+	  if (((session_date.to_date - data['birthdate'].to_date)/356 < 13) rescue false)
+			redirect_to "/clinic/no_minors" and return
+		end
+
     data['birthdate'] = data['birthdate'].to_date.strftime("%Y-%m-%d")
     data['birthdate_estimated'] = ({'false' => 0, 'true' => 1}[data['birthdate_estimated']])
     data['birthdate_estimated'] = params['data']['birthdate_estimated'] if data['birthdate_estimated'].to_s.blank?
@@ -159,7 +171,7 @@ class PeopleController < GenericPeopleController
          response = DDE2Service.search_by_identifier(npid)
          if response.present?
 
-           if response.first['npid'] != npid
+           if response.first['npid'] != npid || (params[:scan_identifier].present? && params[:scan_identifier].strip != npid)
              print_and_redirect("/patients/national_id_label?patient_id=#{p.id}", next_task(p.patient)) and return
            end
          end
