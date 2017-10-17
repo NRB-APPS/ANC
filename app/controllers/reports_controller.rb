@@ -353,28 +353,28 @@ class ReportsController < ApplicationController
     @type = params[:selType]
 
     case params[:selSelect]
-    when "day"
-      @start_date = params[:day]
-      @end_date = params[:day]
-    when "week"
-      @start_date = (("#{params[:selYear]}-01-01".to_date) + (params[:selWeek].to_i * 7)) -
-      ("#{params[:selYear]}-01-01".to_date.strftime("%w").to_i)
-      @end_date = (("#{params[:selYear]}-01-01".to_date) + (params[:selWeek].to_i * 7)) +
-      6 - ("#{params[:selYear]}-01-01".to_date.strftime("%w").to_i)
-    when "month"
-      @start_date = ("#{params[:selYear]}-#{params[:selMonth]}-01").to_date.strftime("%Y-%m-%d")
-      @end_date = ("#{params[:selYear]}-#{params[:selMonth]}-#{ (params[:selMonth].to_i != 12 ?
-      ("#{params[:selYear]}-#{params[:selMonth].to_i + 1}-01".to_date - 1).strftime("%d") : "31") }").to_date.strftime("%Y-%m-%d")
-    when "year"
-      @start_date = ("#{params[:selYear]}-01-01").to_date.strftime("%Y-%m-%d")
-      @end_date = ("#{params[:selYear]}-12-31").to_date.strftime("%Y-%m-%d")
-    when "quarter"
-      day = params[:selQtr].to_s.match(/^min=(.+)&max=(.+)$/)
-      @start_date = (day ? day[1] : Date.today.strftime("%Y-%m-%d"))
-      @end_date = (day ? day[2] : Date.today.strftime("%Y-%m-%d"))
-    when "range"
-      @start_date = params[:start_date]
-      @end_date = params[:end_date]
+      when "day"
+        @start_date = params[:day]
+        @end_date = params[:day]
+      when "week"
+        @start_date = (("#{params[:selYear]}-01-01".to_date) + (params[:selWeek].to_i * 7)) -
+            ("#{params[:selYear]}-01-01".to_date.strftime("%w").to_i)
+        @end_date = (("#{params[:selYear]}-01-01".to_date) + (params[:selWeek].to_i * 7)) +
+            6 - ("#{params[:selYear]}-01-01".to_date.strftime("%w").to_i)
+      when "month"
+        @start_date = ("#{params[:selYear]}-#{params[:selMonth]}-01").to_date.strftime("%Y-%m-%d")
+        @end_date = ("#{params[:selYear]}-#{params[:selMonth]}-#{ (params[:selMonth].to_i != 12 ?
+            ("#{params[:selYear]}-#{params[:selMonth].to_i + 1}-01".to_date - 1).strftime("%d") : "31") }").to_date.strftime("%Y-%m-%d")
+      when "year"
+        @start_date = ("#{params[:selYear]}-01-01").to_date.strftime("%Y-%m-%d")
+        @end_date = ("#{params[:selYear]}-12-31").to_date.strftime("%Y-%m-%d")
+      when "quarter"
+        day = params[:selQtr].to_s.match(/^min=(.+)&max=(.+)$/)
+        @start_date = (day ? day[1] : Date.today.strftime("%Y-%m-%d"))
+        @end_date = (day ? day[2] : Date.today.strftime("%Y-%m-%d"))
+      when "range"
+        @start_date = params[:start_date]
+        @end_date = params[:end_date]
     end
 
     @start_date = params[:start_date] if !params[:start_date].blank?
@@ -411,7 +411,7 @@ class ReportsController < ApplicationController
 
     @week_of_first_visit_2 = report.week_of_first_visit_2
 
-    @week_of_first_visit_unknown = @observations_total - (@week_of_first_visit_1 + @week_of_first_visit_2)
+    @week_of_first_visit_unknown = @new_women_registered - (@week_of_first_visit_1 + @week_of_first_visit_2)
 
     @pre_eclampsia_1 = report.pre_eclampsia_1
 
@@ -423,11 +423,11 @@ class ReportsController < ApplicationController
 
     @ttv__total_previous_doses_2 = report.ttv__total_previous_doses_2
 
-    @fansida__sp___number_of_tablets_given_0 = report.fansida__sp___number_of_tablets_given_0
+    @fansida__sp___number_of_tablets_given_0 = report.fansida__sp___number_of_tablets_given_0.uniq
 
-    @fansida__sp___number_of_tablets_given_1, @fansida__sp___number_of_tablets_given_2, @fansida__sp___number_of_tablets_given_more_than_2 = report.fansida__sp
+    @fansida__sp___number_of_tablets_given_1, @fansida__sp___number_of_tablets_given_6 = report.fansida__sp
 
-    #@fansida__sp___number_of_tablets_given_2 = report.fansida__sp___number_of_tablets_given_2
+    @fansida__sp___number_of_tablets_given_2 = @observations_total - (@fansida__sp___number_of_tablets_given_0 + @fansida__sp___number_of_tablets_given_1)
 
     #@fefo__number_of_tablets_given_2 = report.fefo__number_of_tablets_given_2
 
@@ -437,10 +437,10 @@ class ReportsController < ApplicationController
     #@fansida__sp___number_of_tablets_given_more_than_2 = @observations_total - (@fansida__sp___number_of_tablets_given_0 + @fansida__sp___number_of_tablets_given_1 + @fansida__sp___number_of_tablets_given_2)
 
     @fefo__number_of_tablets_given_1 = @observations_total - @fefo__number_of_tablets_given_2 #report.fefo__number_of_tablets_given_1
-
-    @albendazole = report.albendazole(1)
-
     @albendazole_more_than_1 = report.albendazole(">1")
+
+    @albendazole = report.albendazole(1) + @albendazole_more_than_1
+
     @albendazole_none = @observations_total - (@albendazole + @albendazole_more_than_1)
 
     @bed_net = report.bed_net
@@ -454,68 +454,103 @@ class ReportsController < ApplicationController
 
     @syphilis_result_unk = (@observations_total - (@syphilis_result_pos + @syphilis_result_neg).uniq).uniq
 
-    @hiv_test_result_prev_neg = report.hiv_test_result_prev_neg.uniq
+    #@hiv_test_result_prev_neg = report.hiv_test_result_prev_neg.uniq
 
-    @hiv_test_result_prev_pos = report.hiv_test_result_prev_pos.uniq
+    #@hiv_test_result_prev_pos = report.hiv_test_result_prev_pos.uniq
 
-    @hiv_test_result_neg = report.hiv_test_result_neg.uniq
+    #@hiv_test_result_neg = report.hiv_test_result_neg.uniq
 
-    @hiv_test_result_pos = report.hiv_test_result_pos.uniq
+    #@hiv_test_result_pos = report.hiv_test_result_pos.uniq
 
-    @hiv_test_result_inc  = report.hiv_test_result_inc.uniq
+    #@hiv_test_result_inc  = report.hiv_test_result_inc.uniq
 
     #getting rid of overlaps
-    @hiv_test_result_prev_neg -= (@hiv_test_result_pos + @hiv_test_result_neg + @hiv_test_result_pos)
-    @hiv_test_result_neg -= (@hiv_test_result_prev_pos + @hiv_test_result_pos)
-    @hiv_test_result_prev_pos -= (@hiv_test_result_pos)
+    #@hiv_test_result_prev_neg -= (@hiv_test_result_pos + @hiv_test_result_neg + @hiv_test_result_pos)
+    #@hiv_test_result_neg -= (@hiv_test_result_prev_pos + @hiv_test_result_pos)
+    #@hiv_test_result_prev_pos -= (@hiv_test_result_pos)
 
-    @hiv_test_result_unk = (@observations_total - (@hiv_test_result_prev_neg + @hiv_test_result_prev_pos +
-    @hiv_test_result_neg + @hiv_test_result_pos + @hiv_test_result_inc).uniq).uniq
+    #@hiv_test_result_unk = (@observations_total - (@hiv_test_result_prev_neg + @hiv_test_result_prev_pos +
+    #@hiv_test_result_neg + @hiv_test_result_pos + @hiv_test_result_inc).uniq).uniq
 
-    @total_hiv_positive = (@hiv_test_result_prev_pos + @hiv_test_result_pos).delete_if{|p| p.blank?}
+    #@total_hiv_positive = (@hiv_test_result_prev_pos + @hiv_test_result_pos).delete_if{|p| p.blank?}
 
-    @not_on_art = report.not_on_art
-    @not_on_art.delete_if{|p| p.blank?}
+    #@not_on_art = report.not_on_art.uniq
+    #@not_on_art.delete_if{|p| p.blank?}
 
-    @on_art_before = report.on_art_before
-    @on_art_before.delete_if{|p| p.blank?}
+    #@on_art_before = report.on_art_before
+    #@on_art_before.delete_if{|p| p.blank?}
 
-    @on_art_zero_to_27 = report.on_art_zero_to_27
+    #@on_art_zero_to_27 = report.on_art_zero_to_27
+    #@on_art_zero_to_27.delete_if{|p| p.blank?}
 
-    @on_art_zero_to_27.delete_if{|p| p.blank?}
-
-    @on_art_28_plus = report.on_art_28_plus
-    @on_art_28_plus.delete_if{|p| p.blank?}
-        #raise (@on_art_before + @not_on_art + @on_art_zero_to_27 + @on_art_28_plus).uniq.length.to_yaml
-    #@on_cpt__1 = report.on_cpt__1
-    #@no_cpt__1 = (@total_hiv_positive - @on_cpt__1)
-
-    #@nvp_baby__1 = report.nvp_baby__1
+    #@on_art_28_plus = report.on_art_28_plus.uniq
+    #@on_art_28_plus.delete_if{|p| p.blank?}
 
     #>>>>>>>>>>>>>>>>>>>>>>>>NEW ADDITIONS START<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-      @first_visit_hiv_test_result_prev_negative = report.first_visit_hiv_test_result_prev_negative
-      @first_visit_hiv_test_result_prev_positive = report.first_visit_hiv_test_result_prev_positive
+    @first_visit_hiv_test_result_prev_negative = report.first_visit_hiv_test_result_prev_negative
+    @first_visit_hiv_test_result_prev_positive = report.first_visit_hiv_test_result_prev_positive
+    @first_visit_new_negative = report.first_visit_new_negative
+    @first_visit_new_positive = report.first_visit_new_positive
+    #@first_visit_hiv_not_done = report.first_visit_hiv_not_done
+    @first_visit_hiv_not_done = (@new_women_registered - @first_visit_hiv_test_result_prev_negative -
+        @first_visit_hiv_test_result_prev_positive - @first_visit_new_negative - @first_visit_new_positive)
 
-      @final_visit_hiv_test_result_prev_negative = report.final_visit_hiv_test_result_prev_negative
+    @final_visit_hiv_test_result_prev_negative = report.final_visit_hiv_test_result_prev_negative
+    @final_visit_hiv_test_result_prev_positive = report.final_visit_hiv_test_result_prev_positive
+    @final_visit_new_negative = report.final_visit_new_negative
+    @final_visit_new_positive = report.final_visit_new_positive
+    @final_visit_hiv_not_done = (report.final_visit_hiv_not_done - @final_visit_hiv_test_result_prev_negative -
+        @final_visit_hiv_test_result_prev_positive - @final_visit_new_negative - @final_visit_new_positive)
+    #@observations_total - (@first_visit_new_positive +
+    #@first_visit_new_negative + @first_visit_hiv_test_result_prev_positive + @first_visit_hiv_test_result_prev_negative)
 
+    @total_first_visit_hiv_positive = (@first_visit_hiv_test_result_prev_positive + @first_visit_new_positive).delete_if{|p| p.blank?}
 
-      @first_visit_new_negative = report.first_visit_new_negative
-      @first_visit_new_positive = report.first_visit_new_positive
-      @first_visit_hiv_not_done = report.first_visit_hiv_not_done
+    @total_hiv_positive = @total_first_visit_hiv_positive
+    @first_visit_not_on_art = report.first_visit_not_on_art
+    @first_visit_on_art_zero_to_27 = report.first_visit_on_art_zero_to_27
+    @first_visit_on_art_28_plus = report.first_visit_on_art_28_plus
+    @first_visit_on_art_before = report.first_visit_on_art_before
+    @first_visit_not_on_art =  (@total_first_visit_hiv_positive + @first_visit_not_on_art -
+        (@first_visit_on_art_zero_to_27 +  @first_visit_on_art_28_plus + @first_visit_on_art_before)).uniq
 
-      @total_first_visit_hiv_positive = (@first_visit_hiv_test_result_prev_positive + @first_visit_new_positive).delete_if{|p| p.blank?}
+    @total_final_visit_hiv_positive = (@final_visit_hiv_test_result_prev_positive + @final_visit_new_positive).delete_if{|p| p.blank?}
 
-      @first_visit_not_on_art = report.first_visit_not_on_art
-      @first_visit_on_art_zero_to_27 = report.first_visit_on_art_zero_to_27
-      @first_visit_on_art_28_plus = report.first_visit_on_art_28_plus
-      @first_visit_on_art_before = report.first_visit_on_art_before
+    @total_final_hiv_positive = @total_final_visit_hiv_positive
+    @final_visit_not_on_art = report.final_visit_not_on_art
+    @final_visit_on_art_zero_to_27 = report.final_visit_on_art_zero_to_27
+    @final_visit_on_art_28_plus = report.final_visit_on_art_28_plus
+    @final_visit_on_art_before = report.final_visit_on_art_before
+    @final_visit_not_on_art = (@total_final_visit_hiv_positive + @final_visit_not_on_art -
+        ( @final_visit_on_art_zero_to_27 + @final_visit_on_art_28_plus + @final_visit_on_art_before)).uniq
 
     #>>>>>>>>>>>>>>>>>>>>>>>>NEW ADDITIONS END<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     @nvp_baby__1 = report.nvp_baby__1
     @no_nvp_baby__1 = (@total_final_visit_hiv_positive - @nvp_baby__1)
     @on_cpt__1 = report.on_cpt__1
-    @no_cpt__1 = (@total_first_visit_hiv_positive - @on_cpt__1)
-    #raise @fansida__sp___number_of_tablets_given_more_than_2.to_yaml
+    @no_cpt__1 = (@total_final_visit_hiv_positive - @on_cpt__1)
+
+    #filter for cohort validation rules
+=begin
+    vars = ValidationRule.rules_xy
+
+    @failures = []
+
+    if params[:selType] == "cohort"
+      if vars.collect{|v| eval("@#{v}") }.flatten.uniq.include?(nil) #nils are for failed eval executions
+        raise "One of the cohort validation rules is using an unknown variable".to_s
+      end
+
+      rules = ValidationRule.find_all_by_type_id(1)
+      rules.each do |rule|
+
+        exr =  rule.expr.gsub(/\{/, '@').gsub(/\}/, '.count')
+        if !eval(exr)
+          @failures << "Failed: #{rule.desc}"
+        end
+      end
+    end
+=end
     render :layout => false
   end
 

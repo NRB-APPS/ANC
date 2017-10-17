@@ -15,7 +15,7 @@ Rails::Initializer.run do |config|
   # config.time_zone = 'UTC'
 	config.gem 'warden'
 	config.gem 'devise'
-  config.middleware.use "PDFKit::Middleware", :print_media_type => true
+  config.middleware.use 'PDFKit::Middleware', :print_media_type => true
 
   config.action_controller.session = {
     :session_key => 'bart_session',

@@ -1233,7 +1233,7 @@
 
         <% @parameters =  @parameters.delete_if{|k, v| k.match(/action|controller/)}.collect{|k, v| k + "=" + v}.join("&")
          %>
-        <button class="blue" style="width: 140px; float: right; margin: 10px;" onclick="window.location = '/reports/print_report?<%= @parameters %>'">
+        <button class="blue" style="width: 140px; float: right; margin: 10px;"  onmousedown="javascript:printPDF();">
           <span>
             Print
           </span>
@@ -1246,11 +1246,38 @@
         </button>
       </div>
     </div>
+  <form id="pdf" method="post" action="/reports/report_pdf.pdf" name="pdf_printout">
+  </form>
   </body>
 
 <script>
     if (tableRows.length > 0){
         buildConsistencyTable();
     }
+
+    function printPDF() {
+      var print_pdf_attr = {"end_date":"",
+          "controller":"reports", "day":"",
+          "start_date":"", "selQtr":"",
+          "action":"report",
+          "selMonth":<%= Date::MONTHNAMES.index(@end_date.to_date.strftime('%B')) rescue "" %>,
+          "selSelect":"", "selWeek":"",
+          "selYear":<%= @end_date.to_date.strftime("%Y") rescue "" %>};
+
+      var pdfForm = document.getElementById('pdf')
+      for (name in print_pdf_attr){
+        var input = document.createElement('input');
+        input.setAttribute('type','hidden');
+        input.setAttribute('name',name);
+        input.setAttribute('value', print_pdf_attr[name]);
+        pdfForm.appendChild(input);
+      }
+
+      document.pdf_printout.target = "my_pdf";
+      var w = (window.innerWidth - 80) ; var h = (window.innerHeight - 8);
+      window.open("","my_pdf","width=" + w + ",height=" + h + ",toolbar=0");
+      document.pdf_printout.submit();
+    }
+
 </script>
 </html>
