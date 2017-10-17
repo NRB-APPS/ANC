@@ -206,7 +206,7 @@
           {:id => "input_page",
           :helptext => "Enter pregnancy details <span class='helper'> Obstetric History</span>",
           :tt_onLoad => "jQuery('#clearButton').css('display', 'none');parsedConceptName = ''; loadInputWindow();",
-          :tt_BeforeUnLoad => "buildParams()",
+          :tt_BeforeUnLoad => "buildParams(); console.log(test_code().toString());",
           :optional => "true",
           :condition => "__$('enter_gravida').value > 1 && __$('enter_number_of_deliveries').value !== 'Unknown' "
         } %>

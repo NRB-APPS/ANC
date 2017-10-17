@@ -29,7 +29,10 @@ class PeopleController < GenericPeopleController
       end
 
     elsif create_from_remote
+
       person_from_remote = PatientService.create_remote_person(params)
+      person_from_remote["person"].merge!("citizenship" => params["person"]["citizenship"])
+      # raise person_from_remote.inspect
       person = PatientService.create_from_form(person_from_remote["person"]) unless person_from_remote.blank?
 
       if !person.blank?

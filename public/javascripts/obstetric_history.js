@@ -1,3 +1,5 @@
+var details_available = [];
+
 function readableMessage(){
 
     var conceptName = conceptHash[tstCurrentPage]
@@ -421,8 +423,10 @@ function loadInputWindow(){
 
             for (var pos in $){
 
-                if ($[pos]["condition"] == true)
+                if ($[pos]["condition"] == true){
                     loadPregnancy(pos, "delivery");
+                    details_available.push($[pos]["condition"]);
+                }
             }
 
             for (var i = 1; i <= parseInt(__$("enter_number_of_abortions").value); i ++){
@@ -1556,6 +1560,12 @@ function loadInputWindow(){
     })(jQuery, data);
 
     myModule.load();
+}
+
+function test_code(){
+    result = details_available.length;
+    details_available = []
+    return result;
 }
 
 function buildParams(){
