@@ -340,8 +340,9 @@ class Reports
 
     select =Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
                        :select => ["encounter.patient_id"],
-                       :conditions => ["drug.name = ?  AND (DATE(encounter_datetime) >= ? " +
-                                           "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "SP (3 tablets)",
+                       :conditions => ["(drug.name = ? OR drug.name = ?)  AND (DATE(encounter_datetime) >= ? " +
+                                           "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", 
+                                      "Sulphadoxine and Pyrimenthane (25mg tablet)", "SP (3 tablets)",
                                        @lmp,((@start_date.to_date + @pregnant_range) - 1.day), @cohort_patients]).map(&:patient_id).uniq
     @cohort_patients - select
 
@@ -366,7 +367,7 @@ class Reports
     Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
     :select => ["encounter.patient_id, DATE(encounter_datetime) datetime, drug.name instructions"],
     :conditions => ["drug.name = ?  AND (DATE(encounter_datetime) >= #{@lmp}" +
-      "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "SP (3 tablets)",
+      "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)", "Sulphadoxine and Pyrimenthane (25mg tablet)",
        ((@start_date.to_date + @pregnant_range) - 1.day), @cohort_patients]).each { |o|
         fansida[o.patient_id] = [] if fansida[o.patient_id].blank?
         fansida[o.patient_id] << o.datetime if ! fansida[o.patient_id].include?(o.datetime)
@@ -391,8 +392,9 @@ class Reports
 
     Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
                :select => ["encounter.patient_id, count(distinct(DATE(encounter_datetime))) encounter_id, drug.name instructions"],
-               :group => [:patient_id], :conditions => ["drug.name = ? " +
-                                                            "AND DATE(encounter_datetime) <= ? AND encounter.patient_id IN (?)", "SP (3 tablets)",
+               :group => [:patient_id], :conditions => ["(drug.name = ? OR drug.name = ?) " +
+                                                            "AND DATE(encounter_datetime) <= ? AND encounter.patient_id IN (?)", 
+                                                            "Sulphadoxine and Pyrimenthane (25mg tablet)", "SP (3 tablets)",
                                                          ((@start_date.to_date + @pregnant_range) - 1.day), @cohort_patients]).collect { |o|
       [o.patient_id, o.encounter_id]
     }.delete_if { |x, y| y.to_i != 2 }.collect { |p, c| p }
@@ -403,8 +405,9 @@ class Reports
 
     Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
     :select => ["encounter.patient_id, count(distinct(DATE(encounter_datetime))) encounter_id, drug.name instructions"],
-    :group => [:patient_id], :conditions => ["drug.name = ?  " +
-      "AND DATE(encounter_datetime) <= ? AND encounter.patient_id IN (?)", "SP (3 tablets)",
+    :group => [:patient_id], :conditions => ["(drug.name = ? OR drug.name = ?)  " +
+      "AND DATE(encounter_datetime) <= ? AND encounter.patient_id IN (?)", 
+      "Sulphadoxine and Pyrimenthane (25mg tablet)", "SP (3 tablets)",
        ((@start_date.to_date + @pregnant_range) - 1.day), @cohort_patients]).collect { |o|
         [o.patient_id, o.encounter_id]
       }.delete_if { |x, y| y.to_i < 3 }.collect { |p, c| p }
@@ -442,8 +445,9 @@ class Reports
 
     p = Order.find(:all, :joins => [[:drug_order => :drug], :encounter],
                :select => ["encounter.patient_id, count(*) encounter_id, drug.name instructions"],
-               :group => [:patient_id], :conditions => ["drug.name = ? " +
-                                                            "AND DATE(encounter_datetime) <= ? AND encounter.patient_id IN (?)", "SP (3 tablets)",
+               :group => [:patient_id], :conditions => ["(drug.name = ? OR drug.name = ?) " +
+                                                            "AND DATE(encounter_datetime) <= ? AND encounter.patient_id IN (?)", 
+                                                            "Sulphadoxine and Pyrimenthane (25mg tablet)", "SP (3 tablets)",
                                                        ((@start_date.to_date + @pregnant_range) - 1.day), @cohort_patients]).collect { |o|
       [o.patient_id, o.encounter_id]
     }.delete_if { |x, y| y != 3 }.collect { |p, c| p }
