@@ -215,8 +215,8 @@
           <% (@months || [] ).each do |month|  %>
           <%    if (month[0,3] == @end_date.to_date.strftime("%B")[0,3]) %>
                   <% @index = @months.index(month) %>
-                  <td style="width: 5%;text-align: center;border-left: 1px solid #999;border-right: 1px solid #999;"
-                      class="block_header">
+                  <td style="width: 5%;text-align: center;border-left: 2px solid #999;
+                      border-right: 2px solid #999;" class="block_header">
           <%    else %>
                   <td style="width: 5%;text-align: center">
           <%    end%>
@@ -227,8 +227,8 @@
           <td style="border-right: 1px solid #333;">(Circle)</td>
           <% (1..12).each do |i|  %>
           <%  if (i.to_i == @index.to_i + 1) %>
-              <td style="width: 5%;text-align: center; border-right: 1px solid #999; border-left: 1px solid #999;"
-                  class="block_header">
+              <td style="width: 5%;text-align: center; border-right: 2px solid #999;
+                  border-left: 2px solid #999;" class="block_header">
           <%  else %>
               <td style="width: 5%;text-align: center">
           <%  end %>
@@ -243,7 +243,7 @@
           <% @months_inverse = @second_half + @first_half %>
           <% (@months_inverse || []).each do |month|  %>
           <% if (month == (@end_date.to_date - 6.months).strftime("%B")) %>
-               <td style="width: 5%;text-align: center;border-left: 1px solid #999;border-right: 1px solid #999;
+               <td style="width: 5%;text-align: center;border-left: 2px solid #999;border-right: 2px solid #999;
                border-bottom-left-radius: 70%;"
                    class="block_header">
           <% else %>
@@ -280,14 +280,14 @@
 
           <tr>
             <td class="num">6</td>
-            <td style="border-width: 1px 1px 0 1px; border-style: solid;">Week 0-12</td>
+            <td style="border-top: 1px solid #333; border-left: 1px solid #333;">Week 0-12</td>
             <td class="value_cell"><%= @week_of_first_visit_1.length %></td>
           </tr>
 
           <tr>
             <td class="num"></td>
-            <td style="border-width: 1px 1px 0 1px; border-style: solid;"><span>Week 13+</span></td>
-            <td style="border-width: 0px 1px 0 1px; border-style: solid;"><%= @week_of_first_visit_2.length %></span></td>
+            <td style="border-left: 1px solid #333; border-bottom: 1px solid #333;"><span>Week 13+</span></td>
+            <td style="border: 1px solid #333; text-align: center"><%= @week_of_first_visit_2.length %></span></td>
           </tr>
 
           <tr>
@@ -327,7 +327,7 @@
 
           <tr>
             <td class="num"></td>
-            <td>TotalHIV+ (19+21)</td>
+            <td style="font-style:italic;">TotalHIV+ (19+21)</td>
             <td class="value_cell"><%= @total_first_visit_hiv_positive.length %></td>
           </tr>
 
@@ -413,7 +413,7 @@
           <tr>
             <td class="num">&nbsp;</td>
             <td style="font-style:italic;">
-              Total women in <%if @type == "monthly"%>report <%else%>cohort<%end%>
+              Tot. women in <%if @type == "monthly"%>report <%else%>cohort<%end%>
             </td>
             <td class="value_cell"><%= @observations_total.length %>&nbsp;</td>
           </tr>
@@ -430,9 +430,9 @@
           <tr>
             <td class="num"></td>
             <td style="border-left: 1px solid #999; border-top: 1px solid #999;">
-              <span style="color: gray">No</span></td>
-            <td style="border-left: 1px solid #999; border-top: 1px solid #999; border-right: 1px solid #999;">
-              <span style="color: gray"><%= @pre_eclampsia_no.length %></span>
+              <span style="color: gray; font-style: italic">No</span></td>
+            <td style="color:gray;border: 1px solid #999; border-top: 1px solid #999;text-align: center;">
+              <%= @pre_eclampsia_no.length %>
             </td>
           </tr>
 
@@ -450,10 +450,10 @@
           <tr>
             <td class="num"></td>
             <td style="border-top: 1px solid #999; border-left: 1px solid #999;">
-              <span style="color:gray;"> < 2 doses</span>
+              <span style="color:gray; font-style: italic;"> < 2 doses</span>
             </td>
-            <td style="border: 1px solid #999;">
-              <span style="color:gray;"><%= @ttv__total_previous_doses_1.length %></span>
+            <td style="color:gray;border: 1px solid #999; border-top: 1px solid #999;text-align: center;">
+              <%= @ttv__total_previous_doses_1.length %>
             </td>
           </tr>
           <tr>
@@ -493,10 +493,10 @@
           <tr>
             <td class="num">&nbsp;</td>
             <td style="border-top: 1px solid #999; border-left: 1px solid #999;
-                border-bottom: 0px;"><span style="color: gray"> < 120 tabs </span>
+                border-bottom: 0px;"><span style="color: gray;font-style: italic;"> < 120 tabs </span>
             </td>
-            <td style="border: 1px solid #999; border-top: 1px solid #999;">
-              <span style="color: gray"> <%= @fefo__number_of_tablets_given_1.length %> </span>
+            <td style="color:gray;border: 1px solid #999; border-top: 1px solid #999;text-align: center;">
+              <%= @fefo__number_of_tablets_given_1.length %>
             </td>
           </tr>
 
@@ -513,9 +513,9 @@
 
           <tr>
             <td class="num"></td>
-            <td style="border-top: 1px solid #999;border-left: 1px solid #999;"><span style="color: gray">None</span></td>
-            <td style="border: 1px solid #999; border-top: 1px solid #999;">
-              <span style="color: gray"><%= @albendazole_none.length %></span>
+            <td style="border-top: 1px solid #999;border-left: 1px solid #999;"><span style="color: gray;font-style: italic;">None</span></td>
+            <td style="color:gray;border: 1px solid #999; border-top: 1px solid #999;text-align: center;">
+              <%= @albendazole_none.length %>
             </td>
           </tr>
 
@@ -532,9 +532,9 @@
 
           <tr>
             <td class="num"></td>
-            <td style="border-top: 1px solid #999;border-left: 1px solid #999;"><span style="color: gray">None</span></td>
-            <td style="border: 1px solid #999; border-top: 1px solid #999;">
-              <span style="color: gray"><%= @no_bed_net.length %></span>
+            <td style="border-top: 1px solid #999;border-left: 1px solid #999;"><span style="color: gray;font-style: italic;">None</span></td>
+            <td style="color:gray;border: 1px solid #999; border-top: 1px solid #999;text-align: center;">
+              <%= @no_bed_net.length %>
             </td>
           </tr>
 
@@ -626,9 +626,9 @@
           <tr>
             <td></td>
             <td style="border-top: 1px solid #999;border-left: 1px solid #999;">
-              <span style="color: gray">Not On CPT</span>
+              <span style="color: gray;font-style: italic;">Not On CPT</span>
             </td>
-            <td style="border: 1px solid #999; border-top: 1px solid #999;">
+            <td style="color:gray;border: 1px solid #999; border-top: 1px solid #999;text-align: center;">
               <%= @no_cpt__1.length rescue 0%>
             </td>
           </tr>
@@ -646,8 +646,8 @@
 
           <tr>
             <td></td>
-            <td style="border-top: 1px solid #999;border-left: 1px solid #999;"><span style="color: gray">No</span></td>
-            <td style="border: 1px solid #999; border-top: 1px solid #999;"><%= @no_nvp_baby__1.length %></td>
+            <td style="border-top: 1px solid #999;border-left: 1px solid #999;"><span style="color: gray;font-style: italic;">No</span></td>
+            <td style="color:gray;border: 1px solid #999; border-top: 1px solid #999;text-align: center;"><%= @no_nvp_baby__1.length %></td>
           </tr>
 
           <tr>
@@ -691,22 +691,22 @@
         <table width="100%">
           <tr>
             <td></td>
-            <td colspan="2" class="block_header">Report filled</td>
+            <td colspan="2" class="block_header" style="padding-top: 10px;">Report filled</td>
           </tr>
           <tr>
             <td></td>
             <td style="border-top: 1px solid #999; border-left: 1px solid #999;">Date</td>
-            <td class="value_cell" style="width: 100px;"></td>
+            <td style="border: 2px solid #333; width: 70%;"></td>
           </tr>
           <tr>
             <td></td>
             <td style="border-left: 1px solid #999;">Name</td>
-            <td class="value_cell"></td>
+            <td style="border: 2px solid #333; width: 70%;"></td>
           </tr>
           <tr>
             <td></td>
             <td style="border-left: 1px solid #999; border-bottom: 1px solid #999;">Phone</td>
-            <td class="value_cell"></td>
+            <td style="border: 2px solid #333; width: 70%;"></td>
           </tr>
           <tr>
             <td></td>
@@ -723,18 +723,18 @@
           <tr>
             <td></td>
             <td style="border-top: 1px solid #999; border-left: 1px solid #999;">Date</td>
-            <td class="value_cell" style="width: 100px;"></td>
+            <td style="border: 2px solid #333; width: 70%;"></td>
           </tr>
           <tr>
             <td></td>
             <td style="border-left: 1px solid #999; border-bottom: 1px solid #999;">Name</td>
-            <td class="value_cell"></td>
+            <td style="border: 2px solid #333; width: 70%;"></td>
           </tr>
         </table>
       </div>
     </div>
     <div id="report_footer">
-      <sup style="font-weight: normal;">1</sup> Check: Total of these sections must add up to total number of the women in cohort / month.
+      <sup style="font-weight: normal;">1</sup> Check: Total of these sections must add up to total number of the women in cohort.
     </div>
   </div>
 </div>
