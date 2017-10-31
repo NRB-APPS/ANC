@@ -971,6 +971,9 @@ function loadInputWindow(){
                         }
                     }
                     else if(this.innerHTML.match(/OK/)){
+                        date = new Date();
+                        this_year = date.getUTCFullYear();
+                        this_year = parseInt(this_year);
                         var unit = ""
                         if (__$("unit")){
                             unit = __$("unit").value
@@ -979,10 +982,12 @@ function loadInputWindow(){
                         if (global_control != undefined && parseInt(global_control) > max || parseInt(global_control) < min){
 
                             showMessage("Value out of bound (" + min + " - " + max + ")", false, false);
-                        }else if (global_control == ""){
+                        }else if (global_control == "") {
                             showMessage("Please select a value!", false, false);
                         }else{
-
+                            if (parseInt(global_control) == this_year){
+                                showMessage("You have entered 2017.", true, false);
+                            }
                             global_control += " " + unit;
                             global_control= global_control.trim();
                             var row = __$(__$("popup").getAttribute("row_id"));
@@ -1296,10 +1301,10 @@ function loadInputWindow(){
                 var fields = {
                     "Year of birth" : ["number", min_birth_year, abs_max_birth_year] ,
                     "Place of birth" : ["list", "Health facility", "In transit", "TBA", "Home"],
-                    "Gestation (months)" : ["number", 5, 10],
-                    "Method of delivery" : ["list", "Spontaneous vaginal delivery", "Caesarean Section", "Vacuum Extraction Delivery", "Breech"],
-                    "Condition at birth" : ["list", "Alive", "Still Birth"],
-                    "Birth weight" : ["list", "Big Baby (Above 4kg)", "Average", "Small Baby (Less than 2.5kg)"],
+                    "Gestation (months)" : ["number", 5, 11],
+                    "Method of delivery" : ["list", "Spontaneous vaginal delivery", "Caesarean Section", "Vacuum Extraction Delivery", "Breech", "Forcepts", "Others"],
+                    "Condition at birth" : ["list", "Alive", "Macerated Still Birth (MSB)", "Fresh Still Birth (FSB)"],
+                    "Birth weight" : ["number", 1, 5],
                     "Alive Now" : ["list", "Yes", "No"],
                     "Age at death" : ["age"]
                 };
@@ -1447,7 +1452,7 @@ function loadInputWindow(){
                        
             if (r != undefined){
                 var p = parseInt(r.id.match(/^\d+/)[0]);
-                var n = parseInt(r.getAttribute("n-tuple"))
+                var n = parseInt(r.getAttribute("n-tuple"));
                 var label = r.childNodes[0].innerHTML;
 
                 if (n >= 1 && parseInt($[p]["count"]) > 1){
@@ -1620,7 +1625,7 @@ function buildParams(){
 
 function loadSplitSelections(arr){
     //array format [url, input_id, helpText]
-    var arr = [["/encounters/yes_no_options", "ever_had_symphysiotomy"],
+    var arr = [["/encounters/yes_no_options", "ever_had_episiotomy"],
     ["/encounters/hemorrhage_options", "hemorrhage"],
     ["/encounters/yes_no_options", "pre_eclampsia"],
     ["/encounters/yes_no_options", "eclampsia"]
@@ -1862,7 +1867,7 @@ function addValidationInterval(){
    
     __$("nextButton").onmousedown = function(){
         if (this.innerHTML.match(/Finish/i)){
-            var arr = ["ever_had_symphysiotomy", "hemorrhage", "pre_eclampsia"];
+            var arr = ["ever_had_episiotomy", "hemorrhage", "pre_eclampsia"];
             try{
                 if (__$("2_2") != undefined && __$("2_2").style.display != "none"){
                     arr.push("eclampsia");

@@ -649,12 +649,41 @@
                           :tt_pageStyleClass => "NoKeyboard"} %>
 
     <%= touch_select_tag "FETAL HEART BEAT", @patient,
-                         options_for_select([["", ""], ["Heard", "Heard"], ["Not heard", "Not heard"],
-                                             ["Fetal Movement Felt (FMF)", "Fetal Movement Felt (FMF)"]]),
+                         options_for_select([["", ""], ["Heard", "Heard"], ["Not heard", "Not heard"]]),
                          {:id => "enter_fetal_heart",
                           :condition => "__$('presentation').value != 'Ball' || __$('presentation').value != 'Nill papable'",
                           :tt_onLoad => "",
                           :helptext => "Fetal Heart Beat <span class='helper'> ANC Examination</span>"}, session_date %>
+
+    <%= touch_select_tag "FETAL MOVEMENT FELT", @patient,
+                         options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
+                         {:id => "enter_fetal_movemement",
+                          :condition => "",
+                          :tt_onLoad => "",
+                          :helptext => "Fetal Movement Felt<span class='helper'> ANC Examination</span>"}, session_date %>
+
+    <%= touch_date_tag "LAST FETAL MOVEMENT FELT", @patient, nil,
+                       {:id => "last_fmf",
+                        :helptext => "Last Fetal Movement Felt  <span class='helper'> Current Pregnancy</span>",
+                        :tt_onLoad => "timedEvent = setTimeout('calculateEDOD()', 100); initializeDate()",
+                        :tt_onUnLoad => 'clearTimeout(timedEvent);',
+                        :condition => "__$('enter_fetal_movemement').value == 'No'",
+                        :tt_pageStyleClass => "exclude",
+                        :min => ((session[:datetime] || Date.today).to_date - 42.week),
+                        :absoluteMin => ((session[:datetime] || Date.today).to_date - 45.week),
+                        :absoluteMax => ((session[:datetime] || Date.today).to_date - 1.day)
+                       }%>
+
+    <%= touch_numeric_tag "LAST FETAL MOVEMENT FELT", @patient, nil,
+                          {:id => "last_fmf",
+                           :helptext => "Last Fetal Movement Felt (weeks) <span class='helper'> ANC Examination</span>",
+                           :tt_onLoad => "timedEvent = setTimeout('calculateEDOD()', 100); initializeDate()",
+                           :tt_onUnLoad => 'clearTimeout(timedEvent);',
+                           :condition => "__$('enter_fetal_movemement').value == 'Yes'",
+                           :tt_pageStyleClass => "NumbersWithUnknown",
+                           :absoluteMax => 45,
+                           :tt_onLoad => "buildConceptsHash(); setTimeout(function(){ readableMessage()}, 50)"
+                          }, session_date %>
 
     <%#--------------------------------------------------------%>
 
