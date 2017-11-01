@@ -462,7 +462,6 @@ function loadInputWindow(){
             
             var popup = document.createElement("div");
             popup.id = "popup";
-
             var nTuple = row.getAttribute("n-tuple");
             var pTuple = row.getAttribute("p-tuple");
             var aTuple = row.getAttribute("a-tuple");
@@ -778,13 +777,20 @@ function loadInputWindow(){
         }
 
         function showNumber(id, global_control, min, max, type){
+            console.log(global_control);
             jQ('#backButton, #nextButton').attr("disabled", true);
             cn = 9;
+            this_id = global_control;
+            if (global_control.match(/_row_5/)){
+                m = "Unk"
+            }else {
+                m = "0"
+            }
             global_control = ""
             var row1 = ["1","2","3"];
             var row2 = ["4","5","6"];
             var row3 = ["7","8","9"];
-            var row4 = ["Del","0","OK"];
+            var row4 = ["Del",m,"OK"];
 
             if (min == undefined){
                 min = 0
@@ -970,6 +976,10 @@ function loadInputWindow(){
                             }
                         }
                     }
+                    else if(this.innerHTML.match(/<span>(.+)<\/span>/)[1] == "UNK"){
+                        global_control = this.innerHTML.match(/<span>(.+)<\/span>/)[1];
+                            __$("input").innerHTML =  'Unknown';
+                    }
                     else if(this.innerHTML.match(/OK/)){
                         date = new Date();
                         this_year = date.getUTCFullYear();
@@ -999,7 +1009,9 @@ function loadInputWindow(){
                                 var n = __$("popup").getAttribute("n-tuple");
                                 var p = __$("popup").getAttribute("p-tuple");
                                 var a = __$("popup").getAttribute("a-tuple");
-                                
+                                if (global_control.match(/Unk/)){
+                                    enterWeight(row);
+                                }
                                 display.innerHTML = global_control;
                                 // button.setAttribute("value", global_control);
 
@@ -1295,7 +1307,7 @@ function loadInputWindow(){
         }
 
         function enterData(row){
-
+            console.log(row);
             if (row != undefined){
  
                 var fields = {
@@ -1306,7 +1318,8 @@ function loadInputWindow(){
                     "Condition at birth" : ["list", "Alive", "Macerated Still Birth (MSB)", "Fresh Still Birth (FSB)"],
                     "Birth weight" : ["number", 1, 5],
                     "Alive Now" : ["list", "Yes", "No"],
-                    "Age at death" : ["age"]
+                    "Age at death" : ["age"],
+                    "weight" : ["list"]
                 };
 
                 var field_names = Object.keys(fields);
@@ -1328,7 +1341,6 @@ function loadInputWindow(){
                         var min = fields[field_names[pos]][1];
                         var max = fields[field_names[pos]][2];
                     }
-                    
                     showNumber("popup", row.id, min, max);
                 }else if (type == "list"){
                     var listItems = fields[field_names[pos]];
@@ -1554,6 +1566,44 @@ function loadInputWindow(){
                 }else if (type == "list"){
                     var listItems = fields[field_names[pos]];
                     showList("popup", listItems);
+                }
+            }
+        }
+
+        function enterWeight(row){
+
+            if (row != undefined){
+
+                var fields = {
+                    "Birth weight" : ["list", "Big baby","Normal", "Small baby"]
+                };
+
+                var field_names = Object.keys(fields);
+
+                var pos = row.getAttribute("pos");
+                // console.log(pos);
+                var type = fields[field_names[0]][0]
+                current_popup = field_names[0];
+
+                loadPopup(row);
+                if (type == "number"){
+
+                    if (row.childNodes[0].innerHTML.match(/Year of birth/i)){
+                        var min = validateMin(row, fields[field_names[0]][1]);
+                        var max = validateMax(row, fields[field_names[0]][2]);
+                    }else if(row.childNodes[0].innerHTML.match(/Gestation/i)){
+                        var min = validateGestation(row, fields[field_names[0]][1]);
+                        var max = validateGestation(row, fields[field_names[0]][2]);
+                    }else{
+                        var min = fields[field_names[0]][1];
+                        var max = fields[field_names[0]][2];
+                    }
+                    showNumber("popup", row.id, min, max);
+                }else if (type == "list"){
+                    var listItems = fields[field_names[0]];
+                    showList("popup", listItems);
+                }else if (type == "age"){
+                    showNumber("popup", row.id, 1, 40, "age");
                 }
             }
         }
