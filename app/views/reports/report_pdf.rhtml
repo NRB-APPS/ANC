@@ -42,8 +42,9 @@
   <% @months = [] %>
   <% (1..13).each {|m| @months << Date::MONTHNAMES[m] unless Date::MONTHNAMES[m].nil?} %>
   <style media="print">
-    body {
-      font-family: "Times New Roman", Georgia, Serif;
+    @font-face {
+      font-family: "Times New Roman";
+      src: url('../../../public/fonts/times-new-roman.ttf') format('truetype');
     }
     button {
       display: none;
