@@ -325,7 +325,7 @@ function remoteARTStatus(){
     :condition => "__$('syphilis_result').value != 'Not Done' && getSelected().match(/Syphilis\sTest\sResult/)" } %>
 
   <%= touch_select_tag "URINE PROTEIN", @patient,
-    options_for_select([["", ""], ["Negative", "Negative"], ["Retrace", "Retrace"], ["+", "+"], ["++", "++"],
+    options_for_select([["", ""], ["Negative", "Negative"], ["Trace", "Trace"], ["+", "+"], ["++", "++"],
       ["+++", "+++"], ["++++", "++++"], ["Not Done", "Not Done"]]),
     {:id => "enter_urine_protein",
     :helptext => "Urine Protein <span class='helper'> Lab Results</span>",
