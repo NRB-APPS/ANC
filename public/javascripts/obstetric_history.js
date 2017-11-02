@@ -848,8 +848,12 @@ function loadInputWindow(){
                 btn.innerHTML = "<span>" + row1[i] + "</span>";
                 btn.onmousedown = function(){
                     if(!this.innerHTML.match(/^__$/)){
-                        
-                        global_control += this.innerHTML.match(/<span>(.+)<\/span>/)[1];
+
+                        if (global_control == 'Unknown'){
+                            global_control = this.innerHTML.match(/<span>(.+)<\/span>/)[1];
+                        }else{
+                            global_control += this.innerHTML.match(/<span>(.+)<\/span>/)[1];
+                        }
                         if (global_control != undefined && parseInt(global_control) <= max && parseInt(global_control) >= min){
                             __$("input").innerHTML =  global_control;
                         }else if (global_control != undefined && parseInt(global_control) > max || parseInt(global_control) < min){
@@ -882,8 +886,12 @@ function loadInputWindow(){
                 btn.innerHTML = "<span>" + row2[i] + "</span>";
                 btn.onmousedown = function(){
                     if(!this.innerHTML.match(/^$/)){
-                        
-                        global_control += this.innerHTML.match(/<span>(.+)<\/span>/)[1];
+
+                        if (global_control == 'Unknown'){
+                            global_control = this.innerHTML.match(/<span>(.+)<\/span>/)[1];
+                        }else{
+                            global_control += this.innerHTML.match(/<span>(.+)<\/span>/)[1];
+                        }
                         global_control = global_control.replace(/^0+/, "")
                         if (global_control != undefined && parseInt(global_control) <= max && parseInt(global_control) >= min){
                             __$("input").innerHTML =  global_control;
@@ -918,8 +926,13 @@ function loadInputWindow(){
                 btn.innerHTML = "<span>" + row3[i] + "</span>";
                 btn.onmousedown = function(){
                     if(!this.innerHTML.match(/^__$/)){
-                        
-                        global_control += this.innerHTML.match(/<span>(.+)<\/span>/)[1];
+                        console.log(this.innerHTML);
+                        if (global_control == 'Unknown'){
+                            global_control = this.innerHTML.match(/<span>(.+)<\/span>/)[1];
+                        }else{
+                            global_control += this.innerHTML.match(/<span>(.+)<\/span>/)[1];
+                        }
+
                         global_control = global_control.replace(/^0+/, "")
                         if (global_control != undefined && parseInt(global_control) <= max && parseInt(global_control) >= min){
                             __$("input").innerHTML =  global_control;
@@ -960,8 +973,8 @@ function loadInputWindow(){
                 }
                 btn.onmousedown = function(){
                     if(this.innerHTML.match(/<span>(.+)<\/span>/)[1] == "Del"){
-
-                        if (global_control.length == 1){
+                        console.log(global_control);
+                        if (global_control.length == 1 || global_control == "Unknown"){
                             global_control = ""
                             __$("input").innerHTML = ""
                         }else{
@@ -976,9 +989,9 @@ function loadInputWindow(){
                             }
                         }
                     }
-                    else if(this.innerHTML.match(/<span>(.+)<\/span>/)[1] == "UNK"){
-                        global_control = this.innerHTML.match(/<span>(.+)<\/span>/)[1];
-                            __$("input").innerHTML =  'Unknown';
+                    else if(this.innerHTML.match(/<span>Unk<\/span>/)){
+                        global_control = 'Unknown';
+                        __$("input").innerHTML =  'Unknown';
                     }
                     else if(this.innerHTML.match(/OK/)){
                         date = new Date();
@@ -1012,22 +1025,22 @@ function loadInputWindow(){
                                 if (global_control.match(/Unk/)){
                                     enterWeight(row);
                                 }
-                                display.innerHTML = global_control;
+                                display.innerHTML = global_control.match(/Unk/) ? '?' : global_control;
                                 // button.setAttribute("value", global_control);
 
                                 if(a != undefined && $$[a] != undefined){
 
                                     $$[a][label.innerHTML] = global_control;
-                                   
+
                                 }else{
-                                 
+
                                     if ($[p][n] == undefined){
                                         $[p][n] = {};
                                     }
 
                                     $[p][n][label.innerHTML] = global_control;
                                 }
-                                
+
                                 __$("input").innerHTML = "";
                                 __$("tblKeyboard").parentNode.removeChild(__$("tblKeyboard"));
                                 __$("input").parentNode.removeChild(__$("input"));
