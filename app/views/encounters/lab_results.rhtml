@@ -112,6 +112,19 @@
     return choices;
   }
 
+  function getUrineTest(){
+    var urine_tests = '';
+    if(__$('urine_tests')){
+      for(var o = 0; o < __$('urine_tests').options.length; o++){
+        if(__$('urine_tests').options[o].selected == true){
+          urine_tests += __$('urine_tests').options[o].innerHTML + " ";
+          console.log(urine_tests);
+        }
+      }
+    }
+    return urine_tests;
+  }
+
   function initializeDate(){
     months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     year = "<%=  (session[:datetime] ? session[:datetime].to_date : Date.today).year rescue Date.today.year%>"
@@ -250,8 +263,8 @@ function remoteARTStatus(){
 
     <%= select_tag("choice", options_for_select([["", ""], ["", ""], ["HB Test Result", "HB Test Result"],
           ["Syphilis Test Result", "Syphilis Test Result"], 
-					["Urine Protein", "Urine Protein"], 
-					["Malaria Test Result", "Malaria Test Result"]], ["", ""]),
+					["Urine Test", "Urine Test"],
+					["Malaria Test Result", "Malaria Test Result"],["Blood Group", "Blood Group"]], ["", ""]),
       {
         :helpText => "Select Available Test Results <span class='helper'> Lab Results</span>", :id => "choice", :multiple => true,
         :optional => :true
@@ -260,7 +273,8 @@ function remoteARTStatus(){
 
     <%= select_tag("choice", options_for_select([["", ""], ["", ""], ["HIV Test Result", "HIV Test Result"], 
 					["HB Test Result", "HB Test Result"],["Syphilis Test Result", "Syphilis Test Result"],
-           ["Urine Protein", "Urine Protein"], ["Malaria Test Result", "Malaria Test Result"]], ["", ""]),
+          ["Urine Test", "Urine Test"],
+          ["Malaria Test Result", "Malaria Test Result"],["Blood Group", "Blood Group"]], ["", ""]),
       {
         :helpText => "Select Available Test Results <span class='helper'> Lab Results</span>", :id => "choice", :multiple => true,
         :optional => :true
@@ -324,24 +338,6 @@ function remoteARTStatus(){
     :tt_onUnLoad => "parsedConceptName = '';",
     :condition => "__$('syphilis_result').value != 'Not Done' && getSelected().match(/Syphilis\sTest\sResult/)" } %>
 
-  <%= touch_select_tag "URINE PROTEIN", @patient,
-    options_for_select([["", ""], ["Negative", "Negative"], ["Trace", "Trace"], ["+", "+"], ["++", "++"],
-      ["+++", "+++"], ["++++", "++++"], ["Not Done", "Not Done"]]),
-    {:id => "enter_urine_protein",
-    :helptext => "Urine Protein <span class='helper'> Lab Results</span>",
-    :tt_onLoad => " parsedConceptName = 'Urine Protein';",
-    :tt_onUnLoad => "parsedConceptName = '';",
-    :condition => "getSelected().match(/Urine\sProtein/)" } %>
-
-  <%= touch_date_tag "Urine Protein Test Date", @patient, nil,
-    {:id => "urine_protein_test_date",
-    :helptext => "Urine Protein Test Date <span class='helper'> Lab Results</span>",
-    :tt_onUnLoad => "parsedConceptName = '';",
-    :tt_onLoad => " parsedConceptName = 'Urine Protein Test Date';initializeDate();",
-    :condition => "getSelected().match(/Urine\sProtein/)",
-    :max => "#{session[:datetime].to_date rescue Date.today}"
-  } %>
-
   <%= touch_select_tag "Malaria Test Result", @patient,
     options_for_select([["", ""], ["Negative", "Negative"], ["Positive", "Positive"], ["Not Done", "Not Done"]]),
     {:id => "malaria_test_result",
@@ -369,6 +365,54 @@ function remoteARTStatus(){
     :max => "#{session[:datetime].to_date rescue Date.today}",
     :condition => "__$('malaria_test_result').value.toLowerCase().trim().match(/tive/i)"
   } %>
+
+    <%= touch_select_tag "BLOOD GROUP", @patient,
+          options_for_select([["", ""], ["A", "A"], ["B", "B"], ["O", "O"], ["AB", "AB"]]),
+          {:id => "blood_group",
+           :helptext => "Blood Group <span class='helper'> Lab Results</span>",
+           :tt_onLoad => "parsedConceptName = 'Blood Group';",
+           :tt_onUnLoad => "parsedConceptName = ''",
+           :condition => "getSelected().match(/Blood\sGroup/)"
+          } %>
+    <%= touch_date_tag "Blood Group Test Date", @patient, nil,
+                       {:id => "date_blood_group_test_done",
+                        :helptext => "Date Blood Group Test Done <span class='helper'> Lab Results</span>",
+                        :tt_onUnLoad => "parsedConceptName = '';",
+                        :tt_onLoad => " parsedConceptName = 'Blood Group Test Dtae';",
+                        :max => "#{session[:datetime].to_date rescue Date.today}",
+                        :condition => "__$('blood_group').value !== ''"
+                       } %>
+
+    <%= select_tag("urine_tests",
+                   options_for_select([["", ""],
+                                       ["", ""],
+                                       ["Urine Protein Test", "Urine Protein Test"],
+                                       ["Urine Bacteria Test", "Urine Bacteria Test"],
+                                       ["Urine Blood Cells", "Urine Blood Cells"]], ["", ""]),
+                   {
+                       :condition => "getSelected().match(/Urine\sTest/);",
+                       :helpText => "Select Available Urine Test Results <span class='helper'> Lab Results</span>",
+                       :id => "urine_tests", :multiple => true,
+                       :optional => :true
+                   })%>
+
+    <%= touch_select_tag "URINE PROTEIN", @patient,
+    options_for_select([["", ""], ["Negative", "Negative"], ["Trace", "Trace"], ["+", "+"], ["++", "++"],
+      ["+++", "+++"], ["++++", "++++"], ["Not Done", "Not Done"]]),
+    {:id => "enter_urine_protein",
+    :helptext => "Urine Protein <span class='helper'> Lab Results</span>",
+    :tt_onLoad => " parsedConceptName = 'Urine Protein Test'; console.log(getUrineTest())",
+    :tt_onUnLoad => "parsedConceptName = ''; console.log(getUrineTest());",
+    :condition => "getUrineTest().match(/Urine\sProtein\sTest/);" } %>
+
+    <%= touch_date_tag "Urine Protein Test Date", @patient, nil,
+      {:id => "urine_protein_test_date",
+      :helptext => "Urine Protein Test Date <span class='helper'> Lab Results</span>",
+      :tt_onUnLoad => "parsedConceptName = '';",
+      :tt_onLoad => " parsedConceptName = 'Urine Protein Test Date';initializeDate();",
+      :condition => "getUrineTest().match(/Urine\sProtein\sTest/);",
+      :max => "#{session[:datetime].to_date rescue Date.today}"
+    } %>
 
   <%#= touch_select_tag "WHO Stage", @patient, options_for_select([["", ""], ["1", "1"],
   ["2", "2"], ["3", "3"], ["4", "4"], ["Unknown", "Unknown"]]),

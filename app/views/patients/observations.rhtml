@@ -677,8 +677,7 @@
     <%= touch_numeric_tag "LAST FETAL MOVEMENT FELT", @patient, nil,
                           {:id => "last_fmf",
                            :helptext => "Last Fetal Movement Felt (weeks) <span class='helper'> ANC Examination</span>",
-                           :tt_onLoad => "timedEvent = setTimeout('calculateEDOD()', 100); initializeDate()",
-                           :tt_onUnLoad => 'clearTimeout(timedEvent);',
+                           :tt_onUnLoad => "clearTimeout(timedEvent); addWeeks();",
                            :condition => "__$('enter_fetal_movemement').value == 'Yes'",
                            :tt_pageStyleClass => "NumbersWithUnknown",
                            :absoluteMax => 45,
@@ -693,7 +692,7 @@
             :allowFreeText => 'true',
             :ajaxURL => "/encounters/anc_diagnoses?include_none=true&search_string=",
             :textCase => "upper",
-            :tt_onLoad => "changeUnknownToNone();"
+            :tt_onLoad => "changeUnknownToNone(); console.log(__$('last_fmf').value)"
     } %>
 
     <label for='observations[][value_coded_or_text]'>Signs/Symptoms</label>
@@ -712,6 +711,17 @@
             else
                 $('nextButton').innerHTML = '<span>Next</span>';
             setTimeout(updateNextFinish, 500)
+        }
+        function addWeeks(){
+          v = __$("touchscreenInput" + tstCurrentPage).value;
+          if (parseInt(v) == 1){
+            __$("touchscreenInput" + tstCurrentPage).value += ' week';
+            __$('last_fmf').value = __$("touchscreenInput" + tstCurrentPage).value
+            console.log(__$("touchscreenInput" + tstCurrentPage).value);
+            console.log(__$('last_fmf').value);
+          }else{
+            __$('last_fmf').value = __$("touchscreenInput" + tstCurrentPage).value+' weeks';
+          }
         }
     </script>
 
