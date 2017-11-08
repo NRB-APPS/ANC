@@ -776,8 +776,8 @@ function loadInputWindow(){
             __$("header").style.width = width;
         }
 
-        function showNumber(id, global_control, min, max, type){
-            // console.log(global_control);
+        function showNumber(id, global_control, min, max, abs_max, type){
+            console.log(abs_max);
             jQ('#backButton, #nextButton').attr("disabled", true);
             cn = 9;
             this_id = global_control;
@@ -995,9 +995,7 @@ function loadInputWindow(){
                         __$("input").innerHTML =  'Unknown';
                     }
                     else if(this.innerHTML.match(/OK/)){
-                        date = new Date();
-                        this_year = date.getUTCFullYear();
-                        this_year = parseInt(this_year);
+                        
                         var unit = "";
                         if (__$("unit")){
                             unit = __$("unit").value
@@ -1009,8 +1007,8 @@ function loadInputWindow(){
                         }else if (global_control == "") {
                             showMessage("Please select a value!", false, false);
                         }else{
-                            if (parseInt(global_control) == this_year){
-                                showMeMessage("You have entered 2017.", true, false);
+                            if (parseInt(global_control) == abs_max){
+                                showMeMessage("The value is "+global_control+". Are you sure about this value?", true, false);
                             }
                             global_control += " " + unit;
                             global_control= global_control.trim();
@@ -1042,18 +1040,18 @@ function loadInputWindow(){
 
                                     $[p][n][label.innerHTML] = global_control;
                                 }
-                                if (parseInt(global_control) != this_year){
+                                if (parseInt(global_control) != abs_max){
 
                                     __$("input").innerHTML = "";
                                     __$("tblKeyboard").parentNode.removeChild(__$("tblKeyboard"));
                                     __$("input").parentNode.removeChild(__$("input"));
-                                    
+
                                 }
 
                             }else{
                                 showMessage("Failed to update input!");
                             }
-                            if (parseInt(global_control) != this_year){
+                            if (parseInt(global_control) != abs_max){
 
                                 jQ("#shield, #popup").css("display", "none");
                                 jQ('#backButton, #nextButton').attr("disabled", false);
@@ -1066,9 +1064,9 @@ function loadInputWindow(){
                         
                         global_control += this.innerHTML.match(/<span>(.+)<\/span>/)[1];
                         global_control = global_control.replace(/^0+/, "")
-                        if (global_control != undefined && parseInt(global_control) <= max && parseInt(global_control) >= min){
+                        if (global_control != undefined && parseInt(global_control) <= abs_max && parseInt(global_control) >= min){
                             __$("input").innerHTML =  global_control;
-                        }else if (global_control != undefined && parseInt(global_control) > max || parseInt(global_control) < min){
+                        }else if (global_control != undefined && parseInt(global_control) > abs_max || parseInt(global_control) < min){
 
                             var str = global_control.length > cn ? (global_control.substring(0, cn - 2) + "..." + global_control.substring(global_control.length - 2, global_control.length)) : (global_control)
                             __$("input").innerHTML =  str + "<div style='color: red; font-size: 24px; padding-top: 0px;'><br />&nbsp<br />" + " Out of range</div>";
@@ -1334,9 +1332,9 @@ function loadInputWindow(){
             if (row != undefined){
  
                 var fields = {
-                    "Year of birth" : ["number", min_birth_year, abs_max_birth_year] ,
+                    "Year of birth" : ["number", min_birth_year, abs_max_birth_year, abs_max_birth_year] ,
                     "Place of birth" : ["list", "Health facility", "In transit", "TBA", "Home"],
-                    "Gestation (months)" : ["number", 5, 11],
+                    "Gestation (months)" : ["number", 5, 11, 11],
                     "Method of delivery" : ["list", "Spontaneous vaginal delivery", "Caesarean Section", "Vacuum Extraction Delivery", "Breech", "Forcepts", "Others"],
                     "Condition at birth" : ["list", "Alive", "Macerated Still Birth (MSB)", "Fresh Still Birth (FSB)"],
                     "Birth weight" : ["number", 1, 5],
@@ -1357,19 +1355,21 @@ function loadInputWindow(){
                     if (row.childNodes[0].innerHTML.match(/Year of birth/i)){
                         var min = validateMin(row, fields[field_names[pos]][1]);
                         var max = validateMax(row, fields[field_names[pos]][2]);
+                        var ab_max = validateMax(row, fields[field_names[pos]][3]);
                     }else if(row.childNodes[0].innerHTML.match(/Gestation/i)){
                         var min = validateGestation(row, fields[field_names[pos]][1]);
                         var max = validateGestation(row, fields[field_names[pos]][2]);
+                        var ab_max = validateGestation(row, fields[field_names[pos]][3]);
                     }else{
                         var min = fields[field_names[pos]][1];
                         var max = fields[field_names[pos]][2];
                     }
-                    showNumber("popup", row.id, min, max);
+                    showNumber("popup", row.id, min, max, ab_max);
                 }else if (type == "list"){
                     var listItems = fields[field_names[pos]];
                     showList("popup", listItems);
                 }else if (type == "age"){
-                    showNumber("popup", row.id, 1, 40, "age");
+                    showNumber("popup", row.id, 1, 40, undefined, "age");
                 }
             }
         }
@@ -1380,7 +1380,6 @@ function loadInputWindow(){
             var p = parseInt(r.id.match(/^\d+/)[0]);
             var n = parseInt(r.getAttribute("n-tuple"))
             var label = r.childNodes[0].innerHTML;
-
             if (parseInt($[p]["count"]) > 1){
                 for (var i = 1; i <= parseInt($[p]["count"]); i ++){
                     if (i != n &&  $[p][i] != undefined && $[p][i][label] != undefined){
