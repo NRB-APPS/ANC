@@ -777,16 +777,17 @@ function loadInputWindow(){
         }
 
         function showNumber(id, global_control, min, max, type){
-            console.log(global_control);
+            // console.log(global_control);
             jQ('#backButton, #nextButton').attr("disabled", true);
             cn = 9;
             this_id = global_control;
+
             if (global_control.match(/_row_5/)){
                 m = "Unk"
             }else {
                 m = "0"
             }
-            global_control = ""
+            global_control = "";
             var row1 = ["1","2","3"];
             var row2 = ["4","5","6"];
             var row3 = ["7","8","9"];
@@ -805,7 +806,7 @@ function loadInputWindow(){
             cl.onclick = function(){
                 jQ('#backButton, #nextButton').attr("disabled", false);
                 jQ("#shield, #popup").css("display", "none");
-            }
+            };
            
             jQ(cl).css({
                 "float" : "left",
@@ -851,7 +852,7 @@ function loadInputWindow(){
 
                         if (global_control == 'Unknown'){
                             global_control = this.innerHTML.match(/<span>(.+)<\/span>/)[1];
-                        }else{
+                        }else {
                             global_control += this.innerHTML.match(/<span>(.+)<\/span>/)[1];
                         }
                         if (global_control != undefined && parseInt(global_control) <= max && parseInt(global_control) >= min){
@@ -926,7 +927,7 @@ function loadInputWindow(){
                 btn.innerHTML = "<span>" + row3[i] + "</span>";
                 btn.onmousedown = function(){
                     if(!this.innerHTML.match(/^__$/)){
-                        console.log(this.innerHTML);
+                        // console.log(this.innerHTML);
                         if (global_control == 'Unknown'){
                             global_control = this.innerHTML.match(/<span>(.+)<\/span>/)[1];
                         }else{
@@ -973,9 +974,9 @@ function loadInputWindow(){
                 }
                 btn.onmousedown = function(){
                     if(this.innerHTML.match(/<span>(.+)<\/span>/)[1] == "Del"){
-                        console.log(global_control);
+                        // console.log(global_control);
                         if (global_control.length == 1 || global_control == "Unknown"){
-                            global_control = ""
+                            global_control = "";
                             __$("input").innerHTML = ""
                         }else{
                             global_control = global_control.substring(0,global_control.length - 1);
@@ -997,7 +998,7 @@ function loadInputWindow(){
                         date = new Date();
                         this_year = date.getUTCFullYear();
                         this_year = parseInt(this_year);
-                        var unit = ""
+                        var unit = "";
                         if (__$("unit")){
                             unit = __$("unit").value
                         }
@@ -1009,7 +1010,7 @@ function loadInputWindow(){
                             showMessage("Please select a value!", false, false);
                         }else{
                             if (parseInt(global_control) == this_year){
-                                showMessage("You have entered 2017.", true, false);
+                                showMeMessage("You have entered 2017.", true, false);
                             }
                             global_control += " " + unit;
                             global_control= global_control.trim();
@@ -1025,6 +1026,7 @@ function loadInputWindow(){
                                 if (global_control.match(/Unk/)){
                                     enterWeight(row);
                                 }
+
                                 display.innerHTML = global_control.match(/Unk/) ? '?' : global_control;
                                 // button.setAttribute("value", global_control);
 
@@ -1040,16 +1042,24 @@ function loadInputWindow(){
 
                                     $[p][n][label.innerHTML] = global_control;
                                 }
+                                if (parseInt(global_control) != this_year){
 
-                                __$("input").innerHTML = "";
-                                __$("tblKeyboard").parentNode.removeChild(__$("tblKeyboard"));
-                                __$("input").parentNode.removeChild(__$("input"));
-                               
+                                    __$("input").innerHTML = "";
+                                    __$("tblKeyboard").parentNode.removeChild(__$("tblKeyboard"));
+                                    __$("input").parentNode.removeChild(__$("input"));
+                                    
+                                }
+
                             }else{
                                 showMessage("Failed to update input!");
                             }
-                            jQ("#shield, #popup").css("display", "none");
-                            jQ('#backButton, #nextButton').attr("disabled", false);
+                            if (parseInt(global_control) != this_year){
+
+                                jQ("#shield, #popup").css("display", "none");
+                                jQ('#backButton, #nextButton').attr("disabled", false);
+
+                            }
+
                         }
                        
                     }else if(!this.innerHTML.match(/^$/)){
@@ -1617,6 +1627,27 @@ function loadInputWindow(){
                     showList("popup", listItems);
                 }else if (type == "age"){
                     showNumber("popup", row.id, 1, 40, "age");
+                }
+            }
+        }
+
+        function showMeMessage(aMessage, withCancel, timed) {
+            if(typeof(tstMessageBar) == "undefined"){
+                __$("content").innerHTML += "<div id='messageBar' class='messageBar'></div>";
+
+                tstMessageBar = __$('messageBar');
+            }
+
+            var messageBar = tstMessageBar;
+            messageBar.innerHTML = aMessage +
+                "<br />" + (typeof(withCancel) != "undefined" ? (withCancel == true ?
+                "<button onmousedown=\"tstMessageBar.style.display = 'none'; " +
+                "clearTimeout(tstTimerHandle);\"><span>Cancel</span></button>" : "") : "") +
+                "<button style='width: 200px;' onmousedown=\"__$('popup').style.display = 'none';__$('shield').style.display = 'none';tstMessageBar.style.display = 'none';\"><span>OK</span></button>";
+            if (aMessage.length > 0) {
+                messageBar.style.display = 'block'
+                if((typeof(timed) == "undefined" ? true : timed) == true){
+                    window.setTimeout("hideMessage()",3000)
                 }
             }
         }
