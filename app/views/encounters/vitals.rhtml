@@ -64,7 +64,7 @@
   function $(e) {
     return document.getElementById(e);
   }
- 
+
   function growthIndicators(){
     //These values pulled from the tt_onLoad bit in the third form...
     try{
@@ -84,12 +84,12 @@
       showWeightHeightForAge();
       showWeightForHeight();
     }
-    
+
     document.getElementById('inputFrame'+tstCurrentPage).innerHTML = '<div id="summary">' + displayText + '</div><div id="charts" style="height:185px;margin:2px 6px 6px;padding:2px;width:380px;"></div>' ;
     //alert(fisrt)
-    if (first == "false"){
+    //if (first == "false"){
       jQuery('#charts').empty().load('/patients/graphs/<%= @patient.id -%>?data=weight&currentWeight=' + currentWeight);
-    }
+    //}
   }
         
   function showWeightHeightForAge(){
@@ -145,10 +145,10 @@
 
 
 
-    displayText = "<div style='padding: 10px; font-size:18px;'><table width='100%'><tr valign='top'><td><table width='50%'><tr><th>Current Vitals </th></tr>";
+    displayText = "<div style='padding: 10px; font-size:18px;'><table width='100%'><tr valign='top'><td><table width='50%'><tr><th style='text-align: left;'>Current Vitals </th></tr>";
 
-    displayText += "<tr><td>Weight :" + currentWeight + " Kg</td></tr>";
-    displayText += "<tr><td>Height :" + currentHeight + " Cm</td></tr>";
+    displayText += "<tr><td>Weight :  " + currentWeight + " Kg</td></tr>";
+    displayText += "<tr><td>Height :  " + currentHeight + " Cm</td></tr>";
     displayText += "<tr><td><span class='title'>BMI:</span>";
     if (currentBmi > 40.0) {
       displayText += "<span class=''>" + currentBmi + "</span></td></tr>" +
@@ -440,25 +440,24 @@
 
   <% if current_user.activities.include?("Weight and Height") %>
     <% if params[:weight] %>
-
-
-      <%= text_field_tag "observations[][value_coded_or_text]", nil,
-        {:id => "weight",
-        :field_type => 'number',
-        :min => 40,
-        :max => 200,
-        :absoluteMin => 20,
-        :absoluteMax => 200,
-        :condition => "if(#{options.length} > 2){getSelected().match(/Weight/)}else{true}",
-        :tt_onLoad => "parsedConceptName = 'Weight'; if(conceptHash){}else{transformMessages()};",
-        :tt_onUnLoad => "parsedConceptName = ''; addDecimal();",
-        :units => 'kg',
-        :validationMessage => "You must enter a valid decimal number",
-        :tt_pageStyleClass => "NumbersWithUnknownAndDecimal",
-        :helpText => "Weight (Kg) <span class='helper'> Vitals</span>"} %>
-      <%= hidden_field_tag("observations[][concept_name]", "WEIGHT (KG)") %>
-      <%= hidden_field_tag("observations[][patient_id]", @patient.id) %>
-      <%= hidden_field_tag("observations[][obs_datetime]", session_date) %>
+          <%= text_field_tag "observations[][value_coded_or_text]", nil,
+               {:id => "weight",
+                :field_type => 'number',
+                :min => 40,
+                :max => 200,
+                :absoluteMin => 20,
+                :absoluteMax => 200,
+                :condition => "if(#{options.length} > 2){getSelected().match(/Weight/)}else{true}",
+                :tt_onLoad => "parsedConceptName = 'Weight'; if(conceptHash){}else{transformMessages()};timedEvent = setTimeout('checkText(1)', 100);",
+                :tt_onUnLoad => "parsedConceptName = ''",
+                :units => 'kg',
+                :validationRule => "([0-9]+(\\.[0-9]))|Unknown$",
+                :validationMessage => "You must enter a valid decimal number",
+                :tt_pageStyleClass => "NumbersWithUnknownAndDecimal",
+                :helpText => "Weight (Kg) <span class='helper'> Vitals</span>"} %>
+          <%= hidden_field_tag("observations[][concept_name]", "WEIGHT (KG)") %>
+          <%= hidden_field_tag("observations[][patient_id]", @patient.id) %>
+          <%= hidden_field_tag("observations[][obs_datetime]", session_date) %>
 
     <% end %>
 
