@@ -282,7 +282,10 @@ function remoteARTStatus(){
   <%end%>
 
   <%= touch_select_tag "HIV status", @patient,
-    options_for_select([["", ""], ["Negative", "Negative"], ["Positive", "Positive"],["Inconclusive", "Inconclusive"],["Not Done", "Not Done"]]),
+    options_for_select([["", ""], ["Negative", "Negative"],
+                        ["Positive", "Positive"],
+                        ["Inconclusive", "Inconclusive"],
+                        ["Not Done", "Not Done"]]),
     {:id => "new_test_result_at_current_facility",
     :helptext => "HIV Test Result <span class='helper'> Lab Results</span>",
     :tt_BeforeUnload => "checkHIVTestUnknown()",
@@ -367,7 +370,10 @@ function remoteARTStatus(){
   } %>
 
     <%= touch_select_tag "BLOOD GROUP", @patient,
-          options_for_select([["", ""], ["A", "A"], ["B", "B"], ["O", "O"], ["AB", "AB"]]),
+          options_for_select([["", ""], ["A+", "A+"], ["A-","A-"],
+                              ["B+", "B+"], ["B-","B-"],
+                              ["O+","O+"], ["O-", "O-"],
+                              ["AB+","AB+"],["AB-", "AB-"]]),
           {:id => "blood_group",
            :helptext => "Blood Group <span class='helper'> Lab Results</span>",
            :tt_onLoad => "parsedConceptName = 'Blood Group';",
@@ -388,7 +394,13 @@ function remoteARTStatus(){
                                        ["", ""],
                                        ["Urine Protein Test", "Urine Protein Test"],
                                        ["Urine Bacteria Test", "Urine Bacteria Test"],
-                                       ["Urine Blood Cells", "Urine Blood Cells"]], ["", ""]),
+                                       ["Urine Blood", "Urine Blood"],
+                                       ["WBC", "WBC"],["RBC", "RBC"],
+                                       ["Urobilinogen", "Urobilinogen"],
+                                       ["Bilirubin", "Bilirubin"],
+                                       ["Nitrate", "Nitrate"],
+                                       ["Ketones", "Ketones"],
+                                       ["Specific Gravity", "Specific Gravity"]], ["", ""]),
                    {
                        :condition => "getSelected().match(/Urine\sTest/);",
                        :helpText => "Select Available Urine Test Results <span class='helper'> Lab Results</span>",
@@ -413,6 +425,53 @@ function remoteARTStatus(){
       :condition => "getUrineTest().match(/Urine\sProtein\sTest/);",
       :max => "#{session[:datetime].to_date rescue Date.today}"
     } %>
+
+    <%= touch_select_tag "BLOODY URINE", @patient,
+        options_for_select([["", ""], ['Negative','Negative'],['Heamolysis +10','Heamolysis +10'],
+                            ['Heamolysis ++50','Heamolysis ++50'],['Heamolysis+++250','Heamolysis+++250'],
+                            ['Non- Heamolysis +10','Non- Heamolysis +10'],
+                            ['Non- Heamolysis ++50','Non- Heamolysis ++50']]),
+        {:id => "enter_urine_blood",
+         :helptext => "Urine Blood Test <span class='helper'> Lab Results</span>",
+         :tt_onLoad => " parsedConceptName = 'Urine Blood Test'; console.log(getUrineTest())",
+         :tt_onUnLoad => "parsedConceptName = ''; console.log(getUrineTest());",
+         :condition => "getUrineTest().match(/Urine\sBlood/);" } %>
+
+    <!-- %= touch_date_tag "Urine Test Date", @patient, nil,
+                       {:id => "urine_protein_test_date",
+                        :helptext => "Urine Blood Test Date <span class='helper'> Lab Results</span>",
+                        :tt_onUnLoad => "parsedConceptName = '';",
+                        :tt_onLoad => " parsedConceptName = 'Urine Protein Test Date';initializeDate();",
+                        :condition => "getUrineTest().match(/Urine\sProtein\sTest/);",
+                        :max => "#{session[:datetime].to_date rescue Date.today}"
+                       } % -->
+
+    <%= text_field_tag "WBC", nil,
+        {:id => "white_blood_cells",
+         :field_type => 'number',
+         :helptext =>"White Blood Cells (cmm) <span class='helper'> Lab Results</span>",
+         :allowFreeText => 'true',
+         :tt_onLoad => "parsedConceptName = 'WBC';",
+         :min => 0,
+         :max => 1000000,
+         :condition => "getUrineTest().match(/WBC/);",
+         :tt_onUnLoad => "parsedConceptName = ''; console.log(getUrineTest());",
+         :units => 'cmm',
+         :tt_pageStyleClass => "Numeric NumbersOnlyWithDecimal"} %>
+
+    <%= text_field_tag "RBC", nil,
+                       {:id => "red_blood_cells",
+                        :field_type => 'number',
+                        :helptext =>"Red Blood Cells (cmm) <span class='helper'> Lab Results</span>",
+                        :allowFreeText => 'true',
+                        :tt_onLoad => "parsedConceptName = 'RBC';",
+                        :min => 0,
+                        :max => 1000000,
+                        :condition => "getUrineTest().match(/RBC/);",
+                        :tt_onUnLoad => "parsedConceptName = ''; console.log(getUrineTest());",
+                        :units => 'cmm',
+                        :tt_pageStyleClass => "Numeric NumbersOnlyWithDecimal"} %>
+
 
   <%#= touch_select_tag "WHO Stage", @patient, options_for_select([["", ""], ["1", "1"],
   ["2", "2"], ["3", "3"], ["4", "4"], ["Unknown", "Unknown"]]),
