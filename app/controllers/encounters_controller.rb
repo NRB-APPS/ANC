@@ -461,7 +461,7 @@ class EncountersController < ApplicationController
 
   def hemorrhage_options
 
-    render :text => (["APH", "PPH","No"]).join('|')  and return
+    render :text => (["No", "APH", "PPH"]).join('|')  and return
   end
 
   def duplicate_encounters
