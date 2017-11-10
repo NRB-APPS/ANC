@@ -777,7 +777,7 @@ function loadInputWindow(){
         }
 
         function showNumber(id, global_control, min, max, abs_max, type){
-            console.log(abs_max);
+            
             jQ('#backButton, #nextButton').attr("disabled", true);
             cn = 9;
             this_id = global_control;
@@ -995,6 +995,8 @@ function loadInputWindow(){
                         __$("input").innerHTML =  'Unknown';
                     }
                     else if(this.innerHTML.match(/OK/)){
+
+                        // console.log(this_id);
                         
                         var unit = "";
                         if (__$("unit")){
@@ -1137,9 +1139,9 @@ function loadInputWindow(){
         }
 
         function showList(id, data){
+            console.log(data);
             jQ('#backButton, #nextButton').attr("disabled", true);
             if (data.length > 1){
-
                 var ul = document.createElement("ul");
                 ul.style.width = __$("popup").style.width;
                 ul.id = "listing";
@@ -1174,6 +1176,7 @@ function loadInputWindow(){
                             this.style.backgroundColor = "lightblue";
                             __$("ok").setAttribute("class", "button_blue keyboard_button ok");
                             __$("ok").setAttribute("value", this.innerHTML)
+                            // console.log(this.innerHTML);
                         };
                         ul.appendChild(li);
                     }
@@ -1285,11 +1288,13 @@ function loadInputWindow(){
                                         var bbut = brows[fields.length - 1].childNodes[2].childNodes[0];
                                         var blbl = brows[fields.length - 1].getElementsByClassName("detail-row-label")[0];
                                         var binputdisplay = brows[fields.length - 1].childNodes[1].childNodes[0];
-
+                                        
                                         if ($[p][n][label.innerHTML].trim() == "No"){
+                                            // showNumber("popup", '1_1_detail_row_7', 1, 40, undefined, "age");
 
                                             bbut.className = "input-button";
                                             bbut.onclick = function(){
+
 
                                                 enterData(this.parentNode.parentNode);
                                             }
@@ -1315,12 +1320,12 @@ function loadInputWindow(){
                     }else{
                         showMessage("Please select a value");
                     }
-                }
+                };
 
                 __$("cancel").onclick = function(){
                     jQ('#backButton, #nextButton').attr("disabled", false);
                     jQ("#shield, #popup").css("display", "none");
-                }
+                };
 
                 __$("popup-header").innerHTML = current_popup.replace("Alive Now", "Alive Now?");
                 jQ("#shield, #popup").css("display", "block");
@@ -1328,7 +1333,7 @@ function loadInputWindow(){
         }
 
         function enterData(row){
-            console.log(row);
+
             if (row != undefined){
  
                 var fields = {
@@ -1370,6 +1375,7 @@ function loadInputWindow(){
                     showList("popup", listItems);
                 }else if (type == "age"){
                     showNumber("popup", row.id, 1, 40, undefined, "age");
+
                 }
             }
         }

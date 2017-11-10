@@ -67,13 +67,13 @@ class Patient < ActiveRecord::Base
     self.encounters.find(:all, :select => ["obs.value_coded, obs.value_text"], :joins => [:observations],
       :conditions => ["encounter.encounter_type = ? AND obs.concept_id = ?",
         EncounterType.find_by_name("LAB RESULTS").id, ConceptName.find_by_name("HIV STATUS").concept_id]).collect{|ob|
-      (Concept.find(ob.value_coded).name.name.downcase.strip rescue nil) || ob.value_text.downcase.strip}.include?("positive") rescue false
+      (Concept.find(ob.value_coded).name.name.downcase.strip rescue nil) || ob.value_text.downcase.strip}.include?("reactive") rescue false
    
   end
 
   def resent_hiv_status?(today = Date.today)
 
-    return "positive" if self.hiv_positive?
+    return "reactive" if self.hiv_positive?
 
     lmp = self.lmp(today)
 
@@ -85,7 +85,7 @@ class Patient < ActiveRecord::Base
         checked_date.to_date]).value_datetime.to_date  rescue nil
 
     return "old_negative" if (last_test_visit.to_date <= (today - 3.months) rescue false)
-    return "negative" if !last_test_visit.blank?
+    return "non reactive" if !last_test_visit.blank?
     return "unknown"    
   end
 

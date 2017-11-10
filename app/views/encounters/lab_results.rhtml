@@ -222,7 +222,7 @@ function remoteARTStatus(){
   <% if params[:update].blank? %>
 
     <%= touch_select_tag "HIV status", @patient,
-      options_for_select([["", ""], ["Negative", "Negative"], ["Positive", "Positive"],
+      options_for_select([["", ""], ["Non-Reactive", "Non-Reactive"], ["Reactive", "Reactive"],
                           ["Inconclusive", "Inconclusive"], ["Unknown", "Unknown"], ["Not Done", "Not Done"]],
                          status),
       {:id => "new_test_result_at_current_facility",
@@ -367,7 +367,10 @@ function remoteARTStatus(){
   } %>
 
     <%= touch_select_tag "BLOOD GROUP", @patient,
-          options_for_select([["", ""], ["A", "A"], ["B", "B"], ["O", "O"], ["AB", "AB"]]),
+          options_for_select([["", ""], ["A+", "A+"], ["A-", "A-"],
+                              ["B+", "B+"], ["B-", "B-"],
+                              ["O+", "O+"], ["O-", "O-"],
+                              ["AB+", "AB+"], ["AB-", "AB-"]]),
           {:id => "blood_group",
            :helptext => "Blood Group <span class='helper'> Lab Results</span>",
            :tt_onLoad => "parsedConceptName = 'Blood Group';",
