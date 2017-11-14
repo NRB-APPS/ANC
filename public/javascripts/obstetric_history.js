@@ -689,10 +689,10 @@ function loadInputWindow(){
                                 text = c_node[0].childNodes[1].childNodes[0].innerHTML;
                    
                             if(text.trim() == "?"){
-                                showMessage("Select condition at birth");
+                                alertMessage("Select condition at birth");
                             }
                             else if (text.toLowerCase().trim() == "still birth"){
-                                showMessage("Baby was born dead");
+                                alertMessage("Baby was born dead");
                             }
                         }
                     }else{
@@ -1003,14 +1003,18 @@ function loadInputWindow(){
 
                         if (global_control != undefined && parseInt(global_control) > max || parseInt(global_control) < min){
 
-                            showMessage("Value out of bound (" + min + " - " + max + ")", false, false);
+                            alertMessage("Value out of bound (" + min + " - " + max + ")", false, false);
                         }else if (global_control == "") {
-                            showMessage("Please select a value!", false, false);
+                            alertMessage("Please select a value!", false, false);
                         }else{
                             if (parseInt(global_control) == abs_max){
                                 showMeMessage("The value is "+global_control+". Are you sure about this value?", true, false);
                             }
-                            global_control += " " + unit;
+                            if (unit !== undefined && unit.length !== 0){
+                                global_control += " " + unit;
+                                console.log(unit.length);
+                            }
+
                             global_control= global_control.trim();
                             var row = __$(__$("popup").getAttribute("row_id"));
 
@@ -1049,7 +1053,7 @@ function loadInputWindow(){
                                 }
 
                             }else{
-                                showMessage("Failed to update input!");
+                                alertMessage("Failed to update input!");
                             }
                             if (parseInt(global_control) != abs_max){
 
@@ -1256,7 +1260,7 @@ function loadInputWindow(){
                                                 inputdisplay.innerHTML = "?"
                                                 but.onclick = function(){
                                                     
-                                                    showMessage("Baby was born dead");
+                                                    alertMessage("Baby was born dead");
                                                 }
                                             } else {
 
@@ -1270,7 +1274,7 @@ function loadInputWindow(){
                                                 }else{
                                                     
                                                     but.onclick = function(){
-                                                        showMessage("Select if baby is alive now");
+                                                        alertMessage("Select if baby is alive now");
                                                     }
                                                 }
                                             }
@@ -1300,7 +1304,7 @@ function loadInputWindow(){
                                             $[p][n][blbl.innerHTML] = "?";
                                             bbut.onclick = function(){
 
-                                                showMessage("Baby is still alive");
+                                                alertMessage("Baby is still alive");
                                             }
                                         }
                                     }
@@ -1308,12 +1312,12 @@ function loadInputWindow(){
                                 }
                             }
                         }else{
-                            showMessage("Failed to update input");
+                            alertMessage("Failed to update input");
                         }
                         jQ("#shield, #popup").css("display", "none");
                         jQ('#backButton, #nextButton').attr("disabled", false);
                     }else{
-                        showMessage("Please select a value");
+                        alertMessage("Please select a value");
                     }
                 }
 
@@ -1631,6 +1635,7 @@ function loadInputWindow(){
         }
 
         function showMeMessage(aMessage, withCancel, timed) {
+            __$('popup').style.display = 'none';
             if(typeof(tstMessageBar) == "undefined"){
                 __$("content").innerHTML += "<div id='messageBar' class='messageBar'></div>";
 
@@ -1640,7 +1645,7 @@ function loadInputWindow(){
             var messageBar = tstMessageBar;
             messageBar.innerHTML = aMessage +
                 "<br />" + (typeof(withCancel) != "undefined" ? (withCancel == true ?
-                "<button onmousedown=\"tstMessageBar.style.display = 'none'; " +
+                "<button onmousedown=\"tstMessageBar.style.display = 'none'; __$('popup').style.display = 'block'; " +
                 "clearTimeout(tstTimerHandle);\"><span>Cancel</span></button>" : "") : "") +
                 "<button style='width: 200px;' onmousedown=\"__$('popup').style.display = 'none';__$('shield').style.display = 'none';tstMessageBar.style.display = 'none';\"><span>OK</span></button>";
             if (aMessage.length > 0) {
@@ -1649,6 +1654,34 @@ function loadInputWindow(){
                     window.setTimeout("hideMessage()",3000)
                 }
             }
+        }
+
+        function alertMessage(aMessage, withCancel, timed) {
+            __$('popup').style.display = 'none';
+            if(typeof(tstMessageBar) == "undefined"){
+                __$("content").innerHTML += "<div id='messageBar' class='messageBar'></div>";
+
+                tstMessageBar = __$('messageBar');
+            }
+
+            var messageBar = tstMessageBar;
+            messageBar.innerHTML = aMessage +
+                "<br />" + (typeof(withCancel) != "undefined" ? (withCancel == true ?
+                "<button onmousedown='tstMessageBar.style.display = \"none\"; " +
+                "clearTimeout(tstTimerHandle);'><span>Cancel</span></button>" : "") : "") +
+                "<button style='width: 200px;' onmousedown='tstMessageBar.style.display = \"none\"; " +
+                "clearTimeout(tstTimerHandle); eval(tstTimerFunctionCall);__$(\"popup\").style.display = \"block\";'>" +
+                "<span>OK</span></button>";
+            if (aMessage.length > 0) {
+                messageBar.style.display = 'block'
+                if((typeof(timed) == "undefined" ? true : timed) == true){
+                    window.setTimeout("hideMessage()",3000)
+                }
+            }
+        }
+
+        function hideMessage(){
+            tstMessageBar.style.display = 'none'
         }
 
         return{
@@ -1977,7 +2010,7 @@ function addValidationInterval(){
             }
        
             if (check > 0){
-                showMessage("Select all fields to proceed");
+                alertMessage("Select all fields to proceed");
             }else{
                 gotoNextPage();
             }
