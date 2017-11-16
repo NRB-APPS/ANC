@@ -777,7 +777,9 @@ function loadInputWindow(){
         }
 
         function showNumber(id, global_control, min, max, abs_max, type){
-            console.log(abs_max);
+
+            abs_max = ((abs_max == undefined) ? max : abs_max);
+
             jQ('#backButton, #nextButton').attr("disabled", true);
             cn = 9;
             this_id = global_control;
@@ -791,7 +793,7 @@ function loadInputWindow(){
             var row1 = ["1","2","3"];
             var row2 = ["4","5","6"];
             var row3 = ["7","8","9"];
-            var row4 = ["Del",m,"OK"];
+            var row4 = ["Del",m,"."];
 
             if (min == undefined){
                 min = 0
@@ -807,15 +809,95 @@ function loadInputWindow(){
                 jQ('#backButton, #nextButton').attr("disabled", false);
                 jQ("#shield, #popup").css("display", "none");
             };
-           
+
             jQ(cl).css({
                 "float" : "left",
-                "margin-top" : "170px",
+                "margin-top" : "0px",
                 "margin-left" : "10px"
             });
+
+            var ok = document.createElement('div');
+            ok.className = "button_green ok";
+            ok.innerHTML = "Ok";
+            jQ(ok).css({
+                'margin-left':'360px',
+                'margin-right':'2px'
+            });
+
+            ok.onclick = function(){
+                var unit = "";
+                if (__$("unit")){
+                    unit = __$("unit").value
+                }
+
+                if (global_control != undefined && parseInt(global_control) > max || parseInt(global_control) < min){
+
+                    alertMessage("Value out of bound (" + min + " - " + max + ")", false, false);
+                }else if (global_control == "") {
+                    alertMessage("Please select a value!", false, false);
+                }else{
+                    if (parseInt(global_control) == abs_max){
+                        showMeMessage("The value is "+global_control+". Are you sure about this value?", true, false);
+                    }
+                    if (unit !== undefined && unit.length !== 0){
+                        global_control += " " + unit;
+                        console.log(unit.length);
+                    }
+
+                    global_control= global_control.trim();
+                    var row = __$(__$("popup").getAttribute("row_id"));
+
+                    if (row){
+                        var button = row.getElementsByClassName("input-button")[0];
+                        var display = row.getElementsByClassName("display-space")[0];
+                        var label = row.getElementsByClassName("detail-row-label")[0];
+                        var n = __$("popup").getAttribute("n-tuple");
+                        var p = __$("popup").getAttribute("p-tuple");
+                        var a = __$("popup").getAttribute("a-tuple");
+
+                        if (global_control.match(/Unk/) && label.innerHTML == "Birth weight"){
+                            enterWeight(row);
+                        }
+
+                        display.innerHTML = global_control.match(/Unk/) ? '?' : global_control;
+
+                        if(a != undefined && $$[a] != undefined){
+
+                            $$[a][label.innerHTML] = global_control;
+
+                        }else{
+
+                            if ($[p][n] == undefined){
+                                $[p][n] = {};
+                            }
+
+                            $[p][n][label.innerHTML] = global_control;
+                        }
+                        if (parseInt(global_control) != abs_max){
+
+                            __$("input").innerHTML = "";
+                            __$("tblKeyboard").parentNode.removeChild(__$("tblKeyboard"));
+                            __$("input").parentNode.removeChild(__$("input"));
+
+                        }
+
+                    }else{
+                        alertMessage("Failed to update input!");
+                    }
+                    if (parseInt(global_control) != abs_max){
+
+                        jQ("#shield, #popup").css("display", "none");
+                        jQ('#backButton, #nextButton').attr("disabled", false);
+
+                    }
+
+                }
+            };
+
             var holder = document.createElement("div");
-            holder.innerHTML = "<table style='width: 100%;'><tr><td id = 'left' style='width: 35%;'></td><td id='right' style='width: 65%;' rowspan='2'></td></tr>" +
-            "<tr><td id = 'bcancel'></td></tr></table>"
+            holder.innerHTML = "<table style='width: 100%;'><tr><td id = 'left' style='width: 35%; float: left;'></td><td id='right' style='width: 65%;' rowspan='2'></td></tr>" +
+            "<tr><td id = ''></td></tr><tr><td id='btns' colspan='2' style='padding-top: 8px; padding-bottom: 3px;border-top:1px solid black; background-color: black;'>" +
+                "</td></tr></table>"
             jQ(holder).css({
                 "width":"100%",
                 "border" : "hidden"
@@ -893,7 +975,8 @@ function loadInputWindow(){
                         }else{
                             global_control += this.innerHTML.match(/<span>(.+)<\/span>/)[1];
                         }
-                        global_control = global_control.replace(/^0+/, "")
+                        global_control = global_control.replace(/^0+/, "");
+                        global_control = global_control.replace(/^\.+/, "");
                         if (global_control != undefined && parseInt(global_control) <= max && parseInt(global_control) >= min){
                             __$("input").innerHTML =  global_control;
                         }else if (global_control != undefined && parseInt(global_control) > max || parseInt(global_control) < min){
@@ -934,7 +1017,8 @@ function loadInputWindow(){
                             global_control += this.innerHTML.match(/<span>(.+)<\/span>/)[1];
                         }
 
-                        global_control = global_control.replace(/^0+/, "")
+                        global_control = global_control.replace(/^0+/, "");
+                        global_control = global_control.replace(/^\.+/, "");
                         if (global_control != undefined && parseInt(global_control) <= max && parseInt(global_control) >= min){
                             __$("input").innerHTML =  global_control;
                         }else if (global_control != undefined && parseInt(global_control) > max || parseInt(global_control) < min){
@@ -965,22 +1049,25 @@ function loadInputWindow(){
 
                 var btn = document.createElement("div");
                 btn.innerHTML = "<span>" + row4[i] + "</span>";
-                if (i == 1){
-                    btn.className = "button_blue keyboard_button";
-                }else if (i == 0){
-                    btn.className = "button_red keyboard_button";
-                }else if (i == 2){
-                    btn.className = "button_green keyboard_button";
-                }
+                btn.className = "button_blue keyboard_button";
+                // if (i == 1){
+                //     btn.className = "button_blue keyboard_button";
+                // }else if (i == 0){
+                //     btn.className = "button_red keyboard_button";
+                // }else if (i == 2){
+                //     btn.className = "button_green keyboard_button";
+                // }
                 btn.onmousedown = function(){
                     if(this.innerHTML.match(/<span>(.+)<\/span>/)[1] == "Del"){
-                        // console.log(global_control);
+                        console.log(global_control);
                         if (global_control.length == 1 || global_control == "Unknown"){
                             global_control = "";
                             __$("input").innerHTML = ""
                         }else{
+                            global_control = global_control.split(" ")[0];
                             global_control = global_control.substring(0,global_control.length - 1);
-                            global_control = global_control.replace(/^0+/, "")
+                            global_control = global_control.replace(/^0+/, "");
+                            global_control = global_control.replace(/^\.+/, "");
                             if (global_control != undefined && parseInt(global_control) <= max && parseInt(global_control) >= min){
                                 __$("input").innerHTML =  global_control;
                             }else if (global_control != undefined && parseInt(global_control) > max || parseInt(global_control) < min){
@@ -993,81 +1080,11 @@ function loadInputWindow(){
                     else if(this.innerHTML.match(/<span>Unk<\/span>/)){
                         global_control = 'Unknown';
                         __$("input").innerHTML =  'Unknown';
-                    }
-                    else if(this.innerHTML.match(/OK/)){
-                        
-                        var unit = "";
-                        if (__$("unit")){
-                            unit = __$("unit").value
-                        }
-
-                        if (global_control != undefined && parseInt(global_control) > max || parseInt(global_control) < min){
-
-                            alertMessage("Value out of bound (" + min + " - " + max + ")", false, false);
-                        }else if (global_control == "") {
-                            alertMessage("Please select a value!", false, false);
-                        }else{
-                            if (parseInt(global_control) == abs_max){
-                                showMeMessage("The value is "+global_control+". Are you sure about this value?", true, false);
-                            }
-                            if (unit !== undefined && unit.length !== 0){
-                                global_control += " " + unit;
-                                console.log(unit.length);
-                            }
-
-                            global_control= global_control.trim();
-                            var row = __$(__$("popup").getAttribute("row_id"));
-
-                            if (row){
-                                var button = row.getElementsByClassName("input-button")[0];
-                                var display = row.getElementsByClassName("display-space")[0];
-                                var label = row.getElementsByClassName("detail-row-label")[0];
-                                var n = __$("popup").getAttribute("n-tuple");
-                                var p = __$("popup").getAttribute("p-tuple");
-                                var a = __$("popup").getAttribute("a-tuple");
-                                if (global_control.match(/Unk/)){
-                                    enterWeight(row);
-                                }
-
-                                display.innerHTML = global_control.match(/Unk/) ? '?' : global_control;
-                                // button.setAttribute("value", global_control);
-
-                                if(a != undefined && $$[a] != undefined){
-
-                                    $$[a][label.innerHTML] = global_control;
-
-                                }else{
-
-                                    if ($[p][n] == undefined){
-                                        $[p][n] = {};
-                                    }
-
-                                    $[p][n][label.innerHTML] = global_control;
-                                }
-                                if (parseInt(global_control) != abs_max){
-
-                                    __$("input").innerHTML = "";
-                                    __$("tblKeyboard").parentNode.removeChild(__$("tblKeyboard"));
-                                    __$("input").parentNode.removeChild(__$("input"));
-
-                                }
-
-                            }else{
-                                alertMessage("Failed to update input!");
-                            }
-                            if (parseInt(global_control) != abs_max){
-
-                                jQ("#shield, #popup").css("display", "none");
-                                jQ('#backButton, #nextButton').attr("disabled", false);
-
-                            }
-
-                        }
-                       
                     }else if(!this.innerHTML.match(/^$/)){
                         
                         global_control += this.innerHTML.match(/<span>(.+)<\/span>/)[1];
-                        global_control = global_control.replace(/^0+/, "")
+                        global_control = global_control.replace(/^0+/, "");
+                        global_control = global_control.replace(/^\.+/, "");
                         if (global_control != undefined && parseInt(global_control) <= abs_max && parseInt(global_control) >= min){
                             __$("input").innerHTML =  global_control;
                         }else if (global_control != undefined && parseInt(global_control) > abs_max || parseInt(global_control) < min){
@@ -1098,7 +1115,8 @@ function loadInputWindow(){
             __$(id).appendChild(holder);
             __$("left").appendChild(input);
             __$("right").appendChild(tbl);
-            __$("bcancel").appendChild(cl);
+            __$("btns").appendChild(cl);
+            __$("btns").appendChild(ok);
             __$("popup-header").innerHTML = current_popup;
 
             if (type && type == "age"){
@@ -1106,7 +1124,7 @@ function loadInputWindow(){
                 var unit = document.createElement("select");
                 unit.id = "unit";
                 var options = ["Hours", "Days", "Weeks", "Months", "years"]
-                
+
                 unit.className = "button_blue";
                 unit.innerHTML = "Months";
                 jQ(unit).css({
@@ -1124,8 +1142,8 @@ function loadInputWindow(){
                     "text-indent": "1px",
                     "border" : "none",
                     "text-overflow": ''
-                })
-                
+                });
+
                 __$("left").appendChild(unit);
 
                 for (var i in options){
