@@ -778,7 +778,7 @@ function loadInputWindow(){
 
         function showNumber(id, global_control, min, max, abs_max, type){
 
-            abs_max = ((abs_max == undefined) ? max : abs_max);
+            // abs_max = ((abs_max == undefined) ? max : abs_max);
 
             jQ('#backButton, #nextButton').attr("disabled", true);
             cn = 9;
@@ -830,22 +830,27 @@ function loadInputWindow(){
                     unit = __$("unit").value
                 }
 
-                if (global_control != undefined && parseInt(global_control) > max || parseInt(global_control) < min){
+                var row = __$(__$("popup").getAttribute("row_id"));
+                var name = row.getElementsByClassName("detail-row-label")[0].innerHTML;
+
+                if (global_control != undefined && (parseInt(global_control) > max || parseInt(global_control) < min)){
 
                     alertMessage("Value out of bound (" + min + " - " + max + ")", false, false);
                 }else if (global_control == "") {
                     alertMessage("Please select a value!", false, false);
+                }else if (global_control !== 'Unknown' && !(global_control.match(/^[0-9]+(\.[0-9])?$/))){
+                    alertMessage("Please enter the collect value!", false, false);
                 }else{
-                    if (parseInt(global_control) == abs_max){
+                    if (parseInt(global_control) == abs_max && (name == 'Year of birth' || name == 'Gestation (months)')){
                         showMeMessage("The value is "+global_control+". Are you sure about this value?", true, false);
                     }
+
                     if (unit !== undefined && unit.length !== 0){
                         global_control += " " + unit;
-                        console.log(unit.length);
                     }
 
                     global_control= global_control.trim();
-                    var row = __$(__$("popup").getAttribute("row_id"));
+                    console.log(name);
 
                     if (row){
                         var button = row.getElementsByClassName("input-button")[0];
@@ -1085,9 +1090,9 @@ function loadInputWindow(){
                         global_control += this.innerHTML.match(/<span>(.+)<\/span>/)[1];
                         global_control = global_control.replace(/^0+/, "");
                         global_control = global_control.replace(/^\.+/, "");
-                        if (global_control != undefined && parseInt(global_control) <= abs_max && parseInt(global_control) >= min){
+                        if (global_control != undefined && (parseInt(global_control) <= abs_max || parseInt(global_control) <= max) && parseInt(global_control) >= min){
                             __$("input").innerHTML =  global_control;
-                        }else if (global_control != undefined && parseInt(global_control) > abs_max || parseInt(global_control) < min){
+                        }else if (global_control != undefined && (parseInt(global_control) > abs_max || parseInt(global_control) > max) || parseInt(global_control) < min){
 
                             var str = global_control.length > cn ? (global_control.substring(0, cn - 2) + "..." + global_control.substring(global_control.length - 2, global_control.length)) : (global_control)
                             __$("input").innerHTML =  str + "<div style='color: red; font-size: 24px; padding-top: 0px;'><br />&nbsp<br />" + " Out of range</div>";
