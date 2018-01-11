@@ -1007,11 +1007,11 @@ EOF
 
     patient = PatientBean.new('')
     patient.person_id = person.id
-    patient.patient_id = person.patient.id
-    patient.arv_number = get_patient_identifier(person.patient, 'ARV Number')
+    patient.patient_id = person.patient.id rescue nil
+    patient.arv_number = get_patient_identifier(person.patient, 'ARV Number') rescue nil
     patient.address = person.addresses.first.city_village
-    patient.national_id = get_patient_identifier(person.patient, 'National id')
-	  patient.national_id_with_dashes = get_national_id_with_dashes(person.patient)
+    patient.national_id = get_patient_identifier(person.patient, 'National id') rescue nil
+	  patient.national_id_with_dashes = get_national_id_with_dashes(person.patient) rescue nil
     patient.name = person.names.first.given_name + ' ' + person.names.first.family_name rescue nil
 		patient.first_name = person.names.first.given_name rescue nil
 		patient.last_name = person.names.first.family_name rescue nil
@@ -1031,7 +1031,7 @@ EOF
     patient.eid_number = get_patient_identifier(person.patient, 'EID Number') rescue nil
     patient.pre_art_number = get_patient_identifier(person.patient, 'Pre ART Number (Old format)') rescue nil
     patient.archived_filing_number = get_patient_identifier(person.patient, 'Archived filing number')rescue nil
-    patient.filing_number = get_patient_identifier(person.patient, 'Filing Number')
+    patient.filing_number = get_patient_identifier(person.patient, 'Filing Number') rescue nil
     patient.occupation = get_attribute(person, 'Occupation')
     patient.cell_phone_number = get_attribute(person, 'Cell phone number')
     patient.office_phone_number = get_attribute(person, 'Office phone number')
@@ -1285,12 +1285,11 @@ EOF
     gender = params[:gender]
     given_name = params[:given_name].squish unless params[:given_name].blank?
     family_name = params[:family_name].squish unless params[:family_name].blank?
+    #raise gender.inspect
 
-    people = Person.find(:all, :include => [{:names => [:person_name_code]}, :patient], :conditions => [
-        "gender = ? AND \
-     person_name.given_name = ? AND \
+    people = Person.find(:all, :include => [{:names => [:person_name_code]}], :conditions => [
+        "person_name.given_name = ? AND \
      person_name.family_name = ?",
-        gender,
         given_name,
         family_name
       ]) if people.blank?
@@ -1300,11 +1299,9 @@ EOF
         person.person_id
       }
       # raise matching_people.to_yaml
-      people_like = Person.find(:all, :limit => 15, :include => [{:names => [:person_name_code]}, :patient], :conditions => [
-          "gender = ? AND \
-     person_name_code.given_name_code LIKE ? AND \
+      people_like = Person.find(:all, :limit => 15, :include => [{:names => [:person_name_code]}], :conditions => [
+          "person_name_code.given_name_code LIKE ? AND \
      person_name_code.family_name_code LIKE ? AND person.person_id NOT IN (?)",
-          gender,
           (given_name || '').soundex,
           (family_name || '').soundex,
           matching_people
