@@ -1168,6 +1168,7 @@ EOF
 	end
 
   def self.create_from_form(params)
+    #raise params.inspect
     return nil if params.blank?
 		address_params = params["addresses"]
 		names_params = params["names"]

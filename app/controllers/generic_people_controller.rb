@@ -220,21 +220,22 @@ class GenericPeopleController < ApplicationController
     else
       if params[:person][:id] != '0'
         person = Person.find(params[:person][:id])
-        patient = DDEService::Patient.new(person.patient)
+        #raise Person.find(params[:person][:id]).inspect
+        patient = DDEService::Patient.new(person.patient) rescue nil
         patient_id = PatientService.get_patient_identifier(person.patient, "National id")
-        if patient_id.length != 6 and create_from_dde_server
+        if !patient.blank? and patient_id.length != 6 and create_from_dde_server
           replaced = patient.check_old_national_id(patient_id)
           if replaced.to_s == "true"
             print_and_redirect("/patients/national_id_label?patient_id=#{person.id}", next_task(person.patient)) and return
           end
         end
       end
-      redirect_to search_complete_url(params[:person][:id], params[:relation]) and return unless params[:person][:id].blank? || params[:person][:id] == '0'
+      redirect_to search_complete_url(params[:person][:id], params[:relation]) and return unless params[:person][:id].blank? || params[:person][:id] == '0' || patient.blank?
 
       action = 'new'
       action = 'new_father' if params[:gender] == "M"
 
-      redirect_to :action => action, :gender => params[:gender], :given_name => params[:given_name], :family_name => params[:family_name], :family_name2 => params[:family_name2], :address2 => params[:address2], :identifier => params[:identifier], :relation => params[:relation]
+      redirect_to :action => action, :gender => params[:gender], :given_name => params[:given_name], :family_name => params[:family_name], :family_name2 => params[:family_name2], :address2 => params[:address2], :identifier => params[:identifier], :patient_id => params[:patient_id], :relation => params[:relation]
     end
   end
  

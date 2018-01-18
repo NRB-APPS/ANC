@@ -350,7 +350,7 @@
   <%= hidden_field_tag "encounter[encounter_datetime]", (session[:datetime] ?
       session[:datetime].to_date.strftime("%Y-%m-%d %H:%M:%S") : Time.now) %>
   <%= hidden_field_tag "encounter[provider_id]", session[:user_id] %>
-  <%= hidden_field_tag :gender, "M" %>
+  <%= hidden_field_tag :patient, params[:patient_id] %>
 
   <%= text_field_tag "person[names][given_name]", params[:given_name],
   {:id => 'given_name',
@@ -371,6 +371,15 @@
    :condition => '$("family_name").value == "" || skipped[tstCurrentPage] == 1',
    :tt_onLoad => 'seen(tstCurrentPage);'
   } %>
+
+  Gender:
+  <%= f.select :gender, options_for_select([["", ""], ["Male", "M"], ["Female", "F"]], "M"),
+  {:selected => "M"},
+  {:id => 'gender',
+   :helpText => 'Gender',
+   :condition => 'false/*$("gender").value == "" || skipped[tstCurrentPage] == 1*/',
+   :tt_onLoad => 'seen(tstCurrentPage);'
+  }  %>
 
   <%= text_field_tag "person[names][middle_name]", params[:middle_name],
   {:id => 'middle_name',

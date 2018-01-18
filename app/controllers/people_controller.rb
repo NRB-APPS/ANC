@@ -92,7 +92,8 @@ class PeopleController < GenericPeopleController
           end
         else
           if CoreService.get_global_property_value("father_details")
-            redirect_to "/people/search?gender=Male"
+            @patient_id = person.id
+            redirect_to "/people/search?gender=Male&patient_id=#{person.id}"
           else
             print_and_redirect("/patients/national_id_label?patient_id=#{person.id}", next_task(person.patient))
           end
@@ -105,9 +106,7 @@ class PeopleController < GenericPeopleController
   end
 
   def create_father
-    # {"person"=>{"occupation"=>"Business", "father"=>{"birth_year"=>"Unknown", "birth_month"=>"", "age_estimate"=>"22", "'address2_a'"=>"", "citizenship"=>"Malawian", "race"=>"", "names"=>{"family_name"=>"Father", "given_name"=>"Test"}, "birth_day"=>"", "addresses"=>{"county_district"=>"Blantrye Central Ward", "neighborhood_cell"=>"Blantyre Central", "county_district_a"=>"", "address2"=>"Blantyre City", "state_province"=>"Machinga"}}, "cell_phone_number"=>"Unknown", "addresses"=>{"address1"=>"Police", "city_village"=>"Adamson Trading Centre"}}, "filter"=>{"region"=>"Southern Region", "t_a_a"=>"", "t_a"=>"Chikweo"}, "region"=>{"region_name"=>"Southern Region"}, "p"=>{"addresses"=>{"address1"=>"", "city_village_a"=>""}}, "action"=>"create_father", "controller"=>"people", "encounter"=>{"encounter_type_name"=>"REGISTRATION", "provider_id"=>"", "encounter_datetime"=>"Wed Jan 10 14:25:31 +0200 2018"}}
-    # raise params.inspect
-    # print_and_redirect("/patients/national_id_label?patient_id=#{person.id}", next_task(person.patient))
+    #raise params.inspect
     Person.session_datetime = session[:datetime].to_date rescue Date.today
     identifier = params[:identifier] rescue nil
     if identifier.blank?
@@ -127,7 +126,6 @@ class PeopleController < GenericPeopleController
 
     elsif create_from_remote
 
-      raise params.inspect
       person_from_remote = PatientService.create_remote_person(params)
       person_from_remote["person"].merge!("citizenship" => params["person"]["citizenship"])
       # raise person_from_remote.inspect
@@ -156,27 +154,35 @@ class PeopleController < GenericPeopleController
       person = PatientService.create_from_form(params[:person])
     end
 
-    if params[:person][:patient] && success
+    if success
 
-      if params[:encounter]
-        encounter = Encounter.new(params[:encounter])
-        encounter.patient_id = person.id
-        encounter.encounter_datetime = session[:datetime] unless session[:datetime].blank?
-        encounter.save
-      end rescue nil
+      # add a relationship
+      relationship_type_id = RelationshipType.find_by_description('Spouse to spouse relationship').id
+      @relationship = Relationship.new(
+        :person_a => params[:patient],
+        :person_b => person.id,
+        :relationship => relationship_type_id)
+      @relationship.save
+
+      # if params[:encounter]
+      #   encounter = Encounter.new(params[:encounter])
+      #   encounter.patient_id = person.id
+      #   encounter.encounter_datetime = session[:datetime] unless session[:datetime].blank?
+      #   encounter.save
+      # end rescue nil
       
-      PatientService.patient_national_id_label(person.patient)
-      unless (params[:relation].blank?)
-        redirect_to search_complete_url(person.id, params[:relation]) and return
-      else
+      # PatientService.patient_national_id_label(person.patient)
+      # unless (params[:relation].blank?)
+      #   redirect_to search_complete_url(person.id, params[:relation]) and return
+      # else
 
-        tb_session = false
-        if current_user.activities.include?('Manage Lab Orders') or current_user.activities.include?('Manage Lab Results') or
-            current_user.activities.include?('Manage Sputum Submissions') or current_user.activities.include?('Manage TB Clinic Visits') or
-            current_user.activities.include?('Manage TB Reception Visits') or current_user.activities.include?('Manage TB Registration Visits') or
-            current_user.activities.include?('Manage HIV Status Visits')
-          tb_session = true
-        end
+        # tb_session = false
+        # if current_user.activities.include?('Manage Lab Orders') or current_user.activities.include?('Manage Lab Results') or
+        #     current_user.activities.include?('Manage Sputum Submissions') or current_user.activities.include?('Manage TB Clinic Visits') or
+        #     current_user.activities.include?('Manage TB Reception Visits') or current_user.activities.include?('Manage TB Registration Visits') or
+        #     current_user.activities.include?('Manage HIV Status Visits')
+        #   tb_session = true
+        # end
 
         #raise use_filing_number.to_yaml
         if use_filing_number and not tb_session
@@ -189,9 +195,12 @@ class PeopleController < GenericPeopleController
             print_and_redirect("/patients/filing_number_and_national_id?patient_id=#{person.id}", next_task(person.patient))
           end
         else
-          print_and_redirect("/patients/national_id_label?patient_id=#{person.id}", next_task(person.patient))
+          #raise person.patient.inspect
+          patient = Person.find(params[:patient]).patient
+          #raise patient.inspect
+          print_and_redirect("/patients/national_id_label?patient_id=#{params[:patient]}", next_task(patient))
         end
-      end
+      # end
     else
       # Does this ever get hit?
       redirect_to :action => "index"
@@ -205,7 +214,9 @@ class PeopleController < GenericPeopleController
   end
   
 	def search
+    #raise params["patient_id"].inspect
 		found_person = nil
+    #@patient_id = params["patient_id"] rescue nil
 		if params[:identifier]    
 			local_results = PatientService.search_by_identifier(params[:identifier])
 			if local_results.length > 1
