@@ -203,8 +203,6 @@ class GenericPeopleController < ApplicationController
 
 	# This method is just to allow the select box to submit, we could probably do this better
 	def select
-    #raise params.inspect
-
     if !params[:person][:patient][:identifiers]['National id'].blank? &&
         !params[:person][:names][:given_name].blank? &&
         !params[:person][:names][:family_name].blank?
@@ -220,7 +218,6 @@ class GenericPeopleController < ApplicationController
     else
       if params[:person][:id] != '0'
         person = Person.find(params[:person][:id])
-        #raise Person.find(params[:person][:id]).inspect
         patient = DDEService::Patient.new(person.patient) rescue nil
         patient_id = PatientService.get_patient_identifier(person.patient, "National id")
         if !patient.blank? and patient_id.length != 6 and create_from_dde_server
@@ -230,10 +227,13 @@ class GenericPeopleController < ApplicationController
           end
         end
       end
-      redirect_to search_complete_url(params[:person][:id], params[:relation]) and return unless params[:person][:id].blank? || params[:person][:id] == '0' || patient.blank?
+      
+      redirect_to :action => 'new_father', :person_id => person.id, :patient_id => params[:patient_id] and return if params[:gender] == 'M' && !params[:patient_id].blank? && !person.blank?
+
+      redirect_to search_complete_url(params[:person][:id], params[:relation]) and return unless params[:person][:id].blank? || params[:person][:id] == '0' || person.blank? || !params[:patient_id].blank?
 
       action = 'new'
-      action = 'new_father' if params[:gender] == "M"
+      action = 'new_father' if params[:gender] == "M" && !params[:patient_id].blank?
 
       redirect_to :action => action, :gender => params[:gender], :given_name => params[:given_name], :family_name => params[:family_name], :family_name2 => params[:family_name2], :address2 => params[:address2], :identifier => params[:identifier], :patient_id => params[:patient_id], :relation => params[:relation]
     end

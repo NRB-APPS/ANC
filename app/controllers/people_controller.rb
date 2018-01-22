@@ -2,11 +2,21 @@ class PeopleController < GenericPeopleController
        
   def confirm
     if params[:found_person_id]
-      @patient = Patient.find(params[:found_person_id])
-      redirect_to next_task(@patient) and return
+      @patient = Person.find(params[:found_person_id]) rescue nil
+      if @patient.gender == "F"
+        redirect_to next_task(@patient) and return
+      else
+        redirect_to "/people/show/#{@patient.id}"
+      end
     else 
       redirect_to "/clinic" and return
     end
+  end
+
+  def show
+    person = Person.find(params[:id])
+    @person_bean = PatientService.get_patient(person)
+    #raise @person_bean.inspect
   end
 
   def create
@@ -106,7 +116,6 @@ class PeopleController < GenericPeopleController
   end
 
   def create_father
-    #raise params.inspect
     Person.session_datetime = session[:datetime].to_date rescue Date.today
     identifier = params[:identifier] rescue nil
     if identifier.blank?
@@ -185,21 +194,21 @@ class PeopleController < GenericPeopleController
         # end
 
         #raise use_filing_number.to_yaml
-        if use_filing_number and not tb_session
-          PatientService.set_patient_filing_number(person.patient)
-          archived_patient = PatientService.patient_to_be_archived(person.patient)
-          message = PatientService.patient_printing_message(person.patient,archived_patient,creating_new_patient = true)
-          unless message.blank?
-            print_and_redirect("/patients/filing_number_and_national_id?patient_id=#{person.id}" , next_task(person.patient),message,true,person.id)
-          else
-            print_and_redirect("/patients/filing_number_and_national_id?patient_id=#{person.id}", next_task(person.patient))
-          end
-        else
+        # if use_filing_number and not tb_session
+        #   PatientService.set_patient_filing_number(person.patient)
+        #   archived_patient = PatientService.patient_to_be_archived(person.patient)
+        #   message = PatientService.patient_printing_message(person.patient,archived_patient,creating_new_patient = true)
+        #   unless message.blank?
+        #     print_and_redirect("/patients/filing_number_and_national_id?patient_id=#{person.id}" , next_task(person.patient),message,true,person.id)
+        #   else
+        #     print_and_redirect("/patients/filing_number_and_national_id?patient_id=#{person.id}", next_task(person.patient))
+        #   end
+        # else
           #raise person.patient.inspect
           patient = Person.find(params[:patient]).patient
           #raise patient.inspect
           print_and_redirect("/patients/national_id_label?patient_id=#{params[:patient]}", next_task(patient))
-        end
+        # end
       # end
     else
       # Does this ever get hit?
@@ -208,6 +217,18 @@ class PeopleController < GenericPeopleController
   end
 
   def new_father
+    if !params[:person_id].blank?
+      patient = Person.find(params[:patient_id]).patient
+      relationship_type_id = RelationshipType.find_by_description('Spouse to spouse relationship').id
+      @relationship = Relationship.new(
+        :person_a => params[:patient_id],
+        :person_b => params[:person_id],
+        :relationship => relationship_type_id)
+      if @relationship.save
+        print_and_redirect("/patients/national_id_label?patient_id=#{params[:patient_id]}", next_task(patient)) and return
+      end
+      #raise params.inspect
+    end
     @occupations = occupations
     i=0
     @month_names = [[]] +Date::MONTHNAMES[1..-1].collect{|month|[month,i+=1]} + [["Unknown","Unknown"]]
