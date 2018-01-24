@@ -20,7 +20,6 @@ class PeopleController < GenericPeopleController
   end
 
   def create
-    #raise params.inspect
     Person.session_datetime = session[:datetime].to_date rescue Date.today
     identifier = params[:identifier] rescue nil
     if identifier.blank?
@@ -101,9 +100,10 @@ class PeopleController < GenericPeopleController
             print_and_redirect("/patients/filing_number_and_national_id?patient_id=#{person.id}", next_task(person.patient))
           end
         else
+          #raise next_task(person.patient).inspect
           if CoreService.get_global_property_value("father_details")
             @patient_id = person.id
-            redirect_to "/people/search?gender=Male&patient_id=#{person.id}"
+            print_and_redirect("/patients/national_id_label?patient_id=#{person.id}", "/people/scan_person?patient_id=#{person.id}")
           else
             print_and_redirect("/patients/national_id_label?patient_id=#{person.id}", next_task(person.patient))
           end
