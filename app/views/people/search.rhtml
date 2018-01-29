@@ -106,7 +106,8 @@ end -%>
         "county_district",
         "occupation",
         "cell_phone_number",
-        "national_id"
+        "national_id",
+        "patient_id"
       ]
       for (k = 0; k < fields.length; k ++){
         try{
@@ -119,6 +120,7 @@ end -%>
       createControlAndAssignValue("given_name", "person[names][given_name]", "<%= params[:given_name] %>");
       createControlAndAssignValue("family_name", "person[names][family_name]", "<%= params[:family_name] %>");
       createControlAndAssignValue("gender", "person[gender]", "<%=  params[:gender]%>");
+      createControlAndAssignValue("patient_id", "patient_id", "<%=  params[:patient_id]%>");
     }
 
     if(pos && (person_id == 0) && !text.match(/New Patient/)){
@@ -371,7 +373,8 @@ end -%>
       <%= text_field_tag :given_name, params[:given_name], {:field_type => 'alpha', :helpText => 'First name', :ajaxURL => '/person_names/given_names?search_string=', :allowFreeText => true }%>
       <%= text_field_tag :family_name, params[:family_name], {:field_type => 'alpha', :helpText => 'Last name', :ajaxURL => '/person_names/family_names?search_string=', :allowFreeText => true }%>
       <%= hidden_field_tag :create_patient, params[:create_patient] %>
-      <%= hidden_field_tag :gender, "F" %>
+      <%= hidden_field_tag :gender, params[:gender] %>
+      <%= hidden_field_tag :patient_id, params[:patient_id] %>
       <%= hidden_field_tag :relation, params[:relation] %>
       <%= submit_tag "Find person" %>
     <% end -%>
@@ -430,12 +433,13 @@ end -%>
       <input type="hidden" id="family_name2" name="family_name2" value="<%=h params[:family_name2] -%>" />
       <input type="hidden" id="address2" name="address2" value="<%=h params[:address2] -%>" />
       <input type="hidden" id="relation" name="relation" value="<%=h params[:relation] -%>" />
+      <%= hidden_field_tag :patient_id, params[:patient_id] %>
     <% end -%>
   <% end -%>
 
   <script type="text/javascript" lang="javascript">
     <!--
-    var ctrls = ["identifier", "gender", "given_name", "family_name", "family_name2", "address2", "relation"];
+    var ctrls = ["identifier", "gender", "given_name", "family_name", "family_name2", "address2", "relation", "patient_id"];
 
     function clearFields(){
       for(var i = 0; i < ctrls.length; i++){

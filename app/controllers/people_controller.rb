@@ -3,7 +3,11 @@ class PeopleController < GenericPeopleController
   def confirm
     if params[:found_person_id]
       @patient = Patient.find(params[:found_person_id])
-      redirect_to next_task(@patient) and return
+      if @patient.gender == "F"
+        redirect_to next_task(@patient) and return
+      else
+        redirect_to "/people/show/#{@patient.id}"
+      end
     else 
       redirect_to "/clinic" and return
     end
@@ -98,9 +102,9 @@ class PeopleController < GenericPeopleController
     data = JSON.parse(params['data'])
     data['gender'] = data['gender'].match(/F/i) ? "Female" : "Male"
 
-		if data['gender'] == 'Male'
-			redirect_to "/clinic/no_males" and return
-		end 
+		# if data['gender'] == 'Male'
+		# 	redirect_to "/clinic/no_males" and return
+		# end 
 
 		session_date = session[:datetime].to_date rescue Date.today
 	  if (((session_date.to_date - data['birthdate'].to_date)/356 < 13) rescue false)
@@ -199,8 +203,9 @@ class PeopleController < GenericPeopleController
     if identifier.blank?
       identifier = params[:person][:patient][:identifiers]['National id']
     end rescue nil
-
+    
     if create_from_dde_server
+
       formatted_demographics = DDE2Service.format_params(params, Person.session_datetime)
 
      if DDE2Service.is_valid?(formatted_demographics)
@@ -261,11 +266,12 @@ class PeopleController < GenericPeopleController
 
       end
     else
+
       success = true
       params[:person].merge!({"identifiers" => {"National id" => identifier}}) unless identifier.blank?
       person = PatientService.create_from_form(params[:person])
     end
-
+    #raise params[:person][:patient].inspect
     if params[:person][:patient] && success
       if params[:person][:gender] == 'F' 
         if params[:encounter]
@@ -300,13 +306,23 @@ class PeopleController < GenericPeopleController
             end
           else
             if CoreService.get_global_property_value("father_details")
-              print_and_redirect("/patients/national_id_label?patient_id=#{person.id}", "/people/search?gender=Male&patient_id=#{person.id}")
+              print_and_redirect("/patients/national_id_label?patient_id=#{person.id}", "/people/scan_person?gender=M&patient_id=#{person.id}")
             else
               print_and_redirect("/patients/national_id_label?patient_id=#{person.id}", next_task(person.patient))
             end
           end
         end
-      elsif params[:person][:gender] == "M"
+      elsif params[:person][:gender] == "M" || params[:person][:gender] == "Male"
+        relationship_type_id = RelationshipType.find_by_a_is_to_b('Spouse/Partner').id
+        @relationship = Relationship.new(
+          :person_a => params[:patient],
+          :person_b => person.id,
+          :relationship => relationship_type_id)
+        if @relationship.save
+          print_and_redirect("/patients/national_id_label?patient_id=#{person.id}", next_task(Person.find(params[:patient]).patient))
+        else
+          redirect_to next_task(params[:patient])
+        end
       end
     else
       # Does this ever get hit?
@@ -315,11 +331,24 @@ class PeopleController < GenericPeopleController
   end
   
 	def search
+    #raise params.inspect
+    if params[:gender] == "Male"
+      params[:gender] = "M"
+    elsif params[:gender] == "Female"
+      params[:gender] = "F"
+    end
+
+    person = Person.find(params[:patient]) unless params[:patient].blank?
+
+    if params[:partner] == "No"
+      redirect_to next_task(person.patient)
+    end
 
     found_person = nil
 		if params[:identifier]
       params[:identifier] = params[:identifier].strip
 			local_results = DDE2Service.search_all_by_identifier(params[:identifier])
+
 			if local_results.length > 1
 				redirect_to :action => 'conflicts' ,:identifier => params['identifier']
         return
@@ -340,9 +369,9 @@ class PeopleController < GenericPeopleController
 				end
 
 				found_person = local_results.first
-        if (found_person.gender rescue "") == "M"
-          redirect_to "/clinic/no_males" and return
-        end
+        # if (found_person.gender rescue "") == "M"
+        #   redirect_to "/clinic/no_males" and return
+        # end
 
 				session_date = session[:datetime].to_date rescue Date.today
 			  if (((session_date.to_date - found_person.birthdate.to_date)/356 < 13) rescue false)
@@ -363,9 +392,9 @@ class PeopleController < GenericPeopleController
       gender = found_person.gender rescue nil
       gender = found_person['gender'] if gender.blank? && found_person.class == {}.class
 
-      if gender == "M"
-        redirect_to "/clinic/no_males" and return
-      end
+      # if gender == "M"
+      #   redirect_to "/clinic/no_males" and return
+      # end
 
       if found_person
 
@@ -382,13 +411,28 @@ class PeopleController < GenericPeopleController
 				if params[:relation]
 					redirect_to search_complete_url(found_person.id, params[:relation]) and return
 				else
-          
-          redirect_to next_task(found_person.patient) and return
+          #raise params.inspect
+          if gender == "M" && params[:patient].blank?
+            redirect_to "/people/show_father/#{found_person.id}" and return
+          elsif gender == "M" && !params[:patient].blank?
+            relationship_type_id = RelationshipType.find_by_a_is_to_b('Spouse/Partner').id
+            @relationship = Relationship.new(
+              :person_a => person.id,
+              :person_b => found_person.id,
+              :relationship => relationship_type_id)
+            if @relationship.save
+              print_and_redirect("/patients/national_id_label?patient_id=#{found_person.id}", next_task(person.patient))
+            else
+              redirect_to next_task(person.patient)
+            end
+          else
+            redirect_to next_task(found_person.patient) and return
+          end
           # redirect_to :action => 'confirm', :found_person_id => found_person.id, :relation => params[:relation] and return
 				end
       end
-
 		end
+    #raise params.inspect
 
 		@relation = params[:relation]
     @people = []
@@ -400,6 +444,7 @@ class PeopleController < GenericPeopleController
     if create_from_dde_server
       remote_results = DDE2Service.search_from_dde2(params) if !params[:given_name].blank?
     end
+    #raise remote_results.inspect
 
 	  (remote_results || []).each do |data|
       national_id = data["npid"] rescue nil
@@ -621,6 +666,11 @@ class PeopleController < GenericPeopleController
                   SELECT patient_id FROM patient_identifier WHERE identifier = '#{params[:npid]}'
               )");
     render :layout => false
+  end
+
+  def show_father
+    person = Person.find(params[:id])
+    @person_bean = PatientService.get_patient(person)
   end
 
 
