@@ -135,7 +135,7 @@ function loadSelections(){
         header.appendChild(t2);
 
         var t3 = document.createElement("div");
-        t3.innerHTML = "Details available?";
+        t3.innerHTML = "Details available";
         t3.setAttribute("class", "h-cell");
         header.appendChild(t3);
 
@@ -218,7 +218,7 @@ function loadSelections(){
 function increment(pos){
 
     var i = parseInt( __$("input_" + pos).value);
-    if (i <= 12){
+    if (i <= 3){
 
         __$("input_" + pos).value = parseInt( __$("input_" + pos).value) + 1;
         updateInput(pos);
@@ -1362,7 +1362,7 @@ function loadInputWindow(){
                     "Year of birth" : ["number", min_birth_year, abs_max_birth_year, abs_max_birth_year] ,
                     "Place of birth" : ["list", "Health facility", "In transit", "TBA", "Home"],
                     "Gestation (months)" : ["number", 5, 11, 11],
-                    "Method of delivery" : ["list", "Spontaneous vaginal delivery", "Caesarean Section", "Vacuum Extraction Delivery", "Breech", "Forcepts", "Others"],
+                    "Method of delivery" : ["list", "Spontaneous Vortex", "Caesarean Section", "Vacuum Extraction", "Breech", "Forceps", "Others"],
                     "Condition at birth" : ["list", "Alive", "Macerated Still Birth (MSB)", "Fresh Still Birth (FSB)"],
                     "Birth weight" : ["number", 1, 5],
                     "Alive Now" : ["list", "Yes", "No"],

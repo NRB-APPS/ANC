@@ -282,13 +282,13 @@ function remoteARTStatus(){
     <%= select_tag("choice",
                    options_for_select([["", ""],
                                        ["", ""],
-                                       ["HB Test Result", "HB Test Result"],
-                                       ["Syphilis Test Result", "Syphilis Test Result"],
-                                       ["Urine Test Results", "Urine Test Results"],
-                                       ["Malaria Test Result", "Malaria Test Result"],
-                                       ["Blood Group Test Result", "Blood Group Test Result"]], ["", ""]),
+                                       ["HB", "HB Test Result"],
+                                       ["Syphilis", "Syphilis Test Result"],
+                                       ["Urine", "Urine Test Results"],
+                                       ["Malaria", "Malaria Test Result"],
+                                       ["Blood Group", "Blood Group Test Result"]], ["", ""]),
                    {
-                       :helpText => "Select Available Test Results <span class='helper'> Lab Results</span>",
+                       :helpText => "Available Test Results <span class='helper'> Lab Results</span>",
                        :id => "choice",
                        :multiple => true,
                        :optional => :true
@@ -300,14 +300,14 @@ function remoteARTStatus(){
     <%= select_tag("choice",
                    options_for_select([["", ""],
                                        ["", ""],
-                                       ["HIV Test Result", "HIV Test Result"],
-                                       ["HB Test Result", "HB Test Result"],
-                                       ["Syphilis Test Result", "Syphilis Test Result"],
-                                       ["Urine Test Results", "Urine Test Results"],
-                                       ["Malaria Test Result", "Malaria Test Result"],
-                                       ["Blood Group Test Result", "Blood Group Test Result"]], ["", ""]),
+                                       ["HIV", "HIV Test Result"],
+                                       ["HB", "HB Test Result"],
+                                       ["Syphilis", "Syphilis Test Result"],
+                                       ["Urine", "Urine Test Results"],
+                                       ["Malaria", "Malaria Test Result"],
+                                       ["Blood Group", "Blood Group Test Result"]], ["", ""]),
                    {
-                       :helpText => "Select Available Test Results <span class='helper'> Lab Results</span>",
+                       :helpText => "Available Test Results <span class='helper'> Lab Results</span>",
                        :id => "choice",
                        :multiple => true,
                        :optional => :true
@@ -382,7 +382,7 @@ function remoteARTStatus(){
                            :helptext => "Syphilis Test Result <span class='helper'> Lab Results</span>",
                            :tt_onUnLoad => "parsedConceptName = '';",
                            :tt_onLoad => "parsedConceptName = 'Syphilis Test Result';",
-                           :condition => "getSelected().match(/Syphilis\sTest\sResult/)"
+                           :condition => "getSelected().match(/Syphilis/)"
                        }
   %>
 
@@ -394,7 +394,7 @@ function remoteARTStatus(){
                          :tt_onLoad => " parsedConceptName = 'Syphilis Test Result Date';initializeDate();",
                          :tt_onUnLoad => "parsedConceptName = '';",
                          :condition => "__$('syphilis_result').value != 'Not Done' &&
-                            getSelected().match(/Syphilis\sTest\sResult/)"
+                            getSelected().match(/Syphilis/)"
                      }
   %>
 
@@ -408,7 +408,7 @@ function remoteARTStatus(){
                            :helptext => "Malaria Test Result <span class='helper'> Lab Results</span>",
                            :tt_onUnLoad => "parsedConceptName = 'Malaria Test result';",
                            :tt_onLoad => "parsedConceptName = ' Status'",
-                           :condition => "getSelected().match(/Malaria\sTest\sResult/)"
+                           :condition => "getSelected().match(/Malaria/)"
                        }
   %>
 
@@ -446,19 +446,20 @@ function remoteARTStatus(){
     <%= select_tag("urine_tests",
         options_for_select([["", ""],
                             ["", ""],
-                            ["Urine Protein Test", "Urine Protein Test"],
+                            #["Urine Protein Test", "Urine Protein Test"],
                             #["Urine Bacteria Test", "Urine Bacteria Test"],
-                            ["Urine Blood", "Urine Blood"],
+                            #["Urine Blood", "Urine Blood"],
                             ["WBC", "WBC"],["RBC", "RBC"],
                             ["Urobilinogen", "Urobilinogen"],
                             ["Bilirubin", "Bilirubin"],
                             ["Nitrate", "Nitrate"],
-                            ["Ketones", "Ketones"],
-                            ["Glucose Negative", "Glucose Negative"],
-                            ["Leucocytes", "Leucocytes"],
-                            ["Specific Gravity", "Specific Gravity"]], ["", ""]),
+                            #["Ketones", "Ketones"],
+                            ["Glucose", "Glucose"]
+                            #,["Leucocytes", "Leucocytes"]
+                            #,["Specific Gravity", "Specific Gravity"]
+                            ], ["", ""]),
                    {
-                       :condition => "getSelected().match(/Urine\sTest\sResults/);",
+                       :condition => "getSelected().match(/Urine/);",
                        :helpText => "Select Available Urine Test Results <span class='helper'> Lab Results</span>",
                        :id => "urine_tests", :multiple => true,
                        :optional => :true
@@ -478,7 +479,7 @@ function remoteARTStatus(){
                              :helptext => "Urine Protein Test Result <span class='helper'> Lab Results</span>",
                              :tt_onLoad => " parsedConceptName = 'Urine Protein Test';",
                              :tt_onUnLoad => "parsedConceptName = '';",
-                             :condition => "getUrineTest().match(/Urine\sProtein\sTest/);"
+                             :condition => "getUrineTest().match(/Urine/);"
                          } %>
 
     <%= touch_date_tag "Urine Protein Test Date", @patient, nil,
@@ -487,7 +488,7 @@ function remoteARTStatus(){
                            :helptext => "Date Urine Protein Test Result Done <span class='helper'> Lab Results</span>",
                            :tt_onUnLoad => "parsedConceptName = '';",
                            :tt_onLoad => " parsedConceptName = 'Urine Protein Test Date';initializeDate();",
-                           :condition => "getUrineTest().match(/Urine\sProtein\sTest/);",
+                           :condition => "getUrineTest().match(/Urine/);",
                            :max => "#{session[:datetime].to_date rescue Date.today}"
                        } %>
 
