@@ -349,14 +349,14 @@ function remoteARTStatus(){
   <%= touch_text_field_tag "HB Test Result", @patient, nil,
                            {
                                :id => "hb_result",
-                               :helptext => "HB Test Result (grams) <span class='helper'> Lab Results</span>",
+                               :helptext => "HB Test Result (g/dl) <span class='helper'> Lab Results</span>",
                                :field_type => "number",
                                :tt_pageStyleClass => "NumbersWithUnknownAndDecimal",
                                :min => 2,
                                :max => 16,
                                :tt_onLoad => "unknownToNotDone(); parsedConceptName = 'HB Test Result';",
                                :tt_onUnLoad => "parsedConceptName = '';",
-                               :condition => "getSelected().match(/HB\sTest\sResult/)"
+                               :condition => "getSelected().match(/HB/)"
                            }
   %>
 
@@ -367,7 +367,7 @@ function remoteARTStatus(){
                          :tt_onLoad => "initializeDate(); parsedConceptName = 'HB Test Result Date'; ",
                          :tt_onUnLoad => "parsedConceptName = '';",
                          :condition => "!__$('hb_result').value.match(/Not\\sDone/) &&
-                              getSelected().match(/HB\sTest\sResult/)",
+                              getSelected().match(/HB/)",
                          :max => "#{session[:datetime].to_date rescue Date.today}"
                      }
   %>

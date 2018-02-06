@@ -314,11 +314,11 @@ class GenericPeopleController < ApplicationController
 
   def set_datetime
     if request.post?
-      unless params[:set_day]== "" or params[:set_month]== "" or params[:set_year]== ""
+      unless params['set_date']== ""
         # set for 1 second after midnight to designate it as a retrospective date
-        date_of_encounter = Time.mktime(params[:set_year].to_i,
-          params[:set_month].to_i,
-          params[:set_day].to_i,0,0,1)
+        date = params['set_date'].to_s.split('-')
+        date_of_encounter = Time.mktime(date[0],
+          date[1], date[2],0,0,1)
         session[:datetime] = date_of_encounter #if date_of_encounter.to_date != Date.today
       end
       unless params[:id].blank?

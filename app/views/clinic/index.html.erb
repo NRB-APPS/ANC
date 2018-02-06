@@ -26,7 +26,7 @@
   <div id="facility"><%= @facility rescue "" %></div>
   <div id="location"><%= @location rescue "" %></div>
 
-  <div id="date"><%= @date rescue "" %></div>
+  <div id="date"><%= @date.to_date.strftime("%Y-%m-%d") rescue "" %></div>
   <div id="user"><%= @user.name  rescue (@user.class.to_s  == "String" ? @user : nil) %></div>
 
   <select id="links">
@@ -35,8 +35,8 @@
     <option value='<%= ((session[:datetime].to_date.strftime("%Y-%m-%d") rescue Date.today.strftime("%Y-%m-%d") != 
           Date.today.strftime("%Y-%m-%d")) ?
                 "/people/reset_datetime" : "/people/set_datetime") %>'  ttSize="100px">
-              <%= ((session[:datetime].to_date.strftime("%Y-%m-%d") rescue Date.today.strftime("%Y-%m-%d") !=
-            Date.today.strftime("%Y-%m-%d")) ? "Reset Date" : "Set Date") %></option>
+              <%= ((session[:datetime].to_date.strftime("%d/%m/%Y") rescue Date.today.strftime("%d/%m/%Y") !=
+            Date.today.strftime("%d/%m/%Y")) ? "Reset Date" : "Set Date") %></option>
   </select>
 
 </div>
