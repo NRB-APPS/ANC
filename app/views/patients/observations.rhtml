@@ -663,12 +663,12 @@
                           :tt_onLoad => "",
                           :helptext => "Fetal Heart Beat <span class='helper'> ANC Examination</span>"}, session_date % -->
 
-    <%= touch_select_tag "FETAL MOVEMENT FELT", @patient,
+    <%= touch_select_tag "FETAL MOVEMENT HEARD", @patient,
                          options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
                          {:id => "enter_fetal_movemement",
                           :condition => "",
                           :tt_onLoad => "",
-                          :helptext => "Fetal Movement Felt<span class='helper'> ANC Examination</span>"}, session_date %>
+                          :helptext => "Fetal Movement Heard<span class='helper'> ANC Examination</span>"}, session_date %>
 
     <!-- %= touch_date_tag "LAST FETAL MOVEMENT FELT", @patient, nil,
                        {:id => "last_fmf",
@@ -682,9 +682,9 @@
                         :absoluteMax => ((session[:datetime] || Date.today).to_date - 1.day)
                        }% -->
 
-    <%= touch_numeric_tag "LAST FETAL MOVEMENT FELT", @patient, nil,
+    <%= touch_numeric_tag "LAST FETAL MOVEMENT HEARD", @patient, nil,
                           {:id => "last_fmf",
-                           :helptext => "Last Fetal Movement Felt (weeks) <span class='helper'> ANC Examination</span>",
+                           :helptext => "Last Fetal Movement Heard (weeks) <span class='helper'> ANC Examination</span>",
                            :tt_onUnLoad => "clearTimeout(timedEvent);",
                            :tt_pageStyleClass => "NumbersWithUnknown",
                            :tt_onLoad => "buildConceptsHash(); setTimeout(function(){ readableMessage()}, 50)",
