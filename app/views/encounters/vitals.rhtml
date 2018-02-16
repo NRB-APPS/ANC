@@ -428,9 +428,10 @@
   }
 
   function updateAbsoluteMaxValue(){
-    sbpValue = jQuery('#systolic_blood_pressure')[0].value;
+    sbpValue = currentSBPValue //jQuery('#systolic_blood_pressure')[0].value;
     sbpValue = (parseInt(sbpValue) - 10); //DBP has to be less than SPB at least by 10.
     jQuery('#touchscreenInput'+ tstCurrentPage).attr("absoluteMax", sbpValue);
+    console.log(sbpValue);
   }
 
   function weightLossPercent(currentWeight){
@@ -553,7 +554,7 @@ Find more at: http://www.skillsyouneed.com/num/percent-change.html#ixzz4TIacWujf
       <%= touch_text_field_tag "SYSTOLIC BLOOD PRESSURE", @patient, nil,{
         :id => "systolic_blood_pressure",
         :field_type => "number",
-        :tt_onLoad => "showCategory2('Current vitals');updateSBPValues();",
+        :tt_onLoad => "updateSBPValues();",
         :tt_onUnLoad => "clearInterval(sbpInterval);",
         :helpText => "Systolic blood pressure (<span id='sbp'>&nbsp;</span>/<span id='dbp'>&nbsp;</span>)",
         :absoluteMin => 70,
@@ -565,7 +566,7 @@ Find more at: http://www.skillsyouneed.com/num/percent-change.html#ixzz4TIacWujf
 
       <%= touch_text_field_tag "DIASTOLIC BLOOD PRESSURE", @patient, nil,{
         :id => "diastolic_blood_pressure",
-        :tt_onLoad => "showCategory2('Current vitals');updateDBPValues(); updateAbsoluteMaxValue()",
+        :tt_onLoad => "updateDBPValues(); updateAbsoluteMaxValue();",
         :tt_onUnLoad => "clearInterval(dbpInterval);",
         :field_type => "number",
         :helpText => "Diastolic blood pressure (<span id='sbp'>&nbsp;</span>/<span id='dbp'>&nbsp;</span>)",

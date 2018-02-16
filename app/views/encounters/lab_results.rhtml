@@ -460,7 +460,7 @@ function remoteARTStatus(){
                             ], ["", ""]),
                    {
                        :condition => "getSelected().match(/Urine/);",
-                       :helpText => "Select Available Urine Test Results <span class='helper'> Lab Results</span>",
+                       :helpText => "Available Urine Test Results <span class='helper'> Lab Results</span>",
                        :id => "urine_tests", :multiple => true,
                        :optional => :true
                    })%>
@@ -658,14 +658,14 @@ function remoteARTStatus(){
                            :max => "#{session[:datetime].to_date rescue Date.today}"
                        } %>
 
-    <%= touch_select_tag "Glucose Negative", @patient,
+    <%= touch_select_tag "Glucose", @patient,
                          options_for_select([["", ""],
                                              ['Negative','Negative'],
                                              ['Other','Other']]),
                          {
                              :id => "glucose_negative_test",
-                             :helptext => "Glucose Negative Test Result (mg/dl) <span class='helper'> Lab Results</span>",
-                             :tt_onLoad => " parsedConceptName = 'Glucose negative';",
+                             :helptext => "Glucose Test Result (mg/dl) <span class='helper'> Lab Results</span>",
+                             :tt_onLoad => " parsedConceptName = 'Glucose';",
                              :tt_onUnLoad => "parsedConceptName = '';if(__$('glucose_negative_test').value == 'Other'){
                                 __$('touchscreenInput' + tstCurrentPage).value = '';
                                 __$('glucose_negative_test').value = '';
@@ -673,28 +673,28 @@ function remoteARTStatus(){
                               }else{
                                 glucoseTest = false;
                               };",
-                             :condition => "getUrineTest().match(/Glucose\sNegative/);"
+                             :condition => "getUrineTest().match(/Glucose/);"
                          } %>
 
-    <%= touch_text_field_tag "Glucose Negative", @patient, nil,
+    <%= touch_text_field_tag "Glucose", @patient, nil,
                              {:id => "glucose_negative_test",
                               :field_type => 'number',
-                              :helptext =>"Glucose Negative Test Result (mg/dl) <span class='helper'> Lab Results</span>",
+                              :helptext =>"Glucose Test Result (mg/dl) <span class='helper'> Lab Results</span>",
                               :allowFreeText => 'true',
                               :tt_onLoad => "parsedConceptName = 'Glucose negative';",
                               :min => 0,
                               :max => 1000000,
-                              :condition => "getUrineTest().match(/Glucose\sNegative/) && glucoseTest == true;",
+                              :condition => "getUrineTest().match(/Glucose/) && glucoseTest == true;",
                               :tt_onUnLoad => "parsedConceptName = '';",
                               :tt_pageStyleClass => "Numeric NumbersOnlyWithDecimal"} %>
 
     <%= touch_date_tag "Glucose Test Date", @patient, nil,
                        {
                            :id => "glucose_test_date",
-                           :helptext => "Date Glucose Negative Test Result Done <span class='helper'> Lab Results</span>",
+                           :helptext => "Date Glucose Test Result Done <span class='helper'> Lab Results</span>",
                            :tt_onUnLoad => "parsedConceptName = '';",
                            :tt_onLoad => " parsedConceptName = 'Glucose Test Date';initializeDate();",
-                           :condition => "getUrineTest().match(/Glucose\sNegative/);",
+                           :condition => "getUrineTest().match(/Glucose/);",
                            :max => "#{session[:datetime].to_date rescue Date.today}"
                        } %>
 
