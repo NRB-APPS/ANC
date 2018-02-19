@@ -153,7 +153,7 @@
 <body onload = "setTimeout('changeAttributes()',500);">
 
   <div class="main-caption" id = "caption">
-    <%=@encounter_dates.first.strftime('%A %d %B %Y') rescue nil%>
+    <%=@encounter_dates.first.strftime('%d/%b/%Y') rescue nil%>
   </div>
 
   <div class="main-container">

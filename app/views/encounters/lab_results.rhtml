@@ -682,7 +682,7 @@ function remoteARTStatus(){
                               :helptext =>"Glucose Test Result (mg/dl) <span class='helper'> Lab Results</span>",
                               :allowFreeText => 'true',
                               :tt_onLoad => "parsedConceptName = 'Glucose negative';",
-                              :min => 0,
+                              :min => 1,
                               :max => 1000000,
                               :condition => "getUrineTest().match(/Glucose/) && glucoseTest == true;",
                               :tt_onUnLoad => "parsedConceptName = '';",

@@ -841,7 +841,7 @@ function loadInputWindow(){
                 }else if (global_control !== 'Unknown' && !(global_control.match(/^[0-9]+(\.[0-9])?$/))){
                     alertMessage("Please enter the collect value!", false, false);
                 }else{
-                    if (parseInt(global_control) == abs_max && (name == 'Year of birth' || name == 'Gestation (months)')){
+                    if (parseInt(global_control) == abs_max && (name == 'Year of birth' || name == 'Gestation (weeks)')){
                         showMeMessage("The value is "+global_control+". Are you sure about this value?", true, false);
                     }
 
@@ -1361,7 +1361,7 @@ function loadInputWindow(){
                 var fields = {
                     "Year of birth" : ["number", min_birth_year, abs_max_birth_year, abs_max_birth_year] ,
                     "Place of birth" : ["list", "Health facility", "In transit", "TBA", "Home"],
-                    "Gestation (months)" : ["number", 5, 11, 11],
+                    "Gestation (weeks)" : ["number", 5, 42, 42],
                     "Method of delivery" : ["list", "Spontaneous Vortex", "Caesarean Section", "Vacuum Extraction", "Breech", "Forceps", "Others"],
                     "Condition at birth" : ["list", "Alive", "Macerated Still Birth (MSB)", "Fresh Still Birth (FSB)"],
                     "Birth weight" : ["number", 1, 5],
@@ -1599,7 +1599,7 @@ function loadInputWindow(){
                     "Place of abortion" : ["list", "Health facility", "In transit", "TBA", "Home", "Other"],
                     "Type of abortion" : ["list", "Complete abortion", "Incomplete abortion"],
                     "Procedure done" : ["list", "Manual Vacuum Aspiration (MVA)", "Evacuation", "None"],
-                    "Gestation (months)" : ["number", 0, 7]
+                    "Gestation (weeks)" : ["number", 0, 30]
                    
                 };
 

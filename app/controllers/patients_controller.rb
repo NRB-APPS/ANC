@@ -1006,7 +1006,7 @@ class PatientsController < ApplicationController
         value = (value.to_i > 0 && value.to_s.strip.length ==  value.to_i.to_s.length)  ? value.to_i : value
         concept_name = obs.concept.name.name.strip
         concept_name = concept_name.sub(/Gestation|Pregnancy/i,
-          "Gestation (months)").sub(/Alive/i,  "Alive Now").gsub(/Year of birth/i,
+          "Gestation (weeks)").sub(/Alive/i,  "Alive Now").gsub(/Year of birth/i,
           "Year of birth").sub(/Condition at birth/i, "Condition at birth")
 
         if pregnancy.present?
@@ -1769,7 +1769,7 @@ class PatientsController < ApplicationController
 
           @data[preg][baby].each do |key, value|
 
-            concept_id = ConceptName.find_by_name(key.sub(/Alive Now/i, "Alive").sub("Gestation (months)", "Gestation")).concept_id
+            concept_id = ConceptName.find_by_name(key.sub(/Alive Now/i, "Alive").sub("Gestation (weeks)", "Gestation")).concept_id
             observation = Observation.new(
               :person_id => encounter.patient_id,
               :encounter_id => encounter.encounter_id,
@@ -1812,7 +1812,7 @@ class PatientsController < ApplicationController
       if @abortions_data[key].present?
         @abortions_data[key].each do |ky, value|
 
-          concept_id = ConceptName.find_by_name(ky.sub(/Year of abortion/i, "Year of birth").sub("Gestation (months)",
+          concept_id = ConceptName.find_by_name(ky.sub(/Year of abortion/i, "Year of birth").sub("Gestation (weeks)",
               "Gestation").sub(/Place of abortion/i, "Place of birth")).concept_id
 
           observation = Observation.new(

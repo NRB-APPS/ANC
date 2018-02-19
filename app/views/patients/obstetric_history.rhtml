@@ -32,7 +32,7 @@
   }
 
   var fields = ["Year of birth", "Place of birth",
-    "Gestation (months)", "Method of delivery",
+    "Gestation (weeks)", "Method of delivery",
     "Condition at birth", "Birth weight",
     "Alive Now", "Age at Death"];
 
@@ -43,7 +43,7 @@
   }
 
   var abortionFields = ["Year of abortion", "Place of abortion",
-    "Type of abortion", "Procedure done", "Gestation (months)"
+    "Type of abortion", "Procedure done", "Gestation (weeks)"
   ];
 
   var $$ = <%= @abortions.to_json%>;
