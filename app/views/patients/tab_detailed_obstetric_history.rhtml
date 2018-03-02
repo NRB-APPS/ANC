@@ -77,7 +77,7 @@
 ["YEAR OF BIRTH", "PLACE OF BIRTH", "PREGNANCY", "LABOUR DURATION", 
 "METHOD OF DELIVERY", "CONDITION AT BIRTH", "BIRTH WEIGHT", "ALIVE", "AGE AT DEATH"]      
 %>
-        <% (1..(@obstetrics.length + 1)).each do |pos| %>
+        <% (1..(@obstetrics.length - 1)).each do |pos| %>
           <tr>
             <td>
               <%= pos %>

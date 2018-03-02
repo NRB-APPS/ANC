@@ -1,3 +1,5 @@
+var details_available = [];
+
 function readableMessage(){
 
     var conceptName = conceptHash[tstCurrentPage]
@@ -320,11 +322,16 @@ function stringfy(hash){
 }
 
 function disablePastVisits(){
-    for(var i = 0; i < anc_visits.length; i++){
-        if(__$(anc_visits[i])){
-            __$(anc_visits[i]).className = "keyboardButton gray";
-            __$(anc_visits[i]).onmousedown = function(){}
+    if (last_visit < 11){
+        for(var i = 0; i < anc_visits.length; i++){
+            if(__$(anc_visits[i])){
+                __$(anc_visits[i]).className = "keyboardButton gray";
+                __$(anc_visits[i]).onmousedown = function(){}
+            }
         }
+    }else{
+        __$(anc_visits[anc_visits.length - 1]).className = "keyboardButton gray";
+        __$(anc_visits[anc_visits.length - 1]).onmousedown = function(){}
     }
 }
 
@@ -416,8 +423,10 @@ function loadInputWindow(){
 
             for (var pos in $){
 
-                if ($[pos]["condition"] == true)
+                if ($[pos]["condition"] == true){
                     loadPregnancy(pos, "delivery");
+                    details_available.push($[pos]["condition"]);
+                }
             }
 
             for (var i = 1; i <= parseInt(__$("enter_number_of_abortions").value); i ++){
@@ -1551,6 +1560,12 @@ function loadInputWindow(){
     })(jQuery, data);
 
     myModule.load();
+}
+
+function test_code(){
+    result = details_available.length;
+    details_available = []
+    return result;
 }
 
 function buildParams(){
