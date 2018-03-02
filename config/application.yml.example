@@ -24,6 +24,11 @@ production:
  same_database: false
  use.column.interface: true
  maternity.links: localhost:3000
+<<<<<<< HEAD
+=======
+ use_portal: false
+ portal_url: http://0.0.0.0:3000
+>>>>>>> e632fbc... Added Portal Redirect Back Support
  
 development:
  create_from_remote: no
@@ -52,7 +57,13 @@ development:
  same_database: false
  use.column.interface: true
  maternity.links: localhost:3000
+<<<<<<< HEAD
  
+=======
+ use_portal: false
+ portal_url: http://0.0.0.0:3000 
+
+>>>>>>> e632fbc... Added Portal Redirect Back Support
 test: &TEST
  create_from_remote: no
  use.user.selected.activities: yes
