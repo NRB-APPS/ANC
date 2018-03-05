@@ -24,6 +24,7 @@ production:
  same_database: false
  use.column.interface: true
  maternity.links: localhost:3000
+ father_details: false
  
 development:
  create_from_remote: no
@@ -52,6 +53,7 @@ development:
  same_database: false
  use.column.interface: true
  maternity.links: localhost:3000
+ father_details: false
  
 test: &TEST
  create_from_remote: no
