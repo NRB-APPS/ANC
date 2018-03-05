@@ -212,11 +212,29 @@ class EncountersController < ApplicationController
       weight = ConceptName.find_by_name("WEIGHT (KG)").concept_id
       height = ConceptName.find_by_name("HEIGHT (CM)").concept_id
       bmi = ConceptName.find_by_name("BMI").concept_id
-      @vital["weight"] = Observation.find(:first, :conditions => ["concept_id = ? AND voided = 0", weight]).to_s.split(':')[1] rescue ""
-      @vital["height"] = Observation.find(:first, :conditions => ["concept_id = ? AND voided = 0", height]).to_s.split(':')[1] rescue ""
-      @vital["bmi"] = Observation.find(:first, :conditions => ["concept_id = ? AND voided = 0", bmi]).to_s.split(':')[1] rescue ""
+      @vital["weight"] = Observation.find(:last,
+                                          :conditions => ['concept_id = ?
+                                                          AND voided = 0
+                                                          AND person_id = ?',
+                                                          weight, params[:patient_id]]
+                                          ).to_s.split(':')[1] rescue ''
+
+      @vital["height"] = Observation.find(:last,
+                                          :conditions => ['concept_id = ?
+                                                          AND voided = 0
+                                                          AND person_id = ?',
+                                                          height, params[:patient_id]]
+                                          ).to_s.split(':')[1] rescue ''
+
+      @vital["bmi"] = Observation.find(:last,
+                                       :conditions => ['concept_id = ?
+                                                       AND voided = 0
+                                                       AND person_id = ?',
+                                                       bmi,
+                                                        params[:patient_id]]
+                                       ).to_s.split(':')[1] rescue ''
     else
-      @first = "true"
+      @first = 'true'
     end
     
     

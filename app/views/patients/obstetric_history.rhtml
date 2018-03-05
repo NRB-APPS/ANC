@@ -15,6 +15,7 @@
 
 <%session_date = session[:datetime]? session[:datetime] : Date.today%>
   var anc_visits = <%= @anc_patient.anc_visits(session_date).to_json%>;
+  var last_visit = <%= @anc_patient.last_visit(session_date)%>;
   var birth_year = <%= @birth_year.to_i%>;
   var max_birth_year = <%= @max_birth_year.to_i%>;
   var min_birth_year = <%= @min_birth_year.to_i%>;
@@ -171,10 +172,10 @@
           :tt_onUnLoad => "parsedConceptName = ''",
           :condition => "false" } %>
 
-        <%= touch_select_tag "SYMPHYSIOTOMY", @patient, options_for_select([["", ""], ["No", "No"], ["Yes", "Yes"]]),
-          {:id => "ever_had_symphysiotomy",
-          :helptext => "Ever Had Symphysiotomy?",
-          :tt_onLoad => " parsedConceptName = 'SYMPHYSIOTOMY'",
+        <%= touch_select_tag "EPISIOTOMY", @patient, options_for_select([["", ""], ["No", "No"], ["Yes", "Yes"]]),
+          {:id => "ever_had_episiotomy",
+          :helptext => "Ever Had Episiotomy?",
+          :tt_onLoad => " parsedConceptName = 'EPISIOTOMY'",
           :tt_onUnLoad => "parsedConceptName = ''",
           :condition => "false"
         } %>
@@ -205,9 +206,9 @@
           {:id => "input_page",
           :helptext => "Enter pregnancy details <span class='helper'> Obstetric History</span>",
           :tt_onLoad => "jQuery('#clearButton').css('display', 'none');parsedConceptName = ''; loadInputWindow();",
-          :tt_BeforeUnLoad => "buildParams()",
+          :tt_BeforeUnLoad => "buildParams(); console.log(test_code().toString());",
           :optional => "true",
-          :condition => "__$('enter_gravida').value > 1"
+          :condition => "__$('enter_gravida').value > 1 && __$('enter_number_of_deliveries').value !== 'Unknown' "
         } %>
 
         <%= touch_text_field_tag "", @patient, nil,

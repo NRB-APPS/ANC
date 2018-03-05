@@ -2,11 +2,11 @@ class PeopleController < GenericPeopleController
        
   def confirm
     if params[:found_person_id]
-      @patient = Patient.find(params[:found_person_id])
+      @patient = Person.find(params[:found_person_id])
       if @patient.gender == "F"
         redirect_to next_task(@patient) and return
       else
-        redirect_to "/people/show/#{@patient.id}"
+        redirect_to "/people/show_father/#{@patient.id}"
       end
     else 
       redirect_to "/clinic" and return
@@ -185,19 +185,21 @@ class PeopleController < GenericPeopleController
     redirect_to next_task(p.patient)
   end
 
+#   def create
+#     if District.find_by_name(params['person']['addresses']['state_province']).blank?
+#       params['person']['country_of_residence'] = params['person']['addresses']['state_province']
+#       params['person']['addresses']['state_province'] = ''
+#       params['person']['addresses']['city_village'] = ''
+#     end
+
+#     if !params['person']['race'].blank?
+#       params['person']['address2'] = ''
+#       params['person']['county_district'] = ''
+#       params['person']['neighborhood_cell'] = ''
+#     end
+# ==========================================================
+
   def create
-    if District.find_by_name(params['person']['addresses']['state_province']).blank?
-      params['person']['country_of_residence'] = params['person']['addresses']['state_province']
-      params['person']['addresses']['state_province'] = ''
-      params['person']['addresses']['city_village'] = ''
-    end
-
-    if !params['person']['race'].blank?
-      params['person']['address2'] = ''
-      params['person']['county_district'] = ''
-      params['person']['neighborhood_cell'] = ''
-    end
-
     Person.session_datetime = session[:datetime].to_date rescue Date.today
     identifier = params[:identifier] rescue nil
     if identifier.blank?
@@ -245,7 +247,10 @@ class PeopleController < GenericPeopleController
       end
 
     elsif create_from_remote
+
       person_from_remote = PatientService.create_remote_person(params)
+      person_from_remote["person"].merge!("citizenship" => params["person"]["citizenship"])
+      # raise person_from_remote.inspect
       person = PatientService.create_from_form(person_from_remote["person"]) unless person_from_remote.blank?
 
       if !person.blank?
@@ -321,13 +326,138 @@ class PeopleController < GenericPeopleController
         if @relationship.save
           print_and_redirect("/patients/national_id_label?patient_id=#{person.id}", next_task(Person.find(params[:patient]).patient))
         else
-          redirect_to next_task(params[:patient])
+          #raise next_task(person.patient).inspect
+          if CoreService.get_global_property_value("father_details")
+            @patient_id = person.id
+            print_and_redirect("/patients/national_id_label?patient_id=#{person.id}", "/people/scan_person?patient_id=#{person.id}")
+          else
+            print_and_redirect("/patients/national_id_label?patient_id=#{person.id}", next_task(person.patient))
+          end
         end
       end
     else
       # Does this ever get hit?
       redirect_to :action => "index"
     end
+  end
+
+  def create_father
+    Person.session_datetime = session[:datetime].to_date rescue Date.today
+    identifier = params[:identifier] rescue nil
+    if identifier.blank?
+      identifier = params[:person][:patient][:identifiers]['National id']
+    end rescue nil
+
+    if create_from_dde_server
+      formatted_demographics = DDE2Service.format_params(params, Person.session_datetime)
+      raise formatted_demographics.to_yaml
+
+      if DDE2Service.is_valid?(formatted_demographics)
+        response = DD2Service.create_from_dde2(formatted_demographics)
+      else
+        flash[:error] = "Invalid demographics format posted to DDE2"
+        redirect_to "/" and return
+      end
+
+    elsif create_from_remote
+
+      person_from_remote = PatientService.create_remote_person(params)
+      person_from_remote["person"].merge!("citizenship" => params["person"]["citizenship"])
+      # raise person_from_remote.inspect
+      person = PatientService.create_from_form(person_from_remote["person"]) unless person_from_remote.blank?
+
+      if !person.blank?
+        success = true
+
+        if person_from_remote
+
+            remote_id = person_from_remote["person"]["patient"]["identifiers"]["National id"] rescue nil
+            PatientIdentifier.create(:identifier => remote_id,
+                                     :patient_id => person.person_id,
+                                     :creator => User.current.id,
+                                     :location_id => session[:location_id],
+                                     :identifier_type => PatientIdentifierType.find_by_name("National id").id
+            ) if !id.blank?
+        else
+            PatientService.get_remote_national_id(person.patient)
+        end
+
+      end
+    else
+      success = true
+      params[:person].merge!({"identifiers" => {"National id" => identifier}}) unless identifier.blank?
+      person = PatientService.create_from_form(params[:person])
+    end
+
+    if success
+
+      # add a relationship
+      relationship_type_id = RelationshipType.find_by_description('Spouse to spouse relationship').id
+      @relationship = Relationship.new(
+        :person_a => params[:patient],
+        :person_b => person.id,
+        :relationship => relationship_type_id)
+      @relationship.save
+
+      # if params[:encounter]
+      #   encounter = Encounter.new(params[:encounter])
+      #   encounter.patient_id = person.id
+      #   encounter.encounter_datetime = session[:datetime] unless session[:datetime].blank?
+      #   encounter.save
+      # end rescue nil
+      
+      # PatientService.patient_national_id_label(person.patient)
+      # unless (params[:relation].blank?)
+      #   redirect_to search_complete_url(person.id, params[:relation]) and return
+      # else
+
+        # tb_session = false
+        # if current_user.activities.include?('Manage Lab Orders') or current_user.activities.include?('Manage Lab Results') or
+        #     current_user.activities.include?('Manage Sputum Submissions') or current_user.activities.include?('Manage TB Clinic Visits') or
+        #     current_user.activities.include?('Manage TB Reception Visits') or current_user.activities.include?('Manage TB Registration Visits') or
+        #     current_user.activities.include?('Manage HIV Status Visits')
+        #   tb_session = true
+        # end
+
+        #raise use_filing_number.to_yaml
+        # if use_filing_number and not tb_session
+        #   PatientService.set_patient_filing_number(person.patient)
+        #   archived_patient = PatientService.patient_to_be_archived(person.patient)
+        #   message = PatientService.patient_printing_message(person.patient,archived_patient,creating_new_patient = true)
+        #   unless message.blank?
+        #     print_and_redirect("/patients/filing_number_and_national_id?patient_id=#{person.id}" , next_task(person.patient),message,true,person.id)
+        #   else
+        #     print_and_redirect("/patients/filing_number_and_national_id?patient_id=#{person.id}", next_task(person.patient))
+        #   end
+        # else
+          #raise person.patient.inspect
+          patient = Person.find(params[:patient]).patient
+          #raise patient.inspect
+          print_and_redirect("/patients/national_id_label?patient_id=#{params[:patient]}", next_task(patient))
+        # end
+      # end
+    else
+      # Does this ever get hit?
+      redirect_to :action => "index"
+    end
+  end
+
+  def new_father
+    if !params[:person_id].blank?
+      patient = Person.find(params[:patient_id]).patient
+      relationship_type_id = RelationshipType.find_by_description('Spouse to spouse relationship').id
+      @relationship = Relationship.new(
+        :person_a => params[:patient_id],
+        :person_b => params[:person_id],
+        :relationship => relationship_type_id)
+      if @relationship.save
+        print_and_redirect("/patients/national_id_label?patient_id=#{params[:patient_id]}", next_task(patient)) and return
+      end
+      #raise params.inspect
+    end
+    @occupations = occupations
+    i=0
+    @month_names = [[]] +Date::MONTHNAMES[1..-1].collect{|month|[month,i+=1]} + [["Unknown","Unknown"]]
   end
   
 	def search
@@ -345,7 +475,7 @@ class PeopleController < GenericPeopleController
     end
 
     found_person = nil
-		if params[:identifier]
+		if !params[:identifier].blank?
       params[:identifier] = params[:identifier].strip
 			local_results = DDE2Service.search_all_by_identifier(params[:identifier])
 
@@ -432,7 +562,6 @@ class PeopleController < GenericPeopleController
 				end
       end
 		end
-    #raise params.inspect
 
 		@relation = params[:relation]
     @people = []
@@ -467,7 +596,7 @@ class PeopleController < GenericPeopleController
     end if create_from_dde_server
 
     (@people || []).each do | person |
-      patient = PatientService.get_patient(person) rescue nil
+      patient = PatientService.get_patient(person) # rescue nil
       next if patient.blank?
 			next if @search_results.keys.include?(patient.national_id)
 

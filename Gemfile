@@ -16,6 +16,8 @@ gem 'rdoc',  '3.8'
 gem 'mysql', '2.9.0'
 gem 'nokogiri', '1.5.0'
 gem 'mime-types', '1.25.1'
+gem 'pdfkit'
+gem 'wkhtmltopdf-binary'
 
 group :test, :development do
   gem 'rspec', '3.6.0'

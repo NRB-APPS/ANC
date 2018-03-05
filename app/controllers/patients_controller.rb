@@ -536,7 +536,8 @@ class PatientsController < ApplicationController
   def tab_visit_summary
     session_date = session[:datetime].to_date rescue Date.today
     @data = []
-    @encounters = @patient.encounters.all(:conditions => [" DATE(encounter_datetime) <= ? ", session_date],
+    @encounters = @patient.encounters.all(:conditions => [" DATE(encounter_datetime) <= ? ",
+                                                          session_date],
                                           :order => "encounter_datetime DESC") rescue []
 
     @external_encounters = []
@@ -1141,7 +1142,7 @@ class PatientsController < ApplicationController
   end
 
   def current_visit
-    @nc_types =  EncounterType.find(:all, :conditions => ["name in ('ART_FOLLOWUP', 'PREGNANCY STATUS', 'OBSERVATIONS', 'VITALS', 'TREATMENT', 'LAB RESULTS', " +
+    @enc_types =  EncounterType.find(:all, :conditions => ["name in ('ART_FOLLOWUP', 'PREGNANCY STATUS', 'OBSERVATIONS', 'VITALS', 'TREATMENT', 'LAB RESULTS', " +
           "'DIAGNOSIS', 'APPOINTMENT', 'UPDATE OUTCOME')"]).collect{|t| t.id}
 
     @encounters = @patient.encounters.find(:all, :conditions => ["encounter_type IN (?) AND " +
@@ -1149,6 +1150,8 @@ class PatientsController < ApplicationController
         @enc_types, (session[:datetime] ? session[:datetime].to_date.strftime("%Y-%m-%d") : Date.today.strftime("%Y-%m-%d"))]).collect{|e|
       e.type.name
     }.join(", ")
+
+
 
     @all_encounters = @patient.encounters.find(:all, :conditions => ["encounter_type IN (?)",
         @enc_types]).collect{|e|
@@ -1163,7 +1166,7 @@ class PatientsController < ApplicationController
     @names = @preg_encounters.collect{|e|
       e.name.upcase
     }.uniq
-
+    #raise @patient.encounters.find(:all, :conditions => ["encounter_type IN (?)",@enc_types]).inspect
     session[:home_url] = "/patients/current_visit/?patient_id=#{@patient.patient_id}"
     session[:update] = true;
 

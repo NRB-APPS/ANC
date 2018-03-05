@@ -17,6 +17,8 @@
   tt_cancel_destination = "/patients/show/<%= @patient.id %>";
   var timedEvent;
   var parsedConceptName;
+  var leucocytesTest;
+  var glucoseTest;
 
   //-->
 	<%
@@ -112,6 +114,18 @@
     return choices;
   }
 
+  function getUrineTest(){
+    var urine_tests = '';
+    if(__$('urine_tests')){
+      for(var o = 0; o < __$('urine_tests').options.length; o++){
+        if(__$('urine_tests').options[o].selected == true){
+          urine_tests += __$('urine_tests').options[o].innerHTML + " ";
+        }
+      }
+    }
+    return urine_tests;
+  }
+
   function initializeDate(){
     months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     year = "<%=  (session[:datetime] ? session[:datetime].to_date : Date.today).year rescue Date.today.year%>"
@@ -198,177 +212,555 @@ function remoteARTStatus(){
   <%session_date = session[:datetime] || DateTime.now() %>  
 
 	 <%= text_field_tag :showSummary, nil,
-    {
-    :tt_onLoad => "remoteARTStatus(); __$('keyboard').style.display = 'none'",
-    :optional => "true",
-    :tt_pageStyleClass => "NoControls NoKeyboard",
-    :condition => "#{status.present? || art_status.present? || arv_number.present?}",
-    :helpText => "<span class='helper'> ART Summary </span>"
-  } %>
+                      {
+                          :tt_onLoad => "remoteARTStatus(); __$('keyboard').style.display = 'none'",
+                          :optional => "true",
+                          :tt_pageStyleClass => "NoControls NoKeyboard",
+                          :condition => "#{status.present? || art_status.present? || arv_number.present?}",
+                          :helpText => "<span class='helper'> ART Summary </span>"
+                      }
+   %>
 
   <% if params[:update].blank? %>
 
     <%= touch_select_tag "HIV status", @patient,
-      options_for_select([["", ""], ["Negative", "Negative"], ["Positive", "Positive"],
-                          ["Inconclusive", "Inconclusive"], ["Unknown", "Unknown"], ["Not Done", "Not Done"]],
-                         status),
-      {:id => "new_test_result_at_current_facility",
-      :helptext => "HIV Test Result <span class='helper'> Lab Results</span>",
-      :tt_BeforeUnload => "checkHIVTestUnknown()",
-      :tt_onUnLoad => "parsedConceptName = '';",
-      :tt_onLoad => "parsedConceptName = 'HIV Status'; alertStatus(); unknownToNotDone(); ",
-      :condition => "#{["unknown", "old_negative"].include?(@patient.resent_hiv_status?(session_date))}" } %>
+        options_for_select([["", ""],
+                            ["Negative", "Negative"],
+                            ["Positive", "Positive"],
+                            ["Inconclusive", "Inconclusive"],
+                            ["Unknown", "Unknown"],
+                            ["Not Done", "Not Done"]],
+                           status),
+                         {
+                             :id => "new_test_result_at_current_facility",
+                             :helptext => "HIV Test Result <span class='helper'> Lab Results</span>",
+                             :tt_BeforeUnload => "checkHIVTestUnknown()",
+                             :tt_onUnLoad => "parsedConceptName = '';",
+                             :tt_onLoad => "parsedConceptName = 'HIV Status'; alertStatus(); unknownToNotDone(); ",
+                             :condition => "#{["unknown", "old_negative"].include?(@patient.resent_hiv_status?(session_date))}"
+                         }
+    %>
 
     <%= touch_date_tag "HIV test date", @patient, nil,
-      {:id => "enter_date_result_given",
-      :helptext => "HIV Test Date <span class='helper'> Lab Results</span>",
-      :tt_onUnLoad => "parsedConceptName = '';",
-      :tt_onLoad => " parsedConceptName = 'HIV Test date';initializeDate();",
-      :condition => "__$('new_test_result_at_current_facility').value != 'Not Done' &&
-      #{["unknown", "old_negative"].include?(@patient.resent_hiv_status?(session_date))}",
-      :tt_BeforeUnload => "checkHIVTestDate()",
-      :max => "#{session[:datetime].to_date rescue Date.today}"
-    } %>
+                       {
+                           :id => "enter_date_result_given",
+                           :helptext => "HIV Test Date <span class='helper'> Lab Results</span>",
+                           :tt_onUnLoad => "parsedConceptName = '';",
+                           :tt_onLoad => " parsedConceptName = 'HIV Test date';initializeDate();",
+                           :condition => "__$('new_test_result_at_current_facility').value != 'Not Done' &&
+                                    #{["unknown", "old_negative"].include?(@patient.resent_hiv_status?(session_date))}",
+                           :tt_BeforeUnload => "checkHIVTestDate()",
+                           :max => "#{session[:datetime].to_date rescue Date.today}"
+                       }
+    %>
 
     <%= touch_select_tag "On ART", @patient,
-                         options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]], art_status),
-       {:id => "on_art",
-        :helptext => "Is Patient On ART? <span class='helper'> Lab Results</span>",
-        :tt_onUnLoad => "parsedConceptName = '';",
-        :tt_onLoad => " parsedConceptName = 'On ART'; alertARTStatus()",
-        :condition => "__$('new_test_result_at_current_facility').value == 'Positive'"
-       } %>
+        options_for_select([["", ""],
+                            ["Yes", "Yes"],
+                            ["No", "No"]],
+                           art_status),
+                         {
+                             :id => "on_art",
+                             :helptext => "Is Patient On ART? <span class='helper'> Lab Results</span>",
+                             :tt_onUnLoad => "parsedConceptName = '';",
+                             :tt_onLoad => " parsedConceptName = 'On ART'; alertARTStatus()",
+                             :condition => "__$('new_test_result_at_current_facility').value == 'Positive'"
+                         }
+    %>
 
     <%= touch_text_field_tag "ARV Number", @patient, arv_number,
-       {:id => "arv_number",
-        :optional => true,
-				:tt_onLoad => 'alertARVNumber()',
-        :helptext => "ARV Number <span class='helper'> Lab Results</span>",
-        :tt_onUnLoad => "parsedConceptName = '';",
-        :condition => "__$('on_art').value == 'Yes'"
-       } %>
+                             {
+                                 :id => "arv_number",
+                                 :optional => true,
+                                 :tt_onLoad => 'alertARVNumber()',
+                                 :helptext => "ARV Number <span class='helper'> Lab Results</span>",
+                                 :tt_onUnLoad => "parsedConceptName = '';",
+                                 :condition => "__$('on_art').value == 'Yes'"
+                             }
+    %>
 
-    <%= select_tag("choice", options_for_select([["", ""], ["", ""], ["HB Test Result", "HB Test Result"],
-          ["Syphilis Test Result", "Syphilis Test Result"], 
-					["Urine Protein", "Urine Protein"], 
-					["Malaria Test Result", "Malaria Test Result"]], ["", ""]),
-      {
-        :helpText => "Select Available Test Results <span class='helper'> Lab Results</span>", :id => "choice", :multiple => true,
-        :optional => :true
-      })%>
+    <%= select_tag("choice",
+                   options_for_select([["", ""],
+                                       ["", ""],
+                                       ["HB Test Result", "HB Test Result"],
+                                       ["Syphilis Test Result", "Syphilis Test Result"],
+                                       ["Urine Test Results", "Urine Test Results"],
+                                       ["Malaria Test Result", "Malaria Test Result"],
+                                       ["Blood Group Test Result", "Blood Group Test Result"]], ["", ""]),
+                   {
+                       :helpText => "Select Available Test Results <span class='helper'> Lab Results</span>",
+                       :id => "choice",
+                       :multiple => true,
+                       :optional => :true
+                   })
+    %>
+
   <% else %>
 
-    <%= select_tag("choice", options_for_select([["", ""], ["", ""], ["HIV Test Result", "HIV Test Result"], 
-					["HB Test Result", "HB Test Result"],["Syphilis Test Result", "Syphilis Test Result"],
-           ["Urine Protein", "Urine Protein"], ["Malaria Test Result", "Malaria Test Result"]], ["", ""]),
-      {
-        :helpText => "Select Available Test Results <span class='helper'> Lab Results</span>", :id => "choice", :multiple => true,
-        :optional => :true
-      })%>
+    <%= select_tag("choice",
+                   options_for_select([["", ""],
+                                       ["", ""],
+                                       ["HIV Test Result", "HIV Test Result"],
+                                       ["HB Test Result", "HB Test Result"],
+                                       ["Syphilis Test Result", "Syphilis Test Result"],
+                                       ["Urine Test Results", "Urine Test Results"],
+                                       ["Malaria Test Result", "Malaria Test Result"],
+                                       ["Blood Group Test Result", "Blood Group Test Result"]], ["", ""]),
+                   {
+                       :helpText => "Select Available Test Results <span class='helper'> Lab Results</span>",
+                       :id => "choice",
+                       :multiple => true,
+                       :optional => :true
+                   })
+    %>
+
   <%end%>
 
   <%= touch_select_tag "HIV status", @patient,
-    options_for_select([["", ""], ["Negative", "Negative"], ["Positive", "Positive"],["Inconclusive", "Inconclusive"],["Not Done", "Not Done"]]),
-    {:id => "new_test_result_at_current_facility",
-    :helptext => "HIV Test Result <span class='helper'> Lab Results</span>",
-    :tt_BeforeUnload => "checkHIVTestUnknown()",
-    :tt_onUnLoad => "parsedConceptName = '';",
-    :tt_onLoad => "parsedConceptName = 'HIV Status'; ",
-    :condition => "getSelected().match(/HIV\sTest\sResult/)" } %>
+      options_for_select([["", ""],
+                          ["Negative", "Negative"],
+                          ["Positive", "Positive"],
+                          ["Inconclusive", "Inconclusive"],
+                          ["Not Done", "Not Done"]]),
+                       {
+                           :id => "new_test_result_at_current_facility",
+                           :helptext => "HIV Test Result <span class='helper'> Lab Results</span>",
+                           :tt_BeforeUnload => "checkHIVTestUnknown()",
+                           :tt_onUnLoad => "parsedConceptName = '';",
+                           :tt_onLoad => "parsedConceptName = 'HIV Status'; ",
+                           :condition => "getSelected().match(/HIV\sTest\sResult/)"
+                       }
+  %>
 
   <%= touch_date_tag "HIV test date", @patient, nil,
-    {:id => "enter_date_result_given",
-    :helptext => "Date Result Done <span class='helper'> Lab Results</span>",
-    :tt_onUnLoad => "parsedConceptName = '';",
-    :tt_onLoad => " parsedConceptName = 'HIV Test date';initializeDate();",
-    :condition => "__$('new_test_result_at_current_facility').value != 'Not Done' && getSelected().match(/HIV\sTest\sResult/)",
-    :tt_BeforeUnload => "checkHIVTestDate()",
-    :max => "#{session[:datetime].to_date rescue Date.today}"
-  } %>
+                     {
+                         :id => "enter_date_result_given",
+                         :helptext => "Date Result Done <span class='helper'> Lab Results</span>",
+                         :tt_onUnLoad => "parsedConceptName = '';",
+                         :tt_onLoad => " parsedConceptName = 'HIV Test date';initializeDate();",
+                         :condition => "__$('new_test_result_at_current_facility').value != 'Not Done'
+                              && getSelected().match(/HIV\sTest\sResult/)",
+                         :tt_BeforeUnload => "checkHIVTestDate()",
+                         :max => "#{session[:datetime].to_date rescue Date.today}"
+                     }
+  %>
 
 
   <%= touch_text_field_tag "HB Test Result", @patient, nil,
-    {:id => "hb_result",
-    :helptext => "HB Test Result (grams) <span class='helper'> Lab Results</span>",
-    :field_type => "number",
-    :tt_pageStyleClass => "NumbersWithUnknownAndDecimal",
-    :min => 2,
-    :max => 16,
-    :tt_onLoad => "unknownToNotDone(); parsedConceptName = 'HB Test Result';",
-    :tt_onUnLoad => "parsedConceptName = '';",
-    :condition => "getSelected().match(/HB\sTest\sResult/)"
-  } %>
+                           {
+                               :id => "hb_result",
+                               :helptext => "HB Test Result (grams) <span class='helper'> Lab Results</span>",
+                               :field_type => "number",
+                               :tt_pageStyleClass => "NumbersWithUnknownAndDecimal",
+                               :min => 2,
+                               :max => 16,
+                               :tt_onLoad => "unknownToNotDone(); parsedConceptName = 'HB Test Result';",
+                               :tt_onUnLoad => "parsedConceptName = '';",
+                               :condition => "getSelected().match(/HB\sTest\sResult/)"
+                           }
+  %>
 
   <%= touch_date_tag "HB Test Result Date", @patient, nil,
-    {:id => "enter_date_hb1_result_given",
-    :helptext => "Date HB Test Result Done <span class='helper'> Lab Results</span>",
-    :tt_onLoad => "initializeDate(); parsedConceptName = 'HB Test Result Date'; ",
-    :tt_onUnLoad => "parsedConceptName = '';",
-    :condition => "!__$('hb_result').value.match(/Not\\sDone/) && getSelected().match(/HB\sTest\sResult/)",
-    :max => "#{session[:datetime].to_date rescue Date.today}" } %>
+                     {
+                         :id => "enter_date_hb1_result_given",
+                         :helptext => "Date HB Test Result Done <span class='helper'> Lab Results</span>",
+                         :tt_onLoad => "initializeDate(); parsedConceptName = 'HB Test Result Date'; ",
+                         :tt_onUnLoad => "parsedConceptName = '';",
+                         :condition => "!__$('hb_result').value.match(/Not\\sDone/) &&
+                              getSelected().match(/HB\sTest\sResult/)",
+                         :max => "#{session[:datetime].to_date rescue Date.today}"
+                     }
+  %>
 
   <%= touch_select_tag "Syphilis Test Result", @patient,
-    options_for_select([["", ""], ["Positive", "Positive"],
-      ["Negative", "Negative"], ["Not Done", "Not Done"]]),
-    {:id => "syphilis_result",
-    :helptext => "Syphilis Test Result <span class='helper'> Lab Results</span>",
-    :tt_onUnLoad => "parsedConceptName = '';",
-    :tt_onLoad => "parsedConceptName = 'Syphilis Test Result';",
-    :condition => "getSelected().match(/Syphilis\sTest\sResult/)" } %>
+      options_for_select([["", ""],
+                          ["Positive", "Positive"],
+                          ["Negative", "Negative"],
+                          ["Not Done", "Not Done"]]),
+                       {
+                           :id => "syphilis_result",
+                           :helptext => "Syphilis Test Result <span class='helper'> Lab Results</span>",
+                           :tt_onUnLoad => "parsedConceptName = '';",
+                           :tt_onLoad => "parsedConceptName = 'Syphilis Test Result';",
+                           :condition => "getSelected().match(/Syphilis\sTest\sResult/)"
+                       }
+  %>
 
   <%= touch_date_tag "Syphilis Test Result Date", @patient, nil,
-    {:id => "enter_date_syphilis_result_given",
-    :helptext => "Date Syphilis Test Result Done <span class='helper'> Lab Results</span>",
-    :max => "#{session[:datetime].to_date rescue Date.today}",
-    :tt_onLoad => " parsedConceptName = 'Syphilis Test Result Date';initializeDate();",
-    :tt_onUnLoad => "parsedConceptName = '';",
-    :condition => "__$('syphilis_result').value != 'Not Done' && getSelected().match(/Syphilis\sTest\sResult/)" } %>
-
-  <%= touch_select_tag "URINE PROTEIN", @patient,
-    options_for_select([["", ""], ["Negative", "Negative"], ["Retrace", "Retrace"], ["+", "+"], ["++", "++"],
-      ["+++", "+++"], ["++++", "++++"], ["Not Done", "Not Done"]]),
-    {:id => "enter_urine_protein",
-    :helptext => "Urine Protein <span class='helper'> Lab Results</span>",
-    :tt_onLoad => " parsedConceptName = 'Urine Protein';",
-    :tt_onUnLoad => "parsedConceptName = '';",
-    :condition => "getSelected().match(/Urine\sProtein/)" } %>
-
-  <%= touch_date_tag "Urine Protein Test Date", @patient, nil,
-    {:id => "urine_protein_test_date",
-    :helptext => "Urine Protein Test Date <span class='helper'> Lab Results</span>",
-    :tt_onUnLoad => "parsedConceptName = '';",
-    :tt_onLoad => " parsedConceptName = 'Urine Protein Test Date';initializeDate();",
-    :condition => "getSelected().match(/Urine\sProtein/)",
-    :max => "#{session[:datetime].to_date rescue Date.today}"
-  } %>
+                     {
+                         :id => "enter_date_syphilis_result_given",
+                         :helptext => "Date Syphilis Test Result Done <span class='helper'> Lab Results</span>",
+                         :max => "#{session[:datetime].to_date rescue Date.today}",
+                         :tt_onLoad => " parsedConceptName = 'Syphilis Test Result Date';initializeDate();",
+                         :tt_onUnLoad => "parsedConceptName = '';",
+                         :condition => "__$('syphilis_result').value != 'Not Done' &&
+                            getSelected().match(/Syphilis\sTest\sResult/)"
+                     }
+  %>
 
   <%= touch_select_tag "Malaria Test Result", @patient,
-    options_for_select([["", ""], ["Negative", "Negative"], ["Positive", "Positive"], ["Not Done", "Not Done"]]),
-    {:id => "malaria_test_result",
-    :helptext => "Malaria Test Result <span class='helper'> Lab Results</span>",
-    :tt_onUnLoad => "parsedConceptName = 'Malaria Test result';",
-    :tt_onLoad => "parsedConceptName = ' Status'",
-    :condition => "getSelected().match(/Malaria\sTest\sResult/)" } %>
-
-  <%#= touch_date_tag "Date of laboratory test", @patient, nil,
-  {:id => "enter_date_result_given_malaria",
-  :helptext => "Date Malaria Result Done",
-  :tt_onUnLoad => "parsedConceptName = '';",
-  :tt_onLoad => " parsedConceptName = 'Malaria Test Date'; showCategory('Lab Results');",
-  :condition => "getSelected().match(/Malaria\sTest\sResult/)",
-  :max => "#{session[:datetime].to_date rescue Date.today}"
-  } %>
-
-
+      options_for_select([["", ""],
+                          ["Negative", "Negative"],
+                          ["Positive", "Positive"],
+                          ["Not Done", "Not Done"]]),
+                       {
+                           :id => "malaria_test_result",
+                           :helptext => "Malaria Test Result <span class='helper'> Lab Results</span>",
+                           :tt_onUnLoad => "parsedConceptName = 'Malaria Test result';",
+                           :tt_onLoad => "parsedConceptName = ' Status'",
+                           :condition => "getSelected().match(/Malaria\sTest\sResult/)"
+                       }
+  %>
 
   <%= touch_date_tag "Date of laboratory test", @patient, nil,
-    {:id => "enter_date_malaria_result_done",
-    :helptext => "Date Malaria Result Done <span class='helper'> Lab Results</span>",
-    :tt_onUnLoad => "parsedConceptName = '';",
-    :tt_onLoad => " parsedConceptName = 'Malaria Test date';",
-    :max => "#{session[:datetime].to_date rescue Date.today}",
-    :condition => "__$('malaria_test_result').value.toLowerCase().trim().match(/tive/i)"
-  } %>
+                     {
+                         :id => "enter_date_malaria_result_done",
+                         :helptext => "Date Malaria Result Done <span class='helper'> Lab Results</span>",
+                         :tt_onUnLoad => "parsedConceptName = '';",
+                         :tt_onLoad => " parsedConceptName = 'Malaria Test date';",
+                         :max => "#{session[:datetime].to_date rescue Date.today}",
+                         :condition => "__$('malaria_test_result').value.toLowerCase().trim().match(/tive/i)"
+                     }
+  %>
+
+    <%= touch_select_tag "BLOOD GROUP", @patient,
+          options_for_select([["", ""], ["A+", "A+"], ["A-","A-"],
+                              ["B+", "B+"], ["B-","B-"],
+                              ["O+","O+"], ["O-", "O-"],
+                              ["AB+","AB+"],["AB-", "AB-"]]),
+          {:id => "blood_group",
+           :helptext => "Blood Group Test Result <span class='helper'> Lab Results</span>",
+           :tt_onLoad => "parsedConceptName = 'Blood Group';",
+           :tt_onUnLoad => "parsedConceptName = ''",
+           :condition => "getSelected().match(/Blood\sGroup/)"
+          } %>
+    <%= touch_date_tag "Blood Group Test Date", @patient, nil,
+                       {:id => "date_blood_group_test_done",
+                        :helptext => "Date Blood Group Test Result Done <span class='helper'> Lab Results</span>",
+                        :tt_onUnLoad => "parsedConceptName = '';",
+                        :tt_onLoad => " parsedConceptName = 'Blood Group Test Dtae';",
+                        :max => "#{session[:datetime].to_date rescue Date.today}",
+                        :condition => "__$('blood_group').value !== ''"
+                       } %>
+
+    <%= select_tag("urine_tests",
+        options_for_select([["", ""],
+                            ["", ""],
+                            ["Urine Protein Test", "Urine Protein Test"],
+                            #["Urine Bacteria Test", "Urine Bacteria Test"],
+                            ["Urine Blood", "Urine Blood"],
+                            ["WBC", "WBC"],["RBC", "RBC"],
+                            ["Urobilinogen", "Urobilinogen"],
+                            ["Bilirubin", "Bilirubin"],
+                            ["Nitrate", "Nitrate"],
+                            ["Ketones", "Ketones"],
+                            ["Glucose Negative", "Glucose Negative"],
+                            ["Leucocytes", "Leucocytes"],
+                            ["Specific Gravity", "Specific Gravity"]], ["", ""]),
+                   {
+                       :condition => "getSelected().match(/Urine\sTest\sResults/);",
+                       :helpText => "Select Available Urine Test Results <span class='helper'> Lab Results</span>",
+                       :id => "urine_tests", :multiple => true,
+                       :optional => :true
+                   })%>
+
+    <%= touch_select_tag "URINE PROTEIN", @patient,
+        options_for_select([["", ""],
+                            ["Negative", "Negative"],
+                            ["Trace", "Trace"],
+                            ["+", "+"],
+                            ["++", "++"],
+                            ["+++", "+++"],
+                            ["++++", "++++"],
+                            ["Not Done", "Not Done"]]),
+                         {
+                             :id => "enter_urine_protein",
+                             :helptext => "Urine Protein Test Result <span class='helper'> Lab Results</span>",
+                             :tt_onLoad => " parsedConceptName = 'Urine Protein Test';",
+                             :tt_onUnLoad => "parsedConceptName = '';",
+                             :condition => "getUrineTest().match(/Urine\sProtein\sTest/);"
+                         } %>
+
+    <%= touch_date_tag "Urine Protein Test Date", @patient, nil,
+                       {
+                           :id => "urine_protein_test_date",
+                           :helptext => "Date Urine Protein Test Result Done <span class='helper'> Lab Results</span>",
+                           :tt_onUnLoad => "parsedConceptName = '';",
+                           :tt_onLoad => " parsedConceptName = 'Urine Protein Test Date';initializeDate();",
+                           :condition => "getUrineTest().match(/Urine\sProtein\sTest/);",
+                           :max => "#{session[:datetime].to_date rescue Date.today}"
+                       } %>
+
+    <%= touch_select_tag "Urine Blood", @patient,
+        options_for_select([["", ""],
+                            ['Negative','Negative'],
+                            ['Heamolysis +10','Heamolysis +10'],
+                            ['Heamolysis ++50','Heamolysis ++50'],
+                            ['Heamolysis +++250','Heamolysis +++250'],
+                            ['Non-Heamolysis +10','Non-Heamolysis +10'],
+                            ['Non-Heamolysis ++50','Non-Heamolysis ++50']]),
+                         {
+                             :id => "enter_urine_blood",
+                             :helptext => "Urine Blood Test Result <span class='helper'> Lab Results</span>",
+                             :tt_onLoad => " parsedConceptName = 'Urine Blood';",
+                             :tt_onUnLoad => "parsedConceptName = '';",
+                             :condition => "getUrineTest().match(/Urine\sBlood/);"
+                         } %>
+
+    <%= touch_date_tag "Urine Blood Test Date", @patient, nil,
+                       {
+                           :id => "urine_blood_test_date",
+                           :helptext => "Date Urine Blood Test Result Done <span class='helper'> Lab Results</span>",
+                           :tt_onUnLoad => "parsedConceptName = '';",
+                           :tt_onLoad => " parsedConceptName = 'Urine Blood Test Date';initializeDate();",
+                           :condition => "getUrineTest().match(/Urine\sBlood/);",
+                           :max => "#{session[:datetime].to_date rescue Date.today}"
+                       } %>
+
+    <%= touch_text_field_tag "WBC", @patient, nil,
+        {:id => "white_blood_cells",
+         :field_type => 'number',
+         :helptext =>"White Blood Cells Test Result (cmm) <span class='helper'> Lab Results</span>",
+         :allowFreeText => 'true',
+         :tt_onLoad => "parsedConceptName = 'WBC';",
+         :min => 0,
+         :max => 1000000,
+         :condition => "getUrineTest().match(/WBC/);",
+         :tt_onUnLoad => "parsedConceptName = '';",
+         :units => 'cmm',
+         :tt_pageStyleClass => "Numeric NumbersOnlyWithDecimal"} %>
+
+    <%= touch_date_tag "WBC Test Date", @patient, nil,
+                       {
+                           :id => "urine_wbc_test_date",
+                           :helptext => "Date White Blood Cells Test Date <span class='helper'> Lab Results</span>",
+                           :tt_onUnLoad => "parsedConceptName = '';",
+                           :tt_onLoad => " parsedConceptName = 'White Blood Cells Test Date';initializeDate();",
+                           :condition => "getUrineTest().match(/WBC/);",
+                           :max => "#{session[:datetime].to_date rescue Date.today}"
+                       } %>
+
+    <%= touch_text_field_tag "RBC", @patient, nil,
+                             {
+                                 :id => "red_blood_cells",
+                                 :field_type => 'number',
+                                 :helptext =>"Red Blood Cells Test Result (cmm) <span class='helper'> Lab Results</span>",
+                                 :allowFreeText => 'true',
+                                 :tt_onLoad => "parsedConceptName = 'RBC';",
+                                 :min => 0,
+                                 :max => 1000000,
+                                 :condition => "getUrineTest().match(/RBC/);",
+                                 :tt_onUnLoad => "parsedConceptName = '';",
+                                 :units => 'cmm',
+                                 :tt_pageStyleClass => "Numeric NumbersOnlyWithDecimal"
+                             } %>
+
+    <%= touch_date_tag "RBC Test Date", @patient, nil,
+                       {
+                           :id => "urine_rbc_test_date",
+                           :helptext => "Date Red Blood Cells Test Date <span class='helper'> Lab Results</span>",
+                           :tt_onUnLoad => "parsedConceptName = '';",
+                           :tt_onLoad => " parsedConceptName = 'Red Blood Cells Test Date';initializeDate();",
+                           :condition => "getUrineTest().match(/RBC/);",
+                           :max => "#{session[:datetime].to_date rescue Date.today}"
+                       } %>
+
+    <%= touch_text_field_tag "Urobilinogen", @patient, nil,
+                             {:id => "Urobilinogen",
+                              :field_type => 'number',
+                              :helptext =>"Urobilinogen Test Result (mg/dl) <span class='helper'> Lab Results</span>",
+                              :allowFreeText => 'true',
+                              :tt_onLoad => "parsedConceptName = 'Urobilinogen';",
+                              :min => 0,
+                              :max => 1000000,
+                              :condition => "getUrineTest().match(/Urobilinogen/);",
+                              :tt_onUnLoad => "parsedConceptName = '';",
+                              :units => 'mg/dl',
+                              :tt_pageStyleClass => "Numeric NumbersOnlyWithDecimal"} %>
+
+    <%= touch_date_tag "Urobilinogen Test Date", @patient, nil,
+                       {
+                           :id => "urobilinogen test Date",
+                           :helptext => "Date Urobilinogen Test Result Done <span class='helper'> Lab Results</span>",
+                           :tt_onUnLoad => "parsedConceptName = '';",
+                           :tt_onLoad => " parsedConceptName = 'Urobilinogen Test Date';initializeDate();",
+                           :condition => "getUrineTest().match(/Urobilinogen/);",
+                           :max => "#{session[:datetime].to_date rescue Date.today}"
+                       } %>
+
+    <%= touch_select_tag "Bilirubin", @patient,
+        options_for_select([["", ""],
+                            ['Negative','Negative'],
+                            ['+','+'], ['++','++'],
+                            ['+++','+++']]),
+                         {
+                             :id => "bilirubin",
+                             :helptext => "Bilirubin Test Result <span class='helper'> Lab Results</span>",
+                             :tt_onLoad => " parsedConceptName = 'Bilirubin';",
+                             :tt_onUnLoad => "parsedConceptName = '';",
+                             :condition => "getUrineTest().match(/Bilirubin/);"
+                         } %>
+
+    <%= touch_date_tag "Bilirubin Test Date", @patient, nil,
+                       {
+                           :id => "bilirubin_test_date",
+                           :helptext => "Date Bilirubin Test Result Done <span class='helper'> Lab Results</span>",
+                           :tt_onUnLoad => "parsedConceptName = '';",
+                           :tt_onLoad => " parsedConceptName = 'Bilirubin Test Date';initializeDate();",
+                           :condition => "getUrineTest().match(/Bilirubin/);",
+                           :max => "#{session[:datetime].to_date rescue Date.today}"
+                       } %>
+
+    <%= touch_select_tag "Urine Nitrate Test", @patient,
+        options_for_select([["", ""],
+                            ['Negative','Negative'],
+                            ['Trace','Trace'],
+                            ['Positive','Positive']]),
+                         {
+                             :id => "nitrate",
+                             :helptext => "Nitrate Test Result <span class='helper'> Lab Results</span>",
+                             :tt_onLoad => " parsedConceptName = 'Urine Nitrate Test';",
+                             :tt_onUnLoad => "parsedConceptName = '';",
+                             :condition => "getUrineTest().match(/Nitrate/);"
+                         } %>
+
+    <%= touch_date_tag "Urine Nitrate Test Date", @patient, nil,
+                       {
+                           :id => "nitrate_test_date",
+                           :helptext => "Date Urine Nitrate Test Result Done <span class='helper'> Lab Results</span>",
+                           :tt_onUnLoad => "parsedConceptName = '';",
+                           :tt_onLoad => " parsedConceptName = 'Urine Nitrate Test Date';initializeDate();",
+                           :condition => "getUrineTest().match(/Nitrate/);",
+                           :max => "#{session[:datetime].to_date rescue Date.today}"
+                       } %>
+
+    <%= touch_select_tag "Urine Ketones", @patient,
+                         options_for_select([["", ""],
+                                             ['Negative','Negative'],
+                                             ['Trace','Trace'],
+                                             ['Positive','Positive']]),
+                         {
+                             :id => "ketones",
+                             :helptext => "Urine Ketones Test Result <span class='helper'> Lab Results</span>",
+                             :tt_onLoad => " parsedConceptName = 'Urine Ketones';",
+                             :tt_onUnLoad => "parsedConceptName = '';",
+                             :condition => "getUrineTest().match(/Ketones/);"
+                         } %>
+
+    <%= touch_date_tag "Urine Ketones Test Date", @patient, nil,
+                       {
+                           :id => "ketone_test_date",
+                           :helptext => "Date Urine Kitone Test Result Done <span class='helper'> Lab Results</span>",
+                           :tt_onUnLoad => "parsedConceptName = '';",
+                           :tt_onLoad => " parsedConceptName = 'Urine Ketones Test Date';initializeDate();",
+                           :condition => "getUrineTest().match(/Ketones/);",
+                           :max => "#{session[:datetime].to_date rescue Date.today}"
+                       } %>
+
+    <%= touch_select_tag "Glucose Negative", @patient,
+                         options_for_select([["", ""],
+                                             ['Negative','Negative'],
+                                             ['Other','Other']]),
+                         {
+                             :id => "glucose_negative_test",
+                             :helptext => "Glucose Negative Test Result (mg/dl) <span class='helper'> Lab Results</span>",
+                             :tt_onLoad => " parsedConceptName = 'Glucose negative';",
+                             :tt_onUnLoad => "parsedConceptName = '';if(__$('glucose_negative_test').value == 'Other'){
+                                __$('touchscreenInput' + tstCurrentPage).value = '';
+                                __$('glucose_negative_test').value = '';
+                                glucoseTest = true;
+                              }else{
+                                glucoseTest = false;
+                              };",
+                             :condition => "getUrineTest().match(/Glucose\sNegative/);"
+                         } %>
+
+    <%= touch_text_field_tag "Glucose Negative", @patient, nil,
+                             {:id => "glucose_negative_test",
+                              :field_type => 'number',
+                              :helptext =>"Glucose Negative Test Result (mg/dl) <span class='helper'> Lab Results</span>",
+                              :allowFreeText => 'true',
+                              :tt_onLoad => "parsedConceptName = 'Glucose negative';",
+                              :min => 0,
+                              :max => 1000000,
+                              :condition => "getUrineTest().match(/Glucose\sNegative/) && glucoseTest == true;",
+                              :tt_onUnLoad => "parsedConceptName = '';",
+                              :tt_pageStyleClass => "Numeric NumbersOnlyWithDecimal"} %>
+
+    <%= touch_date_tag "Glucose Test Date", @patient, nil,
+                       {
+                           :id => "glucose_test_date",
+                           :helptext => "Date Glucose Negative Test Result Done <span class='helper'> Lab Results</span>",
+                           :tt_onUnLoad => "parsedConceptName = '';",
+                           :tt_onLoad => " parsedConceptName = 'Glucose Test Date';initializeDate();",
+                           :condition => "getUrineTest().match(/Glucose\sNegative/);",
+                           :max => "#{session[:datetime].to_date rescue Date.today}"
+                       } %>
+
+    <%= touch_select_tag "Leucocytes Test", @patient,
+        options_for_select([["", ""],
+                            ['Negative','Negative'],
+                            ['Other','Other']]),
+                         {
+                             :id => "leucocytes_test_results",
+                             :helptext => "Leucocytes Test Result (WBC/ul) <span class='helper'> Lab Results</span>",
+                             :tt_onLoad => " parsedConceptName = 'Leucocytes Test'; ",
+                             :tt_onUnLoad => "parsedConceptName = '';if(__$('leucocytes_test_results').value == 'Other'){
+                             __$('touchscreenInput' + tstCurrentPage).value = '';
+                             __$('leucocytes_test_results').value = '';
+                             leucocytesTest = true;
+                             }else{
+                             leucocytesTest = false;
+                             };",
+                             :condition => "getUrineTest().match(/Leucocytes/);"
+                         } %>
+
+    <%= touch_text_field_tag "Leucocytes Test", @patient, nil,
+                             {:id => "leucocytes_test_results",
+                              :field_type => 'number',
+                              :helptext =>"Leucocytes Test Result (WBC/ul) <span class='helper'> Lab Results</span>",
+                              :allowFreeText => 'true',
+                              :tt_onLoad => "parsedConceptName = 'Leucocytes Test';",
+                              :min => 0,
+                              :max => 1000000,
+                              :condition => "getUrineTest().match(/Leucocytes/) && leucocytesTest == true;",
+                              :tt_onUnLoad => "parsedConceptName = '';",
+                              :tt_pageStyleClass => "Numeric NumbersOnlyWithDecimal"} %>
+
+    <%= touch_date_tag "Leucocytes Test Date", @patient, nil,
+                       {
+                           :id => "urine_protein_test_date",
+                           :helptext => "Date Leucocytes Test Result Done <span class='helper'> Lab Results</span>",
+                           :tt_onUnLoad => "parsedConceptName = '';",
+                           :tt_onLoad => " parsedConceptName = 'Leucocytes Test Date';initializeDate();",
+                           :condition => "getUrineTest().match(/Leucocytes/);",
+                           :max => "#{session[:datetime].to_date rescue Date.today}"
+                       } %>
+
+    <%= touch_text_field_tag "Specific Gravity", @patient, nil,
+                             {:id => "specific_gravity",
+                              :field_type => 'number',
+                              :helptext =>"Specific Gravity Test Result <span class='helper'> Lab Results</span>",
+                              :allowFreeText => 'true',
+                              :tt_onLoad => "parsedConceptName = 'Specific Gravity';",
+                              :min => 0,
+                              :max => 1000000,
+                              :condition => "getUrineTest().match(/Specific\sGravity/);",
+                              :tt_onUnLoad => "parsedConceptName = '';",
+                              :validationRule => "([0-9]+(\\.[0-9]))|Unknown$",
+                              :validationMessage => "You must enter a valid decimal number",
+                              :tt_pageStyleClass => "Numeric NumbersOnlyWithDecimal"} %>
+
+    <%= touch_date_tag "Specific Gravity Test Date", @patient, nil,
+                       {
+                           :id => "specific_gravity_test_date",
+                           :helptext => "Date Specific Gravity Test Result Done <span class='helper'> Lab Results</span>",
+                           :tt_onUnLoad => "parsedConceptName = '';",
+                           :tt_onLoad => " parsedConceptName = 'Specific Gravity Test Date';initializeDate();",
+                           :condition => "getUrineTest().match(/Specific\sGravity/);",
+                           :max => "#{session[:datetime].to_date rescue Date.today}"
+                       } %>
+
 
   <%#= touch_select_tag "WHO Stage", @patient, options_for_select([["", ""], ["1", "1"],
   ["2", "2"], ["3", "3"], ["4", "4"], ["Unknown", "Unknown"]]),

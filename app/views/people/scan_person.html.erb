@@ -35,6 +35,7 @@
   ) %>
   <%= hidden_field_tag "patient", params[:patient_id], 
   {:condition => "__$('details_of_father_available').value == 'Yes'"} %>
+
   <%end%>
   <%= text_field_tag :identifier, '', 
   {:id => 'barcode', 

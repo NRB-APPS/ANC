@@ -22,7 +22,7 @@ class ClinicController < GenericClinicController
 
   def reports
     @reports = [#['/reports/select/','Booking Cohort Report'],
-      ['/reports/report_limits', 'Monthly Report'] ,
+      #['/reports/report_limits', 'Monthly Report'] ,
       ['/reports/select_dates', 'View Appointments'] ,
       ['/reports/select?type=anc_cohort', 'Booking Cohort Report']]
 
