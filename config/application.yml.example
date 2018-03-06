@@ -25,6 +25,8 @@ production:
  use.column.interface: true
  maternity.links: localhost:3000
  father_details: false
+ use_portal: false
+ portal_url: http://0.0.0.0:3000
  
 development:
  create_from_remote: no
@@ -54,7 +56,9 @@ development:
  use.column.interface: true
  maternity.links: localhost:3000
  father_details: false
- 
+ use_portal: false
+ portal_url: http://0.0.0.0:3000 
+
 test: &TEST
  create_from_remote: no
  use.user.selected.activities: yes
