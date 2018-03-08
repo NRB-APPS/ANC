@@ -8,6 +8,33 @@
     var selectedSigns = "";
     var values_hash = {};
 
+    function selectNone(){
+    
+    if (__$("chkSelectAll") && __$("lblSelectAll")){
+
+      __$("lblSelectAll").innerHTML = "None";
+
+      __$("chkSelectAll").onclick = function(){
+        if ( __$("chkSelectAll").src.match(/unticked/))
+        __$("chkSelectAll").src = __$("chkSelectAll").src.replace(/unticked/, "ticked");
+        checkAll();
+        __$("touchscreenInput" + tstCurrentPage).setAttribute("optional", "true")
+        setTimeout("gotoNextPage()", 200);
+      }
+      __$("lblSelectAll").onclick = function(){
+
+        if ( __$("chkSelectAll").src.match(/unticked/))
+          __$("chkSelectAll").src = __$("chkSelectAll").src.replace(/unticked/, "ticked");
+        checkAll();
+        __$("touchscreenInput" + tstCurrentPage).setAttribute("optional", "true");
+
+        setTimeout("gotoNextPage()", 200);
+      }
+    }
+
+    setTimeout("selectNone()", 50);
+  }
+
     function calculateBP(pos) {
         var bp;
 
@@ -493,6 +520,8 @@
         abMax = __$(id).value;
         jQuery('#touchscreenInput'+ tstCurrentPage).attr("absoluteMax", abMax);
     }
+
+    setTimeout("selectNone()", 50);
     //-->
 </script>
 
@@ -504,6 +533,10 @@
 
     .inputFrameClass {
         margin-left: 18px;
+    }
+
+    #viewport {
+      height: 100%;
     }
 
 </style>
@@ -701,12 +734,13 @@
     <% options = {
             :helpText => "Diagnosis <span class='helper'> ANC Examination</span>",
             :allowFreeText => 'true',
-            :ajaxURL => "/encounters/anc_diagnoses?include_none=true&search_string=",
             :textCase => "upper",
+            :multiple => true,
+            :selectAll => "selectAll",
             :tt_onLoad => "changeUnknownToNone(); console.log(__$('last_fmf').value)"
     } %>
 
-    <label for='observations[][value_coded_or_text]'>Signs/Symptoms</label>
+    <label for='observations[][value_coded_or_text_multiple]'>Sicccgns/Symptoms</label>
     <%#= text_field_tag("observations[][value_coded_or_text]", nil, options) %>
     <%#= hidden_field_tag("observations[][value_text]", nil) %>
     <%#= hidden_field_tag("observations[][concept_name]", "DIAGNOSIS", options) %>
@@ -736,19 +770,9 @@
         }
     </script>
 
-    <% sup = ["", "st", "nd", "rd", "th", "th", "th"] %>
+   
 
-    <% 5.times do |counter| %>
-        <% options[:condition] = "check != '' && check != 'none' && tstFormElements[#{counter + 3}].value != '' && tstFormElements[#{counter + 3}].value.toLowerCase().trim() != 'none'" if counter > 0 %>
-        <% options[:optional] = 'true' if counter > 0 %>
-        <% counter += 1 %>
-        <% options[:helpText] = (counter > 1 ? "#{counter}<sup>#{sup[counter]}</sup>  <span class='helper'> ANC Examination</span>" : " <span class='helper'> ANC Examination</span>") + "Diagnosis" %>
-        <% options[:position] = "#{counter + 1}" %>
-        <% options[:id] = "sign#{counter}" %>
-
-        <% options[:tt_onLoad] = (counter > 1 ? "__$('Unknown').style.display = 'none'; " : "") + "changeUnknownToNone();" %>
-
-        <%
+        <!-- %
            if (counter) < 5
              options[:tt_onUnLoad] = "check = __$('touchscreenInput' + tstCurrentPage).value.toLowerCase(); selectedSigns += (selectedSigns.length > 0 ? '&' : '') + 'v#{counter}=' + __$('touchscreenInput' + " +
                      "tstCurrentPage).value.replace(/\\s/g, '+'); if(__$('touchscreenInput' + tstCurrentPage).getAttribute('position')){" +
@@ -758,14 +782,23 @@
            else
              options[:tt_onUnLoad] = ""
            end
-        %>
+        % -->
+    <% @diagnosis_concept = [
+            ["Malaria", "Malaria"],
+            ["Anaemia", "Anaemia"], 
+            ["Pre-eclampsia", "Pre-eclampsia"], 
+            ["Vaginal Bleeding", "Vaginal Bleeding"], 
+            ["Early rupture of membranes", "Early rupture of membranes"], 
+            ["Premature Labour", "Premature Labour"],
+            ["Pneumonia", "Pneumonia"], 
+            ["Extensive Warts", "Extensive Warts"]]
+      %>
 
-        <%= text_field_tag("observations[][value_coded_or_text]", nil, options) %>
         <%= hidden_field_tag("observations[][value_text]", nil) %>
         <%= hidden_field_tag("observations[][concept_name]", "DIAGNOSIS", options) %>
+        <%= select_tag("observations[][value_coded_or_text_multiple]", options_for_select(@diagnosis_concept), options) %>
         <%= hidden_field_tag("observations[][patient_id]", @patient.id) %>
         <%= hidden_field_tag("observations[][obs_datetime]", session_date) %>
-    <% end %>
 
     <%= submit_tag 'Finish' %>
 <% end %>

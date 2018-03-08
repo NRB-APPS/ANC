@@ -2,7 +2,7 @@ class EncountersController < ApplicationController
   before_filter :find_patient, :except => [:void, :probe_lmp]
 
   def create
-    
+    #raise params.inspect
     @patient = Patient.find(params[:encounter][:patient_id])
     #raise params[:observations].to_yaml
     if params[:void_encounter_id]
