@@ -307,7 +307,7 @@ function remoteARTStatus(){
                                        ["Malaria", "Malaria Test Result"],
                                        ["Blood Group", "Blood Group Test Result"]], ["", ""]),
                    {
-                       :helpText => "Available Test Results <span class='helper'> Lab Results</span>",
+                       :helpText => "New Test Results Available Today <span class='helper'> Lab Results</span>",
                        :id => "choice",
                        :multiple => true,
                        :optional => :true
@@ -360,7 +360,7 @@ function remoteARTStatus(){
                            }
   %>
 
-  <%= touch_date_tag "HB Test Result Date", @patient, nil,
+  <!-- %= touch_date_tag "HB Test Result Date", @patient, nil,
                      {
                          :id => "enter_date_hb1_result_given",
                          :helptext => "Date HB Test Result Done <span class='helper'> Lab Results</span>",
@@ -370,7 +370,7 @@ function remoteARTStatus(){
                               getSelected().match(/HB/)",
                          :max => "#{session[:datetime].to_date rescue Date.today}"
                      }
-  %>
+  % -->
 
   <%= touch_select_tag "Syphilis Test Result", @patient,
       options_for_select([["", ""],
@@ -386,7 +386,7 @@ function remoteARTStatus(){
                        }
   %>
 
-  <%= touch_date_tag "Syphilis Test Result Date", @patient, nil,
+  <!-- %= touch_date_tag "Syphilis Test Result Date", @patient, nil,
                      {
                          :id => "enter_date_syphilis_result_given",
                          :helptext => "Date Syphilis Test Result Done <span class='helper'> Lab Results</span>",
@@ -396,7 +396,7 @@ function remoteARTStatus(){
                          :condition => "__$('syphilis_result').value != 'Not Done' &&
                             getSelected().match(/Syphilis/)"
                      }
-  %>
+  % -->
 
   <%= touch_select_tag "Malaria Test Result", @patient,
       options_for_select([["", ""],
@@ -412,7 +412,7 @@ function remoteARTStatus(){
                        }
   %>
 
-  <%= touch_date_tag "Date of laboratory test", @patient, nil,
+  <!-- %= touch_date_tag "Date of laboratory test", @patient, nil,
                      {
                          :id => "enter_date_malaria_result_done",
                          :helptext => "Date Malaria Result Done <span class='helper'> Lab Results</span>",
@@ -421,7 +421,7 @@ function remoteARTStatus(){
                          :max => "#{session[:datetime].to_date rescue Date.today}",
                          :condition => "__$('malaria_test_result').value.toLowerCase().trim().match(/tive/i)"
                      }
-  %>
+  % -->
 
     <%= touch_select_tag "BLOOD GROUP", @patient,
           options_for_select([["", ""], ["A+", "A+"], ["A-","A-"],
@@ -434,27 +434,27 @@ function remoteARTStatus(){
            :tt_onUnLoad => "parsedConceptName = ''",
            :condition => "getSelected().match(/Blood\sGroup/)"
           } %>
-    <%= touch_date_tag "Blood Group Test Date", @patient, nil,
+    <!-- %= touch_date_tag "Blood Group Test Date", @patient, nil,
                        {:id => "date_blood_group_test_done",
                         :helptext => "Date Blood Group Test Result Done <span class='helper'> Lab Results</span>",
                         :tt_onUnLoad => "parsedConceptName = '';",
                         :tt_onLoad => " parsedConceptName = 'Blood Group Test Dtae';",
                         :max => "#{session[:datetime].to_date rescue Date.today}",
                         :condition => "__$('blood_group').value !== ''"
-                       } %>
+                       } % -->
 
     <%= select_tag("urine_tests",
         options_for_select([["", ""],
                             ["", ""],
-                            #["Urine Protein Test", "Urine Protein Test"],
+                            ["Urine Protein", "Urine Protein"],
+                            ["Glucose", "Glucose"],
                             #["Urine Bacteria Test", "Urine Bacteria Test"],
                             #["Urine Blood", "Urine Blood"],
                             ["WBC", "WBC"],["RBC", "RBC"],
-                            ["Urobilinogen", "Urobilinogen"],
-                            ["Bilirubin", "Bilirubin"],
-                            ["Nitrate", "Nitrate"],
+                            # ["Urobilinogen", "Urobilinogen"],
+                            # ["Bilirubin", "Bilirubin"],
+                            ["Nitrate", "Nitrate"]
                             #["Ketones", "Ketones"],
-                            ["Glucose", "Glucose"]
                             #,["Leucocytes", "Leucocytes"]
                             #,["Specific Gravity", "Specific Gravity"]
                             ], ["", ""]),
@@ -468,21 +468,37 @@ function remoteARTStatus(){
     <%= touch_select_tag "URINE PROTEIN", @patient,
         options_for_select([["", ""],
                             ["Negative", "Negative"],
-                            ["Trace", "Trace"],
+                            ["(+)", "(+)"],
                             ["+", "+"],
                             ["++", "++"],
                             ["+++", "+++"],
-                            ["++++", "++++"],
-                            ["Not Done", "Not Done"]]),
+                            ["++++", "++++"]]),
                          {
                              :id => "enter_urine_protein",
                              :helptext => "Urine Protein Test Result <span class='helper'> Lab Results</span>",
                              :tt_onLoad => " parsedConceptName = 'Urine Protein Test';",
                              :tt_onUnLoad => "parsedConceptName = '';",
-                             :condition => "getUrineTest().match(/Urine/);"
+                             :condition => "getUrineTest().match(/Urine\sProtein/);"
                          } %>
+    <%= touch_select_tag "Glucose", @patient,
+      options_for_select([["", ""], ['Normal','Normal'],
+                          ['+','+'],['++','++'],
+                          ['+++','+++'],['++++','++++']]),
+                         {
+      :id => "glucose_negative_test",
+      :helptext => "Glucose Test Result (mg/dl) <span class='helper'> Lab Results</span>",
+      :tt_onLoad => " parsedConceptName = 'Glucose';",
+      :tt_onUnLoad => "parsedConceptName = '';if(__$('glucose_negative_test').value == 'Other'){
+            __$('touchscreenInput' + tstCurrentPage).value = '';
+            __$('glucose_negative_test').value = '';
+            glucoseTest = true;
+          }else{
+            glucoseTest = false;
+          };",
+      :condition => "getUrineTest().match(/Glucose/);"
+    } %>
 
-    <%= touch_date_tag "Urine Protein Test Date", @patient, nil,
+    <!-- %= touch_date_tag "Urine Protein Test Date", @patient, nil,
                        {
                            :id => "urine_protein_test_date",
                            :helptext => "Date Urine Protein Test Result Done <span class='helper'> Lab Results</span>",
@@ -490,7 +506,7 @@ function remoteARTStatus(){
                            :tt_onLoad => " parsedConceptName = 'Urine Protein Test Date';initializeDate();",
                            :condition => "getUrineTest().match(/Urine/);",
                            :max => "#{session[:datetime].to_date rescue Date.today}"
-                       } %>
+                       } % -->
 
     <%= touch_select_tag "Urine Blood", @patient,
         options_for_select([["", ""],
@@ -508,7 +524,7 @@ function remoteARTStatus(){
                              :condition => "getUrineTest().match(/Urine\sBlood/);"
                          } %>
 
-    <%= touch_date_tag "Urine Blood Test Date", @patient, nil,
+    <!-- %= touch_date_tag "Urine Blood Test Date", @patient, nil,
                        {
                            :id => "urine_blood_test_date",
                            :helptext => "Date Urine Blood Test Result Done <span class='helper'> Lab Results</span>",
@@ -516,7 +532,7 @@ function remoteARTStatus(){
                            :tt_onLoad => " parsedConceptName = 'Urine Blood Test Date';initializeDate();",
                            :condition => "getUrineTest().match(/Urine\sBlood/);",
                            :max => "#{session[:datetime].to_date rescue Date.today}"
-                       } %>
+                       } % -->
 
     <%= touch_text_field_tag "WBC", @patient, nil,
         {:id => "white_blood_cells",
@@ -531,7 +547,7 @@ function remoteARTStatus(){
          :units => 'cmm',
          :tt_pageStyleClass => "Numeric NumbersOnlyWithDecimal"} %>
 
-    <%= touch_date_tag "WBC Test Date", @patient, nil,
+    <!-- %= touch_date_tag "WBC Test Date", @patient, nil,
                        {
                            :id => "urine_wbc_test_date",
                            :helptext => "Date White Blood Cells Test Date <span class='helper'> Lab Results</span>",
@@ -539,7 +555,7 @@ function remoteARTStatus(){
                            :tt_onLoad => " parsedConceptName = 'White Blood Cells Test Date';initializeDate();",
                            :condition => "getUrineTest().match(/WBC/);",
                            :max => "#{session[:datetime].to_date rescue Date.today}"
-                       } %>
+                       } % -->
 
     <%= touch_text_field_tag "RBC", @patient, nil,
                              {
@@ -556,7 +572,7 @@ function remoteARTStatus(){
                                  :tt_pageStyleClass => "Numeric NumbersOnlyWithDecimal"
                              } %>
 
-    <%= touch_date_tag "RBC Test Date", @patient, nil,
+    <!-- %= touch_date_tag "RBC Test Date", @patient, nil,
                        {
                            :id => "urine_rbc_test_date",
                            :helptext => "Date Red Blood Cells Test Date <span class='helper'> Lab Results</span>",
@@ -564,7 +580,7 @@ function remoteARTStatus(){
                            :tt_onLoad => " parsedConceptName = 'Red Blood Cells Test Date';initializeDate();",
                            :condition => "getUrineTest().match(/RBC/);",
                            :max => "#{session[:datetime].to_date rescue Date.today}"
-                       } %>
+                       } % -->
 
     <%= touch_text_field_tag "Urobilinogen", @patient, nil,
                              {:id => "Urobilinogen",
@@ -579,7 +595,7 @@ function remoteARTStatus(){
                               :units => 'mg/dl',
                               :tt_pageStyleClass => "Numeric NumbersOnlyWithDecimal"} %>
 
-    <%= touch_date_tag "Urobilinogen Test Date", @patient, nil,
+    <!-- %= touch_date_tag "Urobilinogen Test Date", @patient, nil,
                        {
                            :id => "urobilinogen test Date",
                            :helptext => "Date Urobilinogen Test Result Done <span class='helper'> Lab Results</span>",
@@ -587,7 +603,7 @@ function remoteARTStatus(){
                            :tt_onLoad => " parsedConceptName = 'Urobilinogen Test Date';initializeDate();",
                            :condition => "getUrineTest().match(/Urobilinogen/);",
                            :max => "#{session[:datetime].to_date rescue Date.today}"
-                       } %>
+                       } % -->
 
     <%= touch_select_tag "Bilirubin", @patient,
         options_for_select([["", ""],
@@ -602,7 +618,7 @@ function remoteARTStatus(){
                              :condition => "getUrineTest().match(/Bilirubin/);"
                          } %>
 
-    <%= touch_date_tag "Bilirubin Test Date", @patient, nil,
+    <!-- %= touch_date_tag "Bilirubin Test Date", @patient, nil,
                        {
                            :id => "bilirubin_test_date",
                            :helptext => "Date Bilirubin Test Result Done <span class='helper'> Lab Results</span>",
@@ -610,7 +626,7 @@ function remoteARTStatus(){
                            :tt_onLoad => " parsedConceptName = 'Bilirubin Test Date';initializeDate();",
                            :condition => "getUrineTest().match(/Bilirubin/);",
                            :max => "#{session[:datetime].to_date rescue Date.today}"
-                       } %>
+                       } % -->
 
     <%= touch_select_tag "Urine Nitrate Test", @patient,
         options_for_select([["", ""],
@@ -625,7 +641,7 @@ function remoteARTStatus(){
                              :condition => "getUrineTest().match(/Nitrate/);"
                          } %>
 
-    <%= touch_date_tag "Urine Nitrate Test Date", @patient, nil,
+    <!-- %= touch_date_tag "Urine Nitrate Test Date", @patient, nil,
                        {
                            :id => "nitrate_test_date",
                            :helptext => "Date Urine Nitrate Test Result Done <span class='helper'> Lab Results</span>",
@@ -633,7 +649,7 @@ function remoteARTStatus(){
                            :tt_onLoad => " parsedConceptName = 'Urine Nitrate Test Date';initializeDate();",
                            :condition => "getUrineTest().match(/Nitrate/);",
                            :max => "#{session[:datetime].to_date rescue Date.today}"
-                       } %>
+                       } % -->
 
     <%= touch_select_tag "Urine Ketones", @patient,
                          options_for_select([["", ""],
@@ -648,7 +664,7 @@ function remoteARTStatus(){
                              :condition => "getUrineTest().match(/Ketones/);"
                          } %>
 
-    <%= touch_date_tag "Urine Ketones Test Date", @patient, nil,
+    <!-- %= touch_date_tag "Urine Ketones Test Date", @patient, nil,
                        {
                            :id => "ketone_test_date",
                            :helptext => "Date Urine Kitone Test Result Done <span class='helper'> Lab Results</span>",
@@ -656,27 +672,9 @@ function remoteARTStatus(){
                            :tt_onLoad => " parsedConceptName = 'Urine Ketones Test Date';initializeDate();",
                            :condition => "getUrineTest().match(/Ketones/);",
                            :max => "#{session[:datetime].to_date rescue Date.today}"
-                       } %>
+                       } % -->
 
-    <%= touch_select_tag "Glucose", @patient,
-                         options_for_select([["", ""],
-                                             ['Negative','Negative'],
-                                             ['Other','Other']]),
-                         {
-                             :id => "glucose_negative_test",
-                             :helptext => "Glucose Test Result (mg/dl) <span class='helper'> Lab Results</span>",
-                             :tt_onLoad => " parsedConceptName = 'Glucose';",
-                             :tt_onUnLoad => "parsedConceptName = '';if(__$('glucose_negative_test').value == 'Other'){
-                                __$('touchscreenInput' + tstCurrentPage).value = '';
-                                __$('glucose_negative_test').value = '';
-                                glucoseTest = true;
-                              }else{
-                                glucoseTest = false;
-                              };",
-                             :condition => "getUrineTest().match(/Glucose/);"
-                         } %>
-
-    <%= touch_text_field_tag "Glucose", @patient, nil,
+    <!-- %= touch_text_field_tag "Glucose", @patient, nil,
                              {:id => "glucose_negative_test",
                               :field_type => 'number',
                               :helptext =>"Glucose Test Result (mg/dl) <span class='helper'> Lab Results</span>",
@@ -686,9 +684,9 @@ function remoteARTStatus(){
                               :max => 1000000,
                               :condition => "getUrineTest().match(/Glucose/) && glucoseTest == true;",
                               :tt_onUnLoad => "parsedConceptName = '';",
-                              :tt_pageStyleClass => "Numeric NumbersOnlyWithDecimal"} %>
+                              :tt_pageStyleClass => "Numeric NumbersOnlyWithDecimal"} % -->
 
-    <%= touch_date_tag "Glucose Test Date", @patient, nil,
+    <!-- %= touch_date_tag "Glucose Test Date", @patient, nil,
                        {
                            :id => "glucose_test_date",
                            :helptext => "Date Glucose Test Result Done <span class='helper'> Lab Results</span>",
@@ -696,7 +694,7 @@ function remoteARTStatus(){
                            :tt_onLoad => " parsedConceptName = 'Glucose Test Date';initializeDate();",
                            :condition => "getUrineTest().match(/Glucose/);",
                            :max => "#{session[:datetime].to_date rescue Date.today}"
-                       } %>
+                       } % -->
 
     <%= touch_select_tag "Leucocytes Test", @patient,
         options_for_select([["", ""],
@@ -728,7 +726,7 @@ function remoteARTStatus(){
                               :tt_onUnLoad => "parsedConceptName = '';",
                               :tt_pageStyleClass => "Numeric NumbersOnlyWithDecimal"} %>
 
-    <%= touch_date_tag "Leucocytes Test Date", @patient, nil,
+    <!-- %= touch_date_tag "Leucocytes Test Date", @patient, nil,
                        {
                            :id => "urine_protein_test_date",
                            :helptext => "Date Leucocytes Test Result Done <span class='helper'> Lab Results</span>",
@@ -736,7 +734,7 @@ function remoteARTStatus(){
                            :tt_onLoad => " parsedConceptName = 'Leucocytes Test Date';initializeDate();",
                            :condition => "getUrineTest().match(/Leucocytes/);",
                            :max => "#{session[:datetime].to_date rescue Date.today}"
-                       } %>
+                       } % -->
 
     <%= touch_text_field_tag "Specific Gravity", @patient, nil,
                              {:id => "specific_gravity",
@@ -752,7 +750,7 @@ function remoteARTStatus(){
                               :validationMessage => "You must enter a valid decimal number",
                               :tt_pageStyleClass => "Numeric NumbersOnlyWithDecimal"} %>
 
-    <%= touch_date_tag "Specific Gravity Test Date", @patient, nil,
+    <!-- %= touch_date_tag "Specific Gravity Test Date", @patient, nil,
                        {
                            :id => "specific_gravity_test_date",
                            :helptext => "Date Specific Gravity Test Result Done <span class='helper'> Lab Results</span>",
@@ -760,7 +758,7 @@ function remoteARTStatus(){
                            :tt_onLoad => " parsedConceptName = 'Specific Gravity Test Date';initializeDate();",
                            :condition => "getUrineTest().match(/Specific\sGravity/);",
                            :max => "#{session[:datetime].to_date rescue Date.today}"
-                       } %>
+                       } % -->
 
 
   <%#= touch_select_tag "WHO Stage", @patient, options_for_select([["", ""], ["1", "1"],

@@ -699,7 +699,7 @@
 
     <%# This options hash allows us to define our options in one place %>
     <% options = {
-            :helpText => "Signs/Symptoms <span class='helper'> ANC Examination</span>",
+            :helpText => "Diagnosis <span class='helper'> ANC Examination</span>",
             :allowFreeText => 'true',
             :ajaxURL => "/encounters/anc_diagnoses?include_none=true&search_string=",
             :textCase => "upper",
@@ -742,7 +742,7 @@
         <% options[:condition] = "check != '' && check != 'none' && tstFormElements[#{counter + 3}].value != '' && tstFormElements[#{counter + 3}].value.toLowerCase().trim() != 'none'" if counter > 0 %>
         <% options[:optional] = 'true' if counter > 0 %>
         <% counter += 1 %>
-        <% options[:helpText] = (counter > 1 ? "#{counter}<sup>#{sup[counter]}</sup>  <span class='helper'> ANC Examination</span>" : " <span class='helper'> ANC Examination</span>") + "Danger Sign/Symptom" %>
+        <% options[:helpText] = (counter > 1 ? "#{counter}<sup>#{sup[counter]}</sup>  <span class='helper'> ANC Examination</span>" : " <span class='helper'> ANC Examination</span>") + "Diagnosis" %>
         <% options[:position] = "#{counter + 1}" %>
         <% options[:id] = "sign#{counter}" %>
 
