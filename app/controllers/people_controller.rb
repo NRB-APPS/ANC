@@ -477,7 +477,7 @@ class PeopleController < GenericPeopleController
     found_person = nil
 		if !params[:identifier].blank?
       params[:identifier] = params[:identifier].strip
-			local_results = DDE2Service.search_all_by_identifier(params[:identifier])
+			local_results = DDE2Service.search_all_by_identifier(params[:identifier]) rescue []
 
 			if local_results.length > 1
 				redirect_to :action => 'conflicts' ,:identifier => params['identifier']
