@@ -278,7 +278,7 @@ class PeopleController < GenericPeopleController
     end
     #raise params[:person][:patient].inspect
     if params[:person][:patient] && success
-      if params[:person][:gender] == 'F' 
+      if params[:person][:gender] == 'F' || params[:person][:gender].downcase == 'female'
         if params[:encounter]
           encounter = Encounter.new(params[:encounter])
   	   		encounter.patient_id = person.id
