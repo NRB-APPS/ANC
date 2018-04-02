@@ -278,7 +278,7 @@ class PeopleController < GenericPeopleController
     end
     #raise params[:person][:patient].inspect
     if params[:person][:patient] && success
-      if params[:person][:gender] == 'F' 
+      if params[:person][:gender] == 'F' || params[:person][:gender].downcase == 'female'
         if params[:encounter]
           encounter = Encounter.new(params[:encounter])
   	   		encounter.patient_id = person.id
@@ -476,47 +476,44 @@ class PeopleController < GenericPeopleController
 
     found_person = nil
 		if !params[:identifier].blank?
-      params[:identifier] = params[:identifier].strip
-			local_results = DDE2Service.search_all_by_identifier(params[:identifier]) rescue []
 
-			if local_results.length > 1
-				redirect_to :action => 'conflicts' ,:identifier => params['identifier']
+      local_results = PatientService.search_by_identifier(params[:identifier])
+      if local_results.length > 1
+        redirect_to :action => 'duplicates' ,:search_params => params
         return
-			elsif local_results.length <= 1
+        #@people = PatientService.person_search(params)
+      elsif local_results.length == 1
 
-				if create_from_dde_server
-          p = DDE2Service.search_by_identifier(params[:identifier])
+        if create_from_dde_server
 
+          dde_server = CoreService.get_global_property_value("dde_server_ip") rescue ""
+          dde_server_username = CoreService.get_global_property_value("dde_server_username") rescue ""
+          dde_server_password = CoreService.get_global_property_value("dde_server_password") rescue ""
+          uri = "http://#{dde_server_username}:#{dde_server_password}@#{dde_server}/people/find.json"
+          uri += "?value=#{params[:identifier]}"
+          output = RestClient.get(uri)
+          p = JSON.parse(output)
           if p.count > 1
-            redirect_to :action => 'conflicts' ,:identifier => params['identifier']
-						return
-					elsif (p.present? && p.length == 1) && local_results.length == 1
-						DDE2Service.update_local_from_dde2(p.first, local_results.first) if local_results.first.class != Hash
-          elsif (p.blank? || p.count == 0) && local_results.count == 1
-            patient_bean = PatientService.get_patient(local_results.first)
-            DDE2Service.push_to_dde2(patient_bean)
+            redirect_to :action => 'duplicates' ,:search_params => params
+            return
           end
-				end
+        end
 
-				found_person = local_results.first
+        found_person = local_results.first
+        
         # if (found_person.gender rescue "") == "M"
         #   redirect_to "/clinic/no_males" and return
         # end
+      
+      else
+        # TODO - figure out how to write a test for this
+        # This is sloppy - creating something as the result of a GET
+        if create_from_remote        
+          found_person_ = ANCService.search_by_identifier(params[:identifier]).first rescue nil
 
-				session_date = session[:datetime].to_date rescue Date.today
-			  if (((session_date.to_date - found_person.birthdate.to_date)/356 < 13) rescue false)
-					redirect_to "/clinic/no_minors" and return
-				end 
-
-			else
-				# TODO - figure out how to write a test for this
-				# This is sloppy - creating something as the result of a GET
-				if create_from_remote        
-					found_person_ = ANCService.search_by_identifier(params[:identifier]).first rescue nil
-
-					#found_person = ANCService.create_from_form(found_person_data['person']) unless found_person_data.nil?
-				end 
-			end
+          #found_person = ANCService.create_from_form(found_person_data['person']) unless found_person_data.nil?
+        end 
+      end
 
       found_person = local_results.first if !found_person.blank?
       gender = found_person.gender rescue nil
