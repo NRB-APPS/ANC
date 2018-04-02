@@ -1679,6 +1679,7 @@ module ANCService
     create_from_dde_server = CoreService.get_global_property_value('create.from.dde.server').to_s == "true" rescue false
     create_from_remote = CoreService.get_global_property_value('create.from.remote').to_s == "true" rescue false
 
+
     if create_from_dde_server
       dde_server = GlobalProperty.find_by_property("dde_server_ip").property_value rescue ""
       dde_server_username = GlobalProperty.find_by_property("dde_server_username").property_value rescue ""
