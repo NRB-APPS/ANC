@@ -416,6 +416,7 @@ module PatientService
     #raise known_demographics.to_yaml
 
     #Format params for BART
+    received_params = received_params.with_indifferent_access
     new_params = received_params[:person]
     known_demographics = Hash.new()
     new_params['gender'] == 'F' ? new_params['gender'] = "Female" : new_params['gender'] = "Male"
@@ -458,6 +459,10 @@ module PatientService
          }
     }
 
+    unless new_params[:patient]["identifiers"]["National id"].blank?
+      known_demographics["patient"]["identifiers"] = {"National id" => new_params["patient"]["identifiers"]["National id"]}
+    end
+
     servers = CoreService.get_global_property_value("remote_servers.parent").split(/,/) rescue nil
     server_address_and_port = servers.to_s.split(':')
     server_address = server_address_and_port.first
@@ -470,7 +475,7 @@ module PatientService
     else
       uri = "http://#{login.first}:#{password.first}@#{server_address}:#{server_port}/patient/create_remote"
     end
-		#raise uri.to_yaml
+    
     output = RestClient.post(uri,known_demographics)
 
     results = []

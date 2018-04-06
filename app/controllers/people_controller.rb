@@ -475,6 +475,7 @@ class PeopleController < GenericPeopleController
 
     found_person = nil
 		if !params[:identifier].blank?
+      #debugger
 
       local_results = PatientService.search_by_identifier(params[:identifier])
 
@@ -497,6 +498,59 @@ class PeopleController < GenericPeopleController
             redirect_to :action => 'duplicates' ,:search_params => params
             return
           end
+        elsif create_from_remote
+
+          known_demographics = {:person => {:patient => { :identifiers => {"National id" => params[:identifier] }}}}
+
+          @remote_servers = CoreService.get_global_property_value("remote_servers.parent")
+
+          @remote_server_address_and_port = @remote_servers.to_s.split(':')
+
+          @remote_server_address = @remote_server_address_and_port.first
+          @remote_server_port = @remote_server_address_and_port.second
+
+          @remote_login = CoreService.get_global_property_value("remote_bart.username").split(/,/) rescue ""
+          @remote_password = CoreService.get_global_property_value("remote_bart.password").split(/,/) rescue ""
+          @remote_location = CoreService.get_global_property_value("remote_bart.location").split(/,/) rescue nil
+          @remote_machine = CoreService.get_global_property_value("remote_machine.account_name").split(/,/) rescue ''
+
+          uri = "http://#{@remote_server_address}:#{@remote_server_port}/people/remote_demographics"
+
+          p = JSON.parse(RestClient.post(uri, known_demographics)).first # rescue nil
+          remote_person = {} 
+          remote_person = p.second
+
+          local_person = PatientService.demographics(local_results[0])["person"]
+          
+          local_person.delete("patient")
+          local_person.delete("attributes")
+          local_person.delete("date_changed")
+          local_person["home_district"] = local_person["addresses"]["address2"]
+          local_person.delete("addresses")
+
+          remote_person.delete("patient")
+          remote_person.delete("attributes")
+          remote_person.delete("date_changed")
+          remote_person["home_district"] = remote_person["addresses"]["address2"]
+          remote_person.delete("addresses")
+          remote_person.delete("birthdate")
+          remote_person["names"].delete("middle_name")
+          
+          if remote_person == local_person
+            raise "No duplicates"
+          else
+            # p = JSON.parse(RestClient.post(uri, known_demographics)).first # rescue nil
+            # p.second["occupation"] = p.second["attributes"]["occupation"]
+            # p.second["cell_phone_number"] = p.second["attributes"]["cell_phone_number"]
+            # p.second["home_phone_number"] =  p.second["attributes"]["home_phone_number"]
+            # p.second["office_phone_number"] = p.second["attributes"]["office_phone_number"]
+            # p.second.delete("attributes")
+            # ANCService.create_from_form(p.second)
+            PatientService.create_remote_person(PatientService.demographics(local_results[0]))
+            redirect_to :action => 'duplicates', :search_params => params
+            return
+          end
+
         end
 
         found_person = local_results.first
@@ -635,6 +689,8 @@ class PeopleController < GenericPeopleController
       PatientService.search_from_dde_by_identifier(params[:search_params][:identifier]).each do |person|
         @remote_duplicates << PatientService.get_dde_person(person)
       end
+    elsif create_from_remote
+      
     end
 
     @selected_identifier = params[:search_params][:identifier]
@@ -683,6 +739,11 @@ class PeopleController < GenericPeopleController
       npid.identifier_type = PatientIdentifierType.find_by_name('National ID').id
       npid.identifier = new_npid
       npid.save
+    elsif create_from_remote
+      passed_params = PatientService.demographics(patient.person)
+      uri = "http://#{@remote_server_address}:#{@remote_server_port}/people/reassign_remote_identifier"
+      person = JSON.parse(RestClient.post(uri, passed_params)) # rescue nil
+      raise person.inspect
     else
       PatientIdentifierType.find_by_name('National ID').next_identifier({:patient => patient})
     end
