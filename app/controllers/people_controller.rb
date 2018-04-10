@@ -539,13 +539,13 @@ class PeopleController < GenericPeopleController
           if remote_person == local_person
             raise "No duplicates"
           else
-            # p = JSON.parse(RestClient.post(uri, known_demographics)).first # rescue nil
-            # p.second["occupation"] = p.second["attributes"]["occupation"]
-            # p.second["cell_phone_number"] = p.second["attributes"]["cell_phone_number"]
-            # p.second["home_phone_number"] =  p.second["attributes"]["home_phone_number"]
-            # p.second["office_phone_number"] = p.second["attributes"]["office_phone_number"]
-            # p.second.delete("attributes")
-            # ANCService.create_from_form(p.second)
+            p = JSON.parse(RestClient.post(uri, known_demographics)).first # rescue nil
+            p.second["occupation"] = p.second["attributes"]["occupation"]
+            p.second["cell_phone_number"] = p.second["attributes"]["cell_phone_number"]
+            p.second["home_phone_number"] =  p.second["attributes"]["home_phone_number"]
+            p.second["office_phone_number"] = p.second["attributes"]["office_phone_number"]
+            p.second.delete("attributes")
+            ANCService.create_from_form(p.second)
             PatientService.create_remote_person(PatientService.demographics(local_results[0]))
             redirect_to :action => 'duplicates', :search_params => params
             return
@@ -689,8 +689,6 @@ class PeopleController < GenericPeopleController
       PatientService.search_from_dde_by_identifier(params[:search_params][:identifier]).each do |person|
         @remote_duplicates << PatientService.get_dde_person(person)
       end
-    elsif create_from_remote
-      
     end
 
     @selected_identifier = params[:search_params][:identifier]
@@ -741,9 +739,15 @@ class PeopleController < GenericPeopleController
       npid.save
     elsif create_from_remote
       passed_params = PatientService.demographics(patient.person)
+      raise params.inspect
       uri = "http://#{@remote_server_address}:#{@remote_server_port}/people/reassign_remote_identifier"
       person = JSON.parse(RestClient.post(uri, passed_params)) # rescue nil
-      raise person.inspect
+      # new_npid = PatientService.create_from_dde_server_only(passed_params)
+      # npid = PatientIdentifier.new()
+      # npid.patient_id = patient.id
+      # npid.identifier_type = PatientIdentifierType.find_by_name('National ID').id
+      # npid.identifier = new_npid
+      # npid.save
     else
       PatientIdentifierType.find_by_name('National ID').next_identifier({:patient => patient})
     end
