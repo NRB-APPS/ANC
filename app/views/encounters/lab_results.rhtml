@@ -346,7 +346,7 @@ function remoteARTStatus(){
         :id => "choice",
         :multiple => true,
         :optional => :true,
-        :condition => "__$('prev_hiv_test_results').value == 'Positive' || !checkHIVTestDate();"
+        :condition => "__$('previous_hiv_test').value == 'Yes' && (__$('prev_hiv_test_results').value == 'Positive' || !checkHIVTestDate());"
       })
     %>
 
@@ -361,7 +361,7 @@ function remoteARTStatus(){
         :id => "choice1",
         :multiple => true,
         :optional => :true,
-        :condition => "__$('prev_hiv_test_results').value == 'Negative' && checkHIVTestDate();"
+        :condition => "__$('previous_hiv_test').value == 'No' || (__$('prev_hiv_test_results').value == 'Negative' && checkHIVTestDate());"
       })
     %>
 
@@ -413,6 +413,11 @@ function remoteARTStatus(){
         :condition => "getSelected().match(/HIV/)"
       }
   %>
+
+  <!-- %= hidden_field_tag "HIV test date", "#{session[:datetime].to_date rescue Date.today}"
+    {
+      :condition => "__$('new_test_result_at_current_facility').value != "" || __$('new_test_result_at_current_facility').value != 'Not Done'"
+    } % -->
 
   <!-- %= touch_date_tag "HIV test date", @patient, nil,
                      {

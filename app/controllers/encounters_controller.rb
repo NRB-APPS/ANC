@@ -205,7 +205,28 @@ class EncountersController < ApplicationController
                     AND e.patient_id = #{params[:patient_id]}
                     AND e.encounter_datetime < '#{d.strftime('%Y-%m-%d 23:59:59')}'
                     ORDER BY e.encounter_datetime DESC LIMIT 1").first.encounter_id rescue []
-   
+
+    # Automate the appointment date
+    if (@weeks > 0)
+      periods = [22,30,36]
+      @actual_array = []
+      periods.each do |p|
+        @actual_array << p if p > @weeks
+      end
+      #@actual_array = periods.collect{|p| p if p > @weeks}
+      #raise @actual_array.inspect
+      @days = @actual_array[0] * 7
+
+      if(@pregnancystart.blank?)
+        lmp_value = (session[:datetime] ? session[:datetime].to_date : Date.today).strftime("%Y-%m-%d")
+        @appointmentDate = lmp_value.to_date
+      else
+        @appointmentDate = @pregnancystart.to_date
+      end
+
+      @appointmentDate = (@appointmentDate + @days).strftime("%Y-%m-%d")
+    end
+       
     if ! @last_vitals.blank?
       @first = "false"
       @vital = {}
