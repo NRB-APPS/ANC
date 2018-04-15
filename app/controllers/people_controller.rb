@@ -737,11 +737,24 @@ class PeopleController < GenericPeopleController
       npid.identifier_type = PatientIdentifierType.find_by_name('National ID').id
       npid.identifier = new_npid
       npid.save
-    elsif create_from_remote
-      passed_params = PatientService.demographics(patient.person)
-      raise params.inspect
-      uri = "http://#{@remote_server_address}:#{@remote_server_port}/people/reassign_remote_identifier"
-      person = JSON.parse(RestClient.post(uri, passed_params)) # rescue nil
+    # elsif create_from_remote
+    #   passed_params = PatientService.demographics(patient.person)
+
+    #   @remote_servers = CoreService.get_global_property_value("remote_servers.parent")
+
+    #   @remote_server_address_and_port = @remote_servers.to_s.split(':')
+
+    #   @remote_server_address = @remote_server_address_and_port.first
+    #   @remote_server_port = @remote_server_address_and_port.second
+
+    #   @remote_login = CoreService.get_global_property_value("remote_bart.username").split(/,/) rescue ""
+    #   @remote_password = CoreService.get_global_property_value("remote_bart.password").split(/,/) rescue ""
+    #   @remote_location = CoreService.get_global_property_value("remote_bart.location").split(/,/) rescue nil
+    #   @remote_machine = CoreService.get_global_property_value("remote_machine.account_name").split(/,/) rescue ''
+
+    #   uri = "http://#{@remote_server_address}:#{@remote_server_port}/people/reassign_npid_from_remote"
+    #   person = JSON.parse(RestClient.post(uri, passed_params)) # rescue nil
+    #   raise uri.inspect
       # new_npid = PatientService.create_from_dde_server_only(passed_params)
       # npid = PatientIdentifier.new()
       # npid.patient_id = patient.id
