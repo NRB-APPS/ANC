@@ -110,127 +110,129 @@ class ReportsController < ApplicationController
   end
 
   def report
-
-    @parameters = params
-    session_date = (session[:datetime].to_date rescue Date.today)
-    @facility = Location.current_health_center.name rescue ''
-
-    @start_date = nil
-    @end_date = nil
-    @start_age = params[:startAge]
-    @end_age = params[:endAge]
-
-
-    if params[:selSelect].blank?  && params[:selMonth]
-      params[:selSelect] = "month"
-      params[:selType] = "cohort"
-    elsif params[:selType] == "cohort"
+    if params[:type] == "anc_monthly"
+      redirect_to :action => "monthly_report", :year => params[:selYear], :month => params[:selMonth]
     else
-      params[:selType] = "monthly"
-    end
-    @type = params[:selType]
+      @parameters = params
+      session_date = (session[:datetime].to_date rescue Date.today)
+      @facility = Location.current_health_center.name rescue ''
 
-    case params[:selSelect]
-    when "day"
-      @start_date = params[:day]
-      @end_date = params[:day]
-    when "week"
-      @start_date = (("#{params[:selYear]}-01-01".to_date) + (params[:selWeek].to_i * 7)) -
-      ("#{params[:selYear]}-01-01".to_date.strftime("%w").to_i)
-      @end_date = (("#{params[:selYear]}-01-01".to_date) + (params[:selWeek].to_i * 7)) +
-      6 - ("#{params[:selYear]}-01-01".to_date.strftime("%w").to_i)
-    when "month"
-      @start_date = ("#{params[:selYear]}-#{params[:selMonth]}-01").to_date.strftime("%Y-%m-%d")
-      @end_date = ("#{params[:selYear]}-#{params[:selMonth]}-#{ (params[:selMonth].to_i != 12 ?
-      ("#{params[:selYear]}-#{params[:selMonth].to_i + 1}-01".to_date - 1).strftime("%d") : "31") }").to_date.strftime("%Y-%m-%d")
-    when "year"
-      @start_date = ("#{params[:selYear]}-01-01").to_date.strftime("%Y-%m-%d")
-      @end_date = ("#{params[:selYear]}-12-31").to_date.strftime("%Y-%m-%d")
-    when "quarter"
-      day = params[:selQtr].to_s.match(/^min=(.+)&max=(.+)$/)
-      @start_date = (day ? day[1] : Date.today.strftime("%Y-%m-%d"))
-      @end_date = (day ? day[2] : Date.today.strftime("%Y-%m-%d"))
-    when "range"
-      @start_date = params[:start_date]
-      @end_date = params[:end_date]
-    end
-
-    @start_date = params[:start_date] if !params[:start_date].blank?
-    @end_date = params[:end_date] if !params[:end_date].blank?
-
-    #raise "#{@start_date} : #{@end_date}"
-    if @type == "cohort"
-      session[:report_start_date] = (@start_date.to_date - 6.months).beginning_of_month
-      session[:report_end_date] = (@start_date.to_date - 6.months).end_of_month
-    else
-      session[:report_start_date] = @start_date.to_date
-      session[:report_end_date] = @end_date.to_date
-    end
+      @start_date = nil
+      @end_date = nil
+      @start_age = params[:startAge]
+      @end_age = params[:endAge]
 
 
-    #raise "#{@start_date} #{@end_date} #{@start_age} #{@end_age} #{@type} #{session_date}"
-    report = Reports.new(@start_date, @end_date, @start_age, @end_age, @type, session_date)
+      if params[:selSelect].blank?  && params[:selMonth]
+        params[:selSelect] = "month"
+        params[:selType] = "cohort"
+      elsif params[:selType] == "cohort"
+      else
+        params[:selType] = "monthly"
+      end
+      @type = params[:selType]
 
-    @new_women_registered = report.new_women_registered
+      case params[:selSelect]
+      when "day"
+        @start_date = params[:day]
+        @end_date = params[:day]
+      when "week"
+        @start_date = (("#{params[:selYear]}-01-01".to_date) + (params[:selWeek].to_i * 7)) -
+        ("#{params[:selYear]}-01-01".to_date.strftime("%w").to_i)
+        @end_date = (("#{params[:selYear]}-01-01".to_date) + (params[:selWeek].to_i * 7)) +
+        6 - ("#{params[:selYear]}-01-01".to_date.strftime("%w").to_i)
+      when "month"
+        @start_date = ("#{params[:selYear]}-#{params[:selMonth]}-01").to_date.strftime("%Y-%m-%d")
+        @end_date = ("#{params[:selYear]}-#{params[:selMonth]}-#{ (params[:selMonth].to_i != 12 ?
+        ("#{params[:selYear]}-#{params[:selMonth].to_i + 1}-01".to_date - 1).strftime("%d") : "31") }").to_date.strftime("%Y-%m-%d")
+      when "year"
+        @start_date = ("#{params[:selYear]}-01-01").to_date.strftime("%Y-%m-%d")
+        @end_date = ("#{params[:selYear]}-12-31").to_date.strftime("%Y-%m-%d")
+      when "quarter"
+        day = params[:selQtr].to_s.match(/^min=(.+)&max=(.+)$/)
+        @start_date = (day ? day[1] : Date.today.strftime("%Y-%m-%d"))
+        @end_date = (day ? day[2] : Date.today.strftime("%Y-%m-%d"))
+      when "range"
+        @start_date = params[:start_date]
+        @end_date = params[:end_date]
+      end
 
-    @observations_total = report.observations_total
+      @start_date = params[:start_date] if !params[:start_date].blank?
+      @end_date = params[:end_date] if !params[:end_date].blank?
 
-    @observations_1 = report.observations_1
+      #raise "#{@start_date} : #{@end_date}"
+      if @type == "cohort"
+        session[:report_start_date] = (@start_date.to_date - 6.months).beginning_of_month
+        session[:report_end_date] = (@start_date.to_date - 6.months).end_of_month
+      else
+        session[:report_start_date] = @start_date.to_date
+        session[:report_end_date] = @end_date.to_date
+      end
 
-    @observations_2 = report.observations_2
 
-    @observations_3 = report.observations_3
+      #raise "#{@start_date} #{@end_date} #{@start_age} #{@end_age} #{@type} #{session_date}"
+      report = Reports.new(@start_date, @end_date, @start_age, @end_age, @type, session_date)
 
-    @observations_4 = report.observations_4
+      @new_women_registered = report.new_women_registered
 
-    @observations_5 = report.observations_5
+      @observations_total = report.observations_total
 
-    @week_of_first_visit_1 = report.week_of_first_visit_1
+      @observations_1 = report.observations_1
 
-    @week_of_first_visit_2 = report.week_of_first_visit_2
+      @observations_2 = report.observations_2
 
-    @week_of_first_visit_unknown = @new_women_registered - (@week_of_first_visit_1 + @week_of_first_visit_2)
+      @observations_3 = report.observations_3
 
-    @pre_eclampsia_1 = report.pre_eclampsia_1
+      @observations_4 = report.observations_4
 
-    @pre_eclampsia_no = @observations_total - @pre_eclampsia_1
+      @observations_5 = report.observations_5
 
-    #@pre_eclampsia_2 = report.pre_eclampsia_2
+      @week_of_first_visit_1 = report.week_of_first_visit_1
 
-    @ttv__total_previous_doses_1 = report.ttv__total_previous_doses_2(1)
+      @week_of_first_visit_2 = report.week_of_first_visit_2
 
-    @ttv__total_previous_doses_2 = report.ttv__total_previous_doses_2
+      @week_of_first_visit_unknown = @new_women_registered - (@week_of_first_visit_1 + @week_of_first_visit_2)
 
-    @fansida__sp___number_of_tablets_given_0 = report.fansida__sp___number_of_tablets_given_0.uniq
+      @pre_eclampsia_1 = report.pre_eclampsia_1
 
-    @fansida__sp___number_of_tablets_given_1, @fansida__sp___number_of_tablets_given_6 = report.fansida__sp
+      @pre_eclampsia_no = @observations_total - @pre_eclampsia_1
 
-    @fansida__sp___number_of_tablets_given_2 = @observations_total - (@fansida__sp___number_of_tablets_given_0 + @fansida__sp___number_of_tablets_given_1)
+      #@pre_eclampsia_2 = report.pre_eclampsia_2
 
-    #@fefo__number_of_tablets_given_2 = report.fefo__number_of_tablets_given_2
+      @ttv__total_previous_doses_1 = report.ttv__total_previous_doses_2(1)
 
-    @fefo__number_of_tablets_given_1, @fefo__number_of_tablets_given_2 = report.fefo
-    #@fansida__sp___number_of_tablets_given_more_than_2 = report.fansida__sp___number_of_tablets_given_more_than_2
+      @ttv__total_previous_doses_2 = report.ttv__total_previous_doses_2
 
-    #@fansida__sp___number_of_tablets_given_more_than_2 = @observations_total - (@fansida__sp___number_of_tablets_given_0 + @fansida__sp___number_of_tablets_given_1 + @fansida__sp___number_of_tablets_given_2)
+      @fansida__sp___number_of_tablets_given_0 = report.fansida__sp___number_of_tablets_given_0.uniq
 
-    @fefo__number_of_tablets_given_1 = @observations_total - @fefo__number_of_tablets_given_2 #report.fefo__number_of_tablets_given_1
-    @albendazole_more_than_1 = report.albendazole(">1")
+      @fansida__sp___number_of_tablets_given_1, @fansida__sp___number_of_tablets_given_6 = report.fansida__sp
 
-    @albendazole = report.albendazole(1) + @albendazole_more_than_1
+      @fansida__sp___number_of_tablets_given_2 = @observations_total - (@fansida__sp___number_of_tablets_given_0 + @fansida__sp___number_of_tablets_given_1)
 
-    @albendazole_none = @observations_total - (@albendazole + @albendazole_more_than_1)
+      #@fefo__number_of_tablets_given_2 = report.fefo__number_of_tablets_given_2
 
-    @bed_net = report.bed_net
-    @no_bed_net = @observations_total - report.bed_net
+      @fefo__number_of_tablets_given_1, @fefo__number_of_tablets_given_2 = report.fefo
+      #@fansida__sp___number_of_tablets_given_more_than_2 = report.fansida__sp___number_of_tablets_given_more_than_2
 
-    @syphilis_result_pos = report.syphilis_result_pos.uniq
+      #@fansida__sp___number_of_tablets_given_more_than_2 = @observations_total - (@fansida__sp___number_of_tablets_given_0 + @fansida__sp___number_of_tablets_given_1 + @fansida__sp___number_of_tablets_given_2)
 
-    @syphilis_result_neg = report.syphilis_result_neg.uniq
+      @fefo__number_of_tablets_given_1 = @observations_total - @fefo__number_of_tablets_given_2 #report.fefo__number_of_tablets_given_1
+      @albendazole_more_than_1 = report.albendazole(">1")
 
-    @syphilis_result_neg = @syphilis_result_neg - @syphilis_result_pos
+      @albendazole = report.albendazole(1) + @albendazole_more_than_1
 
-    @syphilis_result_unk = (@observations_total - (@syphilis_result_pos + @syphilis_result_neg).uniq).uniq
+      @albendazole_none = @observations_total - (@albendazole + @albendazole_more_than_1)
+
+      @bed_net = report.bed_net
+      @no_bed_net = @observations_total - report.bed_net
+
+      @syphilis_result_pos = report.syphilis_result_pos.uniq
+
+      @syphilis_result_neg = report.syphilis_result_neg.uniq
+
+      @syphilis_result_neg = @syphilis_result_neg - @syphilis_result_pos
+
+      @syphilis_result_unk = (@observations_total - (@syphilis_result_pos + @syphilis_result_neg).uniq).uniq
 
     #@hiv_test_result_prev_neg = report.hiv_test_result_prev_neg.uniq
 
@@ -265,48 +267,48 @@ class ReportsController < ApplicationController
     #@on_art_28_plus.delete_if{|p| p.blank?}
 
     #>>>>>>>>>>>>>>>>>>>>>>>>NEW ADDITIONS START<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-      @first_visit_hiv_test_result_prev_negative = report.first_visit_hiv_test_result_prev_negative
-      @first_visit_hiv_test_result_prev_positive = report.first_visit_hiv_test_result_prev_positive
-      @first_visit_new_negative = report.first_visit_new_negative
-      @first_visit_new_positive = report.first_visit_new_positive
-      #@first_visit_hiv_not_done = report.first_visit_hiv_not_done
-      @first_visit_hiv_not_done = (@new_women_registered - @first_visit_hiv_test_result_prev_negative -
-          @first_visit_hiv_test_result_prev_positive - @first_visit_new_negative - @first_visit_new_positive)
+        @first_visit_hiv_test_result_prev_negative = report.first_visit_hiv_test_result_prev_negative
+        @first_visit_hiv_test_result_prev_positive = report.first_visit_hiv_test_result_prev_positive
+        @first_visit_new_negative = report.first_visit_new_negative
+        @first_visit_new_positive = report.first_visit_new_positive
+        #@first_visit_hiv_not_done = report.first_visit_hiv_not_done
+        @first_visit_hiv_not_done = (@new_women_registered - @first_visit_hiv_test_result_prev_negative -
+            @first_visit_hiv_test_result_prev_positive - @first_visit_new_negative - @first_visit_new_positive)
 
-      @final_visit_hiv_test_result_prev_negative = report.final_visit_hiv_test_result_prev_negative
-      @final_visit_hiv_test_result_prev_positive = report.final_visit_hiv_test_result_prev_positive
-      @final_visit_new_negative = report.final_visit_new_negative
-      @final_visit_new_positive = report.final_visit_new_positive
-      @final_visit_hiv_not_done = (report.final_visit_hiv_not_done - @final_visit_hiv_test_result_prev_negative -
-          @final_visit_hiv_test_result_prev_positive - @final_visit_new_negative - @final_visit_new_positive)
+        @final_visit_hiv_test_result_prev_negative = report.final_visit_hiv_test_result_prev_negative
+        @final_visit_hiv_test_result_prev_positive = report.final_visit_hiv_test_result_prev_positive
+        @final_visit_new_negative = report.final_visit_new_negative
+        @final_visit_new_positive = report.final_visit_new_positive
+        @final_visit_hiv_not_done = (report.final_visit_hiv_not_done - @final_visit_hiv_test_result_prev_negative -
+            @final_visit_hiv_test_result_prev_positive - @final_visit_new_negative - @final_visit_new_positive)
     #@observations_total - (@first_visit_new_positive +
           #@first_visit_new_negative + @first_visit_hiv_test_result_prev_positive + @first_visit_hiv_test_result_prev_negative)
 
-      @total_first_visit_hiv_positive = (@first_visit_hiv_test_result_prev_positive + @first_visit_new_positive).delete_if{|p| p.blank?}
+        @total_first_visit_hiv_positive = (@first_visit_hiv_test_result_prev_positive + @first_visit_new_positive).delete_if{|p| p.blank?}
 
-      @total_hiv_positive = @total_first_visit_hiv_positive
-      @first_visit_not_on_art = report.first_visit_not_on_art
-      @first_visit_on_art_zero_to_27 = report.first_visit_on_art_zero_to_27
-      @first_visit_on_art_28_plus = report.first_visit_on_art_28_plus
-      @first_visit_on_art_before = report.first_visit_on_art_before
-      @first_visit_not_on_art =  (@total_first_visit_hiv_positive + @first_visit_not_on_art -
-        (@first_visit_on_art_zero_to_27 +  @first_visit_on_art_28_plus + @first_visit_on_art_before)).uniq
+        @total_hiv_positive = @total_first_visit_hiv_positive
+        @first_visit_not_on_art = report.first_visit_not_on_art
+        @first_visit_on_art_zero_to_27 = report.first_visit_on_art_zero_to_27
+        @first_visit_on_art_28_plus = report.first_visit_on_art_28_plus
+        @first_visit_on_art_before = report.first_visit_on_art_before
+        @first_visit_not_on_art =  (@total_first_visit_hiv_positive + @first_visit_not_on_art -
+          (@first_visit_on_art_zero_to_27 +  @first_visit_on_art_28_plus + @first_visit_on_art_before)).uniq
 
-      @total_final_visit_hiv_positive = (@final_visit_hiv_test_result_prev_positive + @final_visit_new_positive).delete_if{|p| p.blank?}
+        @total_final_visit_hiv_positive = (@final_visit_hiv_test_result_prev_positive + @final_visit_new_positive).delete_if{|p| p.blank?}
 
-      @total_final_hiv_positive = @total_final_visit_hiv_positive
-      @final_visit_not_on_art = report.final_visit_not_on_art
-      @final_visit_on_art_zero_to_27 = report.final_visit_on_art_zero_to_27
-      @final_visit_on_art_28_plus = report.final_visit_on_art_28_plus
-      @final_visit_on_art_before = report.final_visit_on_art_before
-      @final_visit_not_on_art = (@total_final_visit_hiv_positive + @final_visit_not_on_art -
-          ( @final_visit_on_art_zero_to_27 + @final_visit_on_art_28_plus + @final_visit_on_art_before)).uniq
+        @total_final_hiv_positive = @total_final_visit_hiv_positive
+        @final_visit_not_on_art = report.final_visit_not_on_art
+        @final_visit_on_art_zero_to_27 = report.final_visit_on_art_zero_to_27
+        @final_visit_on_art_28_plus = report.final_visit_on_art_28_plus
+        @final_visit_on_art_before = report.final_visit_on_art_before
+        @final_visit_not_on_art = (@total_final_visit_hiv_positive + @final_visit_not_on_art -
+            ( @final_visit_on_art_zero_to_27 + @final_visit_on_art_28_plus + @final_visit_on_art_before)).uniq
 
-    #>>>>>>>>>>>>>>>>>>>>>>>>NEW ADDITIONS END<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    @nvp_baby__1 = report.nvp_baby__1
-    @no_nvp_baby__1 = (@total_final_visit_hiv_positive - @nvp_baby__1)
-    @on_cpt__1 = report.on_cpt__1
-    @no_cpt__1 = (@total_final_visit_hiv_positive - @on_cpt__1)
+      #>>>>>>>>>>>>>>>>>>>>>>>>NEW ADDITIONS END<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      @nvp_baby__1 = report.nvp_baby__1
+      @no_nvp_baby__1 = (@total_final_visit_hiv_positive - @nvp_baby__1)
+      @on_cpt__1 = report.on_cpt__1
+      @no_cpt__1 = (@total_final_visit_hiv_positive - @on_cpt__1)
 
     #filter for cohort validation rules
 =begin
@@ -329,7 +331,8 @@ class ReportsController < ApplicationController
       end
     end
 =end
-    render :layout => false
+      render :layout => false
+    end
   end
 
   def report_pdf
@@ -746,6 +749,11 @@ class ReportsController < ApplicationController
         else
           print(file_name, current_printer, start_time) unless start_time < 5.minutes.ago
         end
+      end
+
+      def monthly_report
+        @facility = Location.current_health_center.name rescue ''
+        @start_date = ("#{params[:year]}-#{params[:month]}-01").to_date.strftime("%Y-%m-%d")
       end
 
     end

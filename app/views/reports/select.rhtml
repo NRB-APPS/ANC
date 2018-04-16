@@ -77,7 +77,7 @@
       <input type="text" field_type="date" id="day" name="day" value="" helpText="Select Day:"
              condition="$('selSelect').value == 'day';" />
 
-      <%if params[:type].blank?%>
+      <%if !params[:type].blank?%>
         <input type="hidden" name="type" value= "<%= params[:type] %>"/>
       <%end%>
 

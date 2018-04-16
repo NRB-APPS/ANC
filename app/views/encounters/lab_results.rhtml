@@ -419,18 +419,16 @@ function remoteARTStatus(){
       :condition => "__$('new_test_result_at_current_facility').value != "" || __$('new_test_result_at_current_facility').value != 'Not Done'"
     } % -->
 
-  <!-- %= touch_date_tag "HIV test date", @patient, nil,
-                     {
-                         :id => "enter_date_result_given",
-                         :helptext => "Date Result Done <span class='helper'> Lab Results</span>",
-                         :tt_onUnLoad => "parsedConceptName = '';",
-                         :tt_onLoad => " parsedConceptName = 'HIV Test date';initializeDate();",
-                         :condition => "__$('new_test_result_at_current_facility').value != 'Not Done'
-                              && getSelected().match(/HIV/)",
-                         :tt_BeforeUnload => "checkHIVTestDate()",
-                         :max => "#{session[:datetime].to_date rescue Date.today}"
-                     }
-  % -->
+  <%= touch_date_tag "HIV test date", @patient, "#{session[:datetime].to_date rescue Date.today}",
+    {
+      :id => "enter_date_result_given",
+      :helptext => "Date HIV Test Done <span class='helper'> Lab Results</span>",
+      :tt_onUnLoad => "parsedConceptName = '';",
+      :tt_onLoad => " parsedConceptName = 'HIV Test date';initializeDate(); gotoNextPage();",
+      :condition => "__$('new_test_result_at_current_facility').value != 'Not Done'
+                                && getSelected().match(/HIV/)"
+    }
+  %>
 
 
   <%= touch_text_field_tag "HB Test Result", @patient, nil,

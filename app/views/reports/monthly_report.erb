@@ -1,0 +1,203 @@
+<html>
+  <head>
+    <title>Report</title>
+    <%= stylesheet_link_tag "form" %>
+    <%= stylesheet_link_tag fancy_or_high_contrast_touch %>
+    <link href="/stylesheets/dashboard.css" media="screen" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" language="javascript">
+      <!--
+      tt_cancel_destination = '/reports/select';
+      tt_show = '/clinic';
+
+      cTable = "";
+      tableRows = JSON.parse('<%= @failures.to_json %>');
+
+      function buildConsistencyTable() {
+          cTable = document.getElementById("consistency-section");
+          if (!cTable)
+            return;
+
+          cTable.innerHTML = null;
+
+          var tRows = "";
+          if (tableRows.length < 1) {
+              tRows += "<tr><td class='pass-rows'>The report has passed all external consistency checks</td></tr>";
+          } else {
+              for (var i = 0; i < tableRows.length; i++) {
+                  tRows += "<tr><td class='err-rows err-num'>" + (i + 1) + "</td>";
+                  tRows += "<td class='err-rows'>" + tableRows[i] + "</td></tr>";
+              }
+          }
+          cTable.innerHTML = tRows;
+      }
+
+      //-->
+    </script>
+    <style media="print">
+      button {
+        display: none;
+      }
+      #main {
+        height: 100%;
+      }
+    </style>
+    <style>
+
+        .err-rows {
+            background-color: red;
+            color: white;
+        }
+
+        .pass-rows {
+            background-color: green;
+            color: black;
+            border: 1px solid #000000;
+        }
+
+        .err-num {
+            width: 3%;
+        }
+      #Unknown {display: none;}
+      #num {display: none;}
+      #main {
+        height: 440px;
+      }
+
+      a:link {
+        color: #000;
+        text-decoration: none;
+      }
+
+      a:hover {
+        color: orange !important;
+        text-decoration: underline;
+      }
+
+      a:visited {
+        color: #000;
+        text-decoration: none;
+      }
+      .valueCell {
+        border: 3px solid #000;
+      }
+    </style>
+  </head>
+  <body>
+  <div id="contentt">
+    <div style="background-color: #fff; height: 660px; width: 99%; padding: 5px;">
+      <table style="width: 100%; -moz-user-select: none;">
+        <tr>
+          <th style="font-size: 1.8em; color: #eee; background-color: #999; padding: 10px;">
+            MONTHLY ANTENATAL CLINIC DATA
+          </th>
+        </tr>
+        <tr>
+          <td style="border: 1px solid #999;">
+            <table width="100%" cellspacing="0" cellpadding="5">
+              <tr>
+                <td style="width: 25%;">
+                  Name of Facility
+                </td>
+                <td colspan="3" style="border-left: 1px solid #999;
+                      border-bottom: 1px solid #999; font-style: italic;">
+                  <%= @facility %>&nbsp;
+                </td>
+              </tr>
+              <tr>
+                <td style="width: 25%;">
+                  MONTH OF
+                </td>
+                <td style="border-left: 1px solid #999; border-bottom: 1px solid #999;
+                      font-style: italic;">
+                  <%= @start_date.to_date.strftime("%B") rescue "" %>&nbsp;
+                </td>
+                <td style="width: 25%; border-left: 1px solid #999; border-bottom: 1px solid #999;" align="right">
+                    YEAR
+                </td>
+                <td style="border-left: 1px solid #999; border-bottom: 1px solid #999;
+                      font-style: italic;">
+                  <%= @start_date.to_date.strftime("%Y") rescue "" %>&nbsp;
+                </td>
+              </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              TOTAL NUMBER OF ANTENATAL VISITS
+            </td>
+          </tr>
+          <tr>
+            <td>
+              NEW VISITS
+            </td>
+          </tr>
+          <tr>
+            <td>
+              SUBSEQUENT VISITS
+            </td>
+          </tr>
+          <tr>
+            <td>
+              DISTRIBUTION OF NEW VISITS
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div id="nav">
+        <button class="green" style="width: 140px; float: right; margin: 10px;" onclick="window.location = tt_show">
+          <span>
+            Finish
+          </span>
+        </button>
+
+        <% #@parameters =  @parameters.delete_if{|k, v| k.match(/action|controller/)}.collect{|k, v| k + "=" + v}.join("&")
+         %>
+        <button class="blue" style="width: 140px; float: right; margin: 10px;"  onmousedown="javascript:printPDF();">
+          <span>
+            Print
+          </span>
+        </button>
+
+        <button class="red" style="width: 110px; float: left; margin-top: 10px;" onclick="window.location = tt_show">
+          <span>
+            Cancel
+          </span>
+        </button>
+      </div>
+    </div>
+  <!-- form id="pdf" method="post" action="/reports/report_pdf.pdf" name="pdf_printout" -->
+  </form>
+  </body>
+
+<!-- script>
+    if (tableRows.length > 0){
+        buildConsistencyTable();
+    }
+
+    function printPDF() {
+      var print_pdf_attr = {"end_date":"",
+          "controller":"reports", "day":"",
+          "start_date":"", "selQtr":"",
+          "action":"report",
+          "selMonth":< %= Date::MONTHNAMES.index(@end_date.to_date.strftime('%B')) rescue "" %>,
+          "selSelect":"", "selWeek":"",
+          "selYear":< %= @end_date.to_date.strftime("%Y") rescue "" %>};
+
+      var pdfForm = document.getElementById('pdf')
+      for (name in print_pdf_attr){
+        var input = document.createElement('input');
+        input.setAttribute('type','hidden');
+        input.setAttribute('name',name);
+        input.setAttribute('value', print_pdf_attr[name]);
+        pdfForm.appendChild(input);
+      }
+
+      document.pdf_printout.target = "my_pdf";
+      var w = (window.innerWidth - 80) ; var h = (window.innerHeight - 8);
+      window.open("","my_pdf","width=" + w + ",height=" + h + ",toolbar=0");
+      document.pdf_printout.submit();
+    }
+
+</script -->
+</html>
