@@ -46,9 +46,10 @@ def resolve_duplicates
       puts "#{k.anc_identifier}"
       npid = PatientIdentifier.find(:first, :conditions => ["patient_id = ? AND
       identifier = ? AND voided = 0 AND identifier_type = 3", k.anc_pid,k.anc_identifier])
-      npid.identifier_type = 2
-      npid.save
-      puts "#{k.anc_identifier} has been changed to legacy_id"
+      npid.update_attributes(:identifier_type => 2) unless npid.blank?
+      #npid.save
+      puts "#{k.anc_identifier} has been changed to legacy_id" unless
+      npid.blank?
     else
       puts "True"
     end

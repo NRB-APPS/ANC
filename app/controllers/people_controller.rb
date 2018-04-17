@@ -482,8 +482,16 @@ class PeopleController < GenericPeopleController
       if local_results.length > 1
         redirect_to :action => 'duplicates' ,:search_params => params
         return
-        #@people = PatientService.person_search(params)
       elsif local_results.length == 1
+        ## Check if its a legacy national id
+        pid = local_results[0].person_id
+        id_type = PatientIdentifier.find_by_identifier(params[:identifier]).identifier_type rescue nil
+
+        if !id_type.blank? && id_type == 2
+          ## Flag it to allow user reassign a national ID.
+          redirect_to :action => 'duplicates' ,:search_params => params
+          return
+        end
 
         if create_from_dde_server
 
@@ -498,58 +506,58 @@ class PeopleController < GenericPeopleController
             redirect_to :action => 'duplicates' ,:search_params => params
             return
           end
-        elsif create_from_remote
+        # elsif create_from_remote
 
-          known_demographics = {:person => {:patient => { :identifiers => {"National id" => params[:identifier] }}}}
+          # known_demographics = {:person => {:patient => { :identifiers => {"National id" => params[:identifier] }}}}
 
-          @remote_servers = CoreService.get_global_property_value("remote_servers.parent")
+          # @remote_servers = CoreService.get_global_property_value("remote_servers.parent")
 
-          @remote_server_address_and_port = @remote_servers.to_s.split(':')
+          # @remote_server_address_and_port = @remote_servers.to_s.split(':')
 
-          @remote_server_address = @remote_server_address_and_port.first
-          @remote_server_port = @remote_server_address_and_port.second
+          # @remote_server_address = @remote_server_address_and_port.first
+          # @remote_server_port = @remote_server_address_and_port.second
 
-          @remote_login = CoreService.get_global_property_value("remote_bart.username").split(/,/) rescue ""
-          @remote_password = CoreService.get_global_property_value("remote_bart.password").split(/,/) rescue ""
-          @remote_location = CoreService.get_global_property_value("remote_bart.location").split(/,/) rescue nil
-          @remote_machine = CoreService.get_global_property_value("remote_machine.account_name").split(/,/) rescue ''
+          # @remote_login = CoreService.get_global_property_value("remote_bart.username").split(/,/) rescue ""
+          # @remote_password = CoreService.get_global_property_value("remote_bart.password").split(/,/) rescue ""
+          # @remote_location = CoreService.get_global_property_value("remote_bart.location").split(/,/) rescue nil
+          # @remote_machine = CoreService.get_global_property_value("remote_machine.account_name").split(/,/) rescue ''
 
-          uri = "http://#{@remote_server_address}:#{@remote_server_port}/people/remote_demographics"
+          # uri = "http://#{@remote_server_address}:#{@remote_server_port}/people/remote_demographics"
 
-          p = JSON.parse(RestClient.post(uri, known_demographics)).first # rescue nil
-          remote_person = {} 
-          remote_person = p.second
+          # p = JSON.parse(RestClient.post(uri, known_demographics)).first # rescue nil
+          # remote_person = {} 
+          # remote_person = p.second
 
-          local_person = PatientService.demographics(local_results[0])["person"]
+          # local_person = PatientService.demographics(local_results[0])["person"]
           
-          local_person.delete("patient")
-          local_person.delete("attributes")
-          local_person.delete("date_changed")
-          local_person["home_district"] = local_person["addresses"]["address2"]
-          local_person.delete("addresses")
+          # local_person.delete("patient")
+          # local_person.delete("attributes")
+          # local_person.delete("date_changed")
+          # local_person["home_district"] = local_person["addresses"]["address2"]
+          # local_person.delete("addresses")
 
-          remote_person.delete("patient")
-          remote_person.delete("attributes")
-          remote_person.delete("date_changed")
-          remote_person["home_district"] = remote_person["addresses"]["address2"]
-          remote_person.delete("addresses")
-          remote_person.delete("birthdate")
-          remote_person["names"].delete("middle_name")
+          # remote_person.delete("patient")
+          # remote_person.delete("attributes")
+          # remote_person.delete("date_changed")
+          # remote_person["home_district"] = remote_person["addresses"]["address2"]
+          # remote_person.delete("addresses")
+          # remote_person.delete("birthdate")
+          # remote_person["names"].delete("middle_name")
           
-          if remote_person == local_person
-            raise "No duplicates"
-          else
-            p = JSON.parse(RestClient.post(uri, known_demographics)).first # rescue nil
-            p.second["occupation"] = p.second["attributes"]["occupation"]
-            p.second["cell_phone_number"] = p.second["attributes"]["cell_phone_number"]
-            p.second["home_phone_number"] =  p.second["attributes"]["home_phone_number"]
-            p.second["office_phone_number"] = p.second["attributes"]["office_phone_number"]
-            p.second.delete("attributes")
-            ANCService.create_from_form(p.second)
-            PatientService.create_remote_person(PatientService.demographics(local_results[0]))
-            redirect_to :action => 'duplicates', :search_params => params
-            return
-          end
+          # if remote_person == local_person
+            
+          # else
+            # p = JSON.parse(RestClient.post(uri, known_demographics)).first # rescue nil
+            # p.second["occupation"] = p.second["attributes"]["occupation"]
+            # p.second["cell_phone_number"] = p.second["attributes"]["cell_phone_number"]
+            # p.second["home_phone_number"] =  p.second["attributes"]["home_phone_number"]
+            # p.second["office_phone_number"] = p.second["attributes"]["office_phone_number"]
+            # p.second.delete("attributes")
+            # ANCService.create_from_form(p.second)
+            # PatientService.create_remote_person(PatientService.demographics(local_results[0]))
+            # redirect_to :action => 'duplicates', :search_params => params
+            # return
+          # end
 
         end
 
@@ -692,7 +700,7 @@ class PeopleController < GenericPeopleController
     end
 
     @selected_identifier = params[:search_params][:identifier]
-    render :layout => 'menu'
+    render :layout => 'report'
   end
  
   def reassign_dde_national_id
@@ -717,7 +725,7 @@ class PeopleController < GenericPeopleController
     if @primary_patient.blank? and @dde_duplicates.blank?
       redirect_to :action => 'search',:identifier => params[:identifier] and return
     end
-    render :layout => 'menu'
+    render :layout => 'report'
   end
 
   def create_person_from_dde
@@ -729,6 +737,30 @@ class PeopleController < GenericPeopleController
 
   def reassign_national_identifier
     patient = Patient.find(params[:person_id])
+    patient_id_type = PatientIdentifier.find_by_patient_id(params[:person_id]).identifier_type
+
+    ## Check if ANC is creating from remote and identifier type is legacy
+    if create_from_remote && patient_id_type == 2
+      person = PatientService.demographics(patient.person)
+      ## create a remote person
+      remote_person = PatientService.create_remote_person(person)
+      new_npid = remote_person["person"]["patient"]["identifiers"]["National id"]
+      old_national_id = PatientIdentifier.find(:first, 
+        :conditions => ["patient_id = ? and identifier_type = 3", patient.id]) rescue nil
+      if !old_national_id.blank?
+        old_national_id.update_attributes(:identifier => new_npid)
+      else
+        legacy = PatientIdentifier.find(:first, 
+        :conditions => ["patient_id = ? and identifier_type = 2", patient.id]) rescue nil
+        npid = PatientIdentifier.new()
+        npid.patient_id = patient.id
+        npid.identifier_type = PatientIdentifierType.find_by_name('National ID').id
+        npid.identifier = new_npid
+        npid.save
+      end
+      print_and_redirect("/patients/national_id_label?patient_id=#{patient.id}", next_task(patient))
+    end
+
     if create_from_dde_server
       passed_params = PatientService.demographics(patient.person)
       new_npid = PatientService.create_from_dde_server_only(passed_params)
@@ -737,30 +769,6 @@ class PeopleController < GenericPeopleController
       npid.identifier_type = PatientIdentifierType.find_by_name('National ID').id
       npid.identifier = new_npid
       npid.save
-    # elsif create_from_remote
-    #   passed_params = PatientService.demographics(patient.person)
-
-    #   @remote_servers = CoreService.get_global_property_value("remote_servers.parent")
-
-    #   @remote_server_address_and_port = @remote_servers.to_s.split(':')
-
-    #   @remote_server_address = @remote_server_address_and_port.first
-    #   @remote_server_port = @remote_server_address_and_port.second
-
-    #   @remote_login = CoreService.get_global_property_value("remote_bart.username").split(/,/) rescue ""
-    #   @remote_password = CoreService.get_global_property_value("remote_bart.password").split(/,/) rescue ""
-    #   @remote_location = CoreService.get_global_property_value("remote_bart.location").split(/,/) rescue nil
-    #   @remote_machine = CoreService.get_global_property_value("remote_machine.account_name").split(/,/) rescue ''
-
-    #   uri = "http://#{@remote_server_address}:#{@remote_server_port}/people/reassign_npid_from_remote"
-    #   person = JSON.parse(RestClient.post(uri, passed_params)) # rescue nil
-    #   raise uri.inspect
-      # new_npid = PatientService.create_from_dde_server_only(passed_params)
-      # npid = PatientIdentifier.new()
-      # npid.patient_id = patient.id
-      # npid.identifier_type = PatientIdentifierType.find_by_name('National ID').id
-      # npid.identifier = new_npid
-      # npid.save
     else
       PatientIdentifierType.find_by_name('National ID').next_identifier({:patient => patient})
     end
