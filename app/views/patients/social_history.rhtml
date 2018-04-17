@@ -243,7 +243,7 @@
   :helptext => "Nutrition status" } %>
 
   <%= touch_select_tag "Civil status", @patient,
-    options_for_select([["", ""], ["Never Married", "Single"], ["Engaged", "Engaged"],
+    options_for_select([["", ""], ["Never Married", "Never Married"], ["Engaged", "Engaged"],
       ["Married", "Married"], ["Separated", "Separated"], ["Divorced", "Divorced"],
       ["Widowed", "Widowed"], ["Other", "Other"]]),
     {:id => "civil_status",
