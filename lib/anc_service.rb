@@ -758,6 +758,8 @@ module ANCService
 
       @malaria = syphil["MALARIA TEST RESULT"].titleize rescue ""
 
+      @blood_group = syphil["BLOOD GROUP"] rescue ""
+
       @malaria_date = syphil["MALARIA TEST RESULT"].match(/not done/i)? "" : syphil["DATE OF LABORATORY TEST"] rescue nil
 
       @hiv_test = (syphil["HIV STATUS"].downcase == "positive" ? "=" :
@@ -775,9 +777,9 @@ module ANCService
         }
       }
 
-      @hb1 = hb["HB TEST RESULT 1"] rescue nil
+      @hb = syphil['HB TEST RESULT'] + " g/dl" rescue nil
 
-      @hb1_date = hb["HB TEST RESULT DATE 1"] rescue nil
+      #@hb1_date = hb["HB TEST RESULT DATE 1"] rescue nil
 
       @hb2 = hb["HB TEST RESULT 2"] rescue nil
 
@@ -811,9 +813,10 @@ module ANCService
       label.draw_text("Result",325,140,0,2,1,1,false)
       label.draw_text("HIV",28,166,0,2,1,1,false)
       label.draw_text("Syphilis",28,196,0,2,1,1,false)
-      label.draw_text("Hb1",28,226,0,2,1,1,false)
-      label.draw_text("Hb2",28,256,0,2,1,1,false)
+      label.draw_text("Hb",28,226,0,2,1,1,false)
+      #label.draw_text("Hb2",28,256,0,2,1,1,false)
       label.draw_text("Malaria",28,286,0,2,1,1,false)
+      label.draw_text("Blood Group",28,286,0,2,1,1,false)
       label.draw_line(260,70,170,1,0)
       label.draw_line(260,70,1,60,0)
       label.draw_line(180,306,250,1,0)
@@ -838,15 +841,15 @@ module ANCService
 
       label.draw_text(@hiv_test_date,188,166,0,2,1,1,false)
       label.draw_text(@syphilis_date,188,196,0,2,1,1,false)
-      label.draw_text(@hb1_date,188,226,0,2,1,1,false)
       label.draw_text(@hb2_date,188,256,0,2,1,1,false)
       label.draw_text(@malaria_date,188,286,0,2,1,1,false)
 
       label.draw_text(@hiv_test,345,166,0,2,1,1,false)
       label.draw_text(@syphilis,345,196,0,2,1,1,false)
-      label.draw_text(@hb1,325,226,0,2,1,1,false)
-      label.draw_text(@hb2,325,256,0,2,1,1,false)
+      label.draw_text(@hb,325,226,0,2,1,1,false)
+      #label.draw_text(@hb2,325,256,0,2,1,1,false)
       label.draw_text(@malaria,325,286,0,2,1,1,false)
+      label.draw_text(@blood_group,188,226,0,2,1,1,false)
 
       label.print(1)
 

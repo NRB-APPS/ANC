@@ -1713,7 +1713,7 @@ function loadInputWindow(){
 
     })(jQuery, data);
 
-    myModule.load();
+    //myModule.load();
 }
 
 function test_code(){
@@ -1723,6 +1723,7 @@ function test_code(){
 }
 
 function buildParams(){
+    console.log(data);
     var keys = Object.keys(data)
     for (var i = 0; i < keys.length; i ++){
         

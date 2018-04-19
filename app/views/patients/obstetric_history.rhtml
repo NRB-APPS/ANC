@@ -49,7 +49,7 @@
   var $$ = <%= @abortions.to_json%>;
   var data = <%= @pregnancies.to_json%>;
   var counts = <%= @twin_counts.to_json%>;
-  
+  console.log(data)
   anc_visits.push("zero");
   var parsedConceptName = "Visit Number";
 

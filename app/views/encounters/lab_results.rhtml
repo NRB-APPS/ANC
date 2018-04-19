@@ -251,7 +251,8 @@ function remoteARTStatus(){
       :id => "previous_hiv_test",
       :helptext => "Previous HIV Test Done <span class='helper'> Lab Results</span>",
       :tt_onUnLoad => "parsedConceptName = '';",
-      :tt_onLoad => "parsedConceptName = 'Previous HIV Test';"
+      :tt_onLoad => "parsedConceptName = 'Previous HIV Test'; __$('backButton').style.display = 'none';"
+
     }
   %>
 
@@ -515,7 +516,7 @@ function remoteARTStatus(){
                               ["AB+","AB+"],["AB-", "AB-"]]),
           {:id => "blood_group",
            :helptext => "Blood Group Test Result <span class='helper'> Lab Results</span>",
-           :tt_onLoad => "parsedConceptName = 'Blood Group';",
+           :tt_onLoad => "parsedConceptName = 'Blood Group Test Result';",
            :tt_onUnLoad => "parsedConceptName = ''",
            :condition => "getSelected().match(/Blood\sGroup/)"
           } %>
