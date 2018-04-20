@@ -1,3 +1,5 @@
+<script language="javascript" type="text/javascript" src="/javascripts/jquery.js"></script>
+<link rel="stylesheet" href="/stylesheets/yes_no_btn.css" type="text/css">
 <style type="text/css">
   td #Unknown {
     display: none;
@@ -13,6 +15,33 @@
   .options {
     height: inherit;
   }
+  .labelText {
+    font-size: 23px;
+    vertical-align: middle;
+    padding-left: 20px;
+  }
+
+  #divcontent {
+    background-color: #fff;
+    border: 2px solid #ccf;
+    border-radius: 10px;
+    height: 84%;
+    margin: 10px;
+    overflow: hidden;
+    width: 98%;
+  }
+
+  #divScroller {
+    height: 97%;
+    margin: 10px;
+    overflow: auto;
+    width: 98%;
+  }
+
+  .disabled-li{
+    text-decoration: line-through;
+    color: gray !important;
+  }
 </style>
 <script type="text/javascript" language="javascript">
   <!--
@@ -22,6 +51,12 @@
   var parsedConceptName;
   var leucocytesTest;
   var glucoseTest;
+  var rapidRecencyAssayHash = {};
+  <% rapid_recency_assay_array = ["Line 1. Control Line Present","Line 2. Positive Verification Line Present","Line 3. Long-Term Line Present"] %>
+
+  <% rapid_recency_assay_array.each do |rapid_recency| %>
+    rapidRecencyAssayHash['<%= rapid_recency %>'] = {yes: '', no: ''}
+  <% end %>
 
   //-->
 	<%
@@ -125,7 +160,6 @@
         }
       }
     }
-    console.log(__$('choice').options[2]);
 
     return choices;
   }
@@ -217,6 +251,186 @@ function remoteARTStatus(){
     document.getElementById('inputFrame'+tstCurrentPage).innerHTML = '<div id="summary">' + displayText + '</div>';   
   }
 
+  function advancedRapidRecencyAssay(){
+
+    rapidRecencyAssayArray = JSON.parse('["Line 1. Control Line Present","Line 2. Positive Verification Line Present","Line 3. Long-Term Line Present"]');
+
+    __$("inputFrame" + tstCurrentPage).remove()
+    jQuery("#helpText" + tstCurrentPage).css({
+       marginLeft: "0%",
+       fontWeight: "bold",
+       fontSize: "1.9em"
+     })
+
+    html = "<div id='divcontent'>";
+    html += "<div id='divScroller'>";
+    rapidRecencyAssayOptions = JSON.parse('["Line 1. Control Line Present","Line 2. Positive Verification Line Present","Line 3. Long-Term Line Present"]');
+    html += "<table cellspacing='1' cellpadding='2' width='95%' id='yes_no_table'>";
+    html += "<tbody>";
+
+    for (var i=0; i<=rapidRecencyAssayOptions.length - 1; i++){
+      html += "<tr>";
+      html += "<td class='labelText'>" + rapidRecencyAssayOptions[i] + "</td>";
+
+      
+      html += "<td style='width: 30%;'>";
+      html += "<table style='float: right; width: 100%; padding-right: 10px;' class='btn-table'>";
+      html += "<tr>";
+      
+      html += "<td>";
+      html += "<div class='switch switch-yes' id='yes_btn_container_" + i + "' category='rapid_recency_assay' ";
+      html += "key='" + rapidRecencyAssayOptions[i] + "' onmousedown='clicked(this);'>";
+      html += "<input class='hidden-checkbox' id='yes_checkbox_" + i + "' type='checkbox'>";
+      html +="<label id='yes_lable_" + i + "'><i></i></label>";
+      html += "</td>";
+     
+      html += "<td>";
+      html += "<div class='switch switch-no' id='no_btn_container_" + i + "' category='rapid_recency_assay' ";
+      html += "key='" + rapidRecencyAssayOptions[i] + "' onmousedown='clicked(this);'>";
+      html += "<input class='hidden-checkbox' id='no_checkbox_" + i + "' type='checkbox'>";
+      html +="<label id='no_lable_" + i + "'><i></i></label>";
+      html += "</td>";
+     
+      html += "</tr>";
+      html += "</table>";
+      html += "</td>";
+     
+     
+      html += "</tr>"
+    }
+
+    html += "<tbody>"
+    html += "</table>";
+    html += "</div>";
+    html += "</div>";
+
+    thisPage = document.getElementById('page' + tstCurrentPage);
+    thisPage.innerHTML += html;
+
+    preselectSelectedRapidRecencyAssay();
+    setBackButton();
+    __$('nextButton').onmousedown = function(){
+      validateRapidRecencyAssayInput();
+    }
+    
+  }
+
+  function preselectSelectedRapidRecencyAssay(){
+    for (var key in rapidRecencyAssayHash){
+      yesValue = rapidRecencyAssayHash[key]["yes"];
+      noValue = rapidRecencyAssayHash[key]["no"];
+      yes_no_buttons = jQuery("[key='" + key + "']");
+      yes_button = yes_no_buttons[0]
+      no_button = yes_no_buttons[1]
+
+      divs = document.getElementsByClassName('switch');
+      for(var i = 0; i < divs.length; i++){
+        divKey = divs[i].getAttribute('key');
+        if(key == divKey){
+          if(yesValue.length > 0) {
+            index = yes_button.id.replace("yes_btn_container_",'');
+            hidden_checkbox = document.getElementById('yes_checkbox_' + index);
+            on_label_checkbox = document.getElementById('yes_lable_' + index);
+            on_label_checkbox.setAttribute('style','color: white; background-color: lightgreen;');
+            hidden_checkbox.checked = true;
+            break;
+          }else if(noValue.length > 0){
+            index = no_button.id.replace("no_btn_container_",'');
+            hidden_checkbox = document.getElementById('no_checkbox_' + index);
+            on_label_checkbox = document.getElementById('no_lable_' + index);
+            on_label_checkbox.setAttribute('style','color: white; background-color: lightgreen;');
+            hidden_checkbox.checked = true;
+            break;
+          }
+        }
+      }
+ 
+    }
+  }
+
+  function updateRapidRecencyNoValue(obj){
+    key = obj.getAttribute('key');
+    rapidRecencyAssayHash[key]["no"] = 'true';
+    rapidRecencyAssayHash[key]["yes"] = '';
+  }
+
+
+  function updateRapidRecencyYesValue(obj){
+    key = obj.getAttribute('key');
+    rapidRecencyAssayHash[key]["yes"] = 'true';
+    rapidRecencyAssayHash[key]["no"] = '';
+  }
+
+  function validateRapidRecencyAssayInput(){
+    unselectedRapidRecencyAssay = [];
+    for (var key in rapidRecencyAssayHash){
+      yesValue = rapidRecencyAssayHash[key]["yes"];
+      noValue = rapidRecencyAssayHash[key]["no"];
+      if (yesValue.length == 0 && noValue.length == 0){
+        //The row was not selected
+        unselectedRapidRecencyAssay.push(key);
+      }
+    }
+
+    if (unselectedRapidRecencyAssay.length > 0){
+      showMessage("The following Asante Result Field are not selected <br />" +  unselectedRapidRecencyAssay.join('<br /> '));
+    }else{
+      gotoNextPage();
+    }
+  }
+
+  function setBackButton(){
+    backButton = __$('backButton')[0];
+    if (backButton){
+      mouseEvent = backButton.getAttribute('onmousedown');
+      if (mouseEvent){
+        if (!mouseEvent.match(/resetNextButton/i)){
+          onmousedownevent = backButton.getAttribute('onmousedown') + '; resetNextButton()';
+          backButton.setAttribute('onmousedown', onmousedownevent);
+        }
+      }
+    }
+  }
+
+  function clicked(e) {
+    category = e.getAttribute('category');
+    key = e.getAttribute('key');
+    
+    if(e.id.match(/no_btn_container_/i)) {
+      index = e.id.replace("no_btn_container_",'');
+      hidden_checkbox = document.getElementById('no_checkbox_' + index);
+      off_hidden_checkbox = document.getElementById('yes_checkbox_' + index);
+      off_label_checkbox = document.getElementById('yes_lable_' + index);
+      on_label_checkbox = document.getElementById('no_lable_' + index);
+    }else{
+      index = e.id.replace("yes_btn_container_",'');
+      hidden_checkbox = document.getElementById('yes_checkbox_' + index);
+      off_hidden_checkbox = document.getElementById('no_checkbox_' + index);
+      off_label_checkbox = document.getElementById('no_lable_' + index);
+      on_label_checkbox = document.getElementById('yes_lable_' + index);
+    }
+
+    off_hidden_checkbox.checked = false;
+    off_label_checkbox.setAttribute('style','color: black; background-color: ""');
+    on_label_checkbox.setAttribute('style','color: white; background-color: lightgreen;');
+    if(hidden_checkbox.checked) {
+      hidden_checkbox.checked = false;
+    }else{
+      hidden_checkbox.checked = true;
+    }
+
+    inputID = key + '_child_concept';
+    if(e.id.match(/no_/i)) {
+      //__$(key).value = '';
+      __$(inputID).value = 'No';
+      updateRapidRecencyNoValue(e);
+    }else{
+      //__$(key).value = key;
+      __$(inputID).value = 'Yes';
+      updateRapidRecencyYesValue(e)
+    }
+  }
+
   // function checkHIVTestPositive(){
   //   prev_hiv_test = __$('prev_hiv_test_results').value
     
@@ -232,6 +446,11 @@ function remoteARTStatus(){
   <%= hidden_field_tag "encounter[encounter_datetime]", DateTime.now() %>
   <%= hidden_field_tag "encounter[provider_id]", session[:user_id] %>
   <%session_date = session[:datetime] || DateTime.now() %>  
+
+  <% rapid_recency_assay_array.each do |element| %>
+    <!-- %= touch_hidden_tag "MALAWI ART SIDE EFFECTS", @patient, "#{element}", :id => "#{element}" %_-->
+    <%= touch_hidden_tag "#{element}", @patient, "", :id => "#{element}_child_concept"%>
+  <% end %>
 
 	 <%= text_field_tag :showSummary, nil,
                       {
@@ -445,6 +664,15 @@ function remoteARTStatus(){
                                :condition => "getSelected().match(/HB/)"
                            }
   %>
+
+<%= text_field_tag "advanced_rapid_recency_assay", nil, {
+      :id => 'rapid_recency_assay',
+      :tt_onLoad => "advancedRapidRecencyAssay(); __$('keyboard').style.display = 'none';",
+      :helpText => "Rapid Recency Assay - Asante Results",
+      :optional => "true",
+      :tt_pageStyleClass => "NoControls",
+      :condition => "__$('new_test_result_at_current_facility').value == 'Positive'
+         || __$('prev_hiv_test_results').value == 'Positive';" } %>
 
   <!-- %= touch_date_tag "HB Test Result Date", @patient, nil,
                      {
