@@ -350,7 +350,7 @@ class PeopleController < GenericPeopleController
 
     if create_from_dde_server
       formatted_demographics = DDE2Service.format_params(params, Person.session_datetime)
-      raise formatted_demographics.to_yaml
+      #raise formatted_demographics.to_yaml
 
       if DDE2Service.is_valid?(formatted_demographics)
         response = DD2Service.create_from_dde2(formatted_demographics)
@@ -709,6 +709,7 @@ class PeopleController < GenericPeopleController
   end
 
   def remote_duplicates
+    #raise params.inspect
     if params[:patient_id]
       @primary_patient = PatientService.get_patient(Person.find(params[:patient_id]))
     else
@@ -737,29 +738,35 @@ class PeopleController < GenericPeopleController
 
   def reassign_national_identifier
     patient = Patient.find(params[:person_id])
-    patient_id_type = PatientIdentifier.find_by_patient_id(params[:person_id]).identifier_type
-
-    ## Check if ANC is creating from remote and identifier type is legacy
-    if create_from_remote && patient_id_type == 2
-      person = PatientService.demographics(patient.person)
-      ## create a remote person
-      remote_person = PatientService.create_remote_person(person)
-      new_npid = remote_person["person"]["patient"]["identifiers"]["National id"]
-      old_national_id = PatientIdentifier.find(:first, 
-        :conditions => ["patient_id = ? and identifier_type = 3", patient.id]) rescue nil
-      if !old_national_id.blank?
-        old_national_id.update_attributes(:identifier => new_npid)
-      else
-        legacy = PatientIdentifier.find(:first, 
-        :conditions => ["patient_id = ? and identifier_type = 2", patient.id]) rescue nil
-        npid = PatientIdentifier.new()
-        npid.patient_id = patient.id
-        npid.identifier_type = PatientIdentifierType.find_by_name('National ID').id
-        npid.identifier = new_npid
-        npid.save
+    patient_ids = PatientIdentifier.find(:all, :conditions => ["patient_id = ?", params[:person_id]])
+    
+    unless patient_ids.blank?
+      patient_ids.each do |pat|
+        ## Check if ANC is creating from remote and identifier type is legacy
+        if create_from_remote && pat["identifier_type"] == 2
+          person = PatientService.demographics(patient.person)
+          ## create a remote person
+          remote_person = PatientService.create_remote_person(person)
+          new_npid = remote_person["person"]["patient"]["identifiers"]["National id"]
+          old_national_id = PatientIdentifier.find(:first,
+            :conditions => ["patient_id = ? and identifier_type = 3", patient.id]) rescue nil
+          if !old_national_id.blank?
+            old_national_id.update_attributes(:identifier => new_npid)
+          else
+            legacy = PatientIdentifier.find(:first,
+             :conditions => ["patient_id = ? and identifier_type = 2", patient.id]) rescue nil
+            npid = PatientIdentifier.new()
+            npid.patient_id = patient.id
+            npid.identifier_type = PatientIdentifierType.find_by_name('National ID').id
+            npid.identifier = new_npid
+            npid.save
+          end
+          #print_and_redirect("/patients/national_id_label?patient_id=#{patient.id}", next_task(patient))
+          break
+        end
       end
-      print_and_redirect("/patients/national_id_label?patient_id=#{patient.id}", next_task(patient))
     end
+
 
     if create_from_dde_server
       passed_params = PatientService.demographics(patient.person)
@@ -775,11 +782,13 @@ class PeopleController < GenericPeopleController
     npid = PatientIdentifier.find(:first,
       :conditions => ["patient_id = ? AND identifier = ?
            AND voided = 0", patient.id,params[:identifier]])
-    npid.voided = 1
-    npid.void_reason = "Given another national ID"
-    npid.date_voided = Time.now()
-    npid.voided_by = current_user.id
-    npid.save
+    unless npid.blank?
+      npid.voided = 1
+      npid.void_reason = "Given another national ID"
+      npid.date_voided = Time.now()
+      npid.voided_by = current_user.id
+      npid.save
+    end
     
     print_and_redirect("/patients/national_id_label?patient_id=#{patient.id}", next_task(patient))
   end

@@ -461,7 +461,7 @@ module PatientService
 
     unless new_params[:patient]["identifiers"]["National id"].blank?
       known_demographics["patient"]["identifiers"] = {"National id" => new_params["patient"]["identifiers"]["National id"]}
-    end
+    end rescue nil
 
     servers = CoreService.get_global_property_value("remote_servers.parent").split(/,/) rescue nil
     server_address_and_port = servers.to_s.split(':')

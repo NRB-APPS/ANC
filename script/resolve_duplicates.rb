@@ -12,8 +12,8 @@ def resolve_duplicates
   patient_identifiers = PatientIdentifier.find_by_sql(["select t.patient_id as
   anc_pid,
   t2.patient_id as patient_id2, t.identifier as anc_identifier, 
-  t2.identifier as art_identifier from openmrs_ukwe_anc.patient_identifier t, 
-  openmrs.patient_identifier t2 where t.identifier = t2.identifier and
+  t2.identifier as art_identifier from anc_ukwe.patient_identifier t, 
+  openmrs_ukwe.patient_identifier t2 where t.identifier = t2.identifier and
   t.identifier_type = 3 and t.voided = 0"])
 
   patient_identifiers.each do |k|
@@ -46,9 +46,10 @@ def resolve_duplicates
       puts "#{k.anc_identifier}"
       npid = PatientIdentifier.find(:first, :conditions => ["patient_id = ? AND
       identifier = ? AND voided = 0 AND identifier_type = 3", k.anc_pid,k.anc_identifier])
-      npid.update_attributes(:identifier_type => 2) unless npid.blank?
+      npid.update_attributes(:identifier_type => 2) unless npid.blank? #|| simp_anc_person["first_name"] != "Test"
+      #raise "here".inspect if simp_anc_person["first_name"] == "Test"
       #npid.save
-      puts "#{k.anc_identifier} has been changed to legacy_id" unless
+      #puts "#{k.anc_identifier} has been changed to legacy_id" unless
       npid.blank?
     else
       puts "True"
