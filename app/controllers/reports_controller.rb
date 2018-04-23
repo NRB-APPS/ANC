@@ -754,6 +754,28 @@ class ReportsController < ApplicationController
       def monthly_report
         @facility = Location.current_health_center.name rescue ''
         @start_date = ("#{params[:year]}-#{params[:month]}-01").to_date.strftime("%Y-%m-%d")
+        end_date = ("#{params[:year]}-#{(params[:month].to_i + 1)}-01").to_date
+        @end_date = (end_date - 1.days).strftime("%Y-%m-%d")
+        date_today = (session[:datetime].to_date rescue Date.today)
+        @date_today = date_today.strftime("%d/%m/%Y")
+
+        report = Reports.new(@start_date, @end_date, @start_age, @end_age, @type)
+
+        @total_no_of_anc_visits = report.total_monthly_anc_visits
+        @new_visits = report.new_monthly_anc_visits
+        @subseq_visits = @total_no_of_anc_visits - @new_visits
+
+        @first_trimester = report.first_trimester_visits
+        @second_trimester = report.second_trimester_visits
+        @third_trimester = report.third_trimester_visits
+        @screened_for_syphilis = report.women_screening_syphilis
+        @received_sp_1 = report.women_received_sp_1
+        @received_sp_2 = report.women_received_sp_2
+        @received_sp_3 = report.women_received_sp_3
+        @received_albendazole = report.women_received_albendazole
+        @received_itn = report.women_received_itn
+
+        render :layout => "report"
       end
 
     end

@@ -68,6 +68,7 @@
         ["HB", "HB Test Result"],["Syphilis", "Syphilis Test Result"],
         ["Urine", "Urine Test Results"],["Malaria", "Malaria Test Result"],
         ["Blood Group", "Blood Group Test Result"]]
+      @test_date = false
   %>
 
   function readableMessage(){
@@ -627,28 +628,55 @@ function remoteARTStatus(){
       {
         :id => "new_test_result_at_current_facility",
         :helptext => "HIV Test Result <span class='helper'> Lab Results</span>",
-        :tt_BeforeUnload => "checkHIVTestUnknown()",
-        :tt_onUnLoad => "parsedConceptName = '';",
+        :tt_BeforeUnload => "checkHIVTestUnknown();",
+        :tt_onUnLoad => "parsedConceptName = ''; #{@test_date = true};",
         :tt_onLoad => "parsedConceptName = 'HIV Status'; ",
         :condition => "getSelected().match(/HIV/)"
       }
   %>
+
+  <%= touch_select_tag "On ART", @patient,
+      options_for_select([["", ""],["Yes", "Yes"],
+        ["No", "No"]], art_status),
+      {
+        :id => "new_on_art",
+        :helptext => "Is Patient On ART? <span class='helper'> Lab Results</span>",
+        :tt_onUnLoad => "parsedConceptName = '';",
+        :tt_onLoad => " parsedConceptName = 'On ART'; alertARTStatus()",
+        :condition => "__$('new_test_result_at_current_facility').value == 'Positive'"
+                         }
+    %>
+
+    <%= touch_text_field_tag "ARV Number", @patient, arv_number,
+      {
+        :id => "arv_number",
+        :optional => true,
+        :tt_onLoad => 'alertARVNumber()',
+        :helptext => "ARV Number <span class='helper'> Lab Results</span>",
+        :tt_onUnLoad => "parsedConceptName = '';",
+        :condition => "__$('new_on_art').value == 'Yes'"
+      }
+    %>
 
   <!-- %= hidden_field_tag "HIV test date", "#{session[:datetime].to_date rescue Date.today}"
     {
       :condition => "__$('new_test_result_at_current_facility').value != "" || __$('new_test_result_at_current_facility').value != 'Not Done'"
     } % -->
 
-  <%= touch_date_tag "HIV test date", @patient, "#{session[:datetime].to_date rescue Date.today}",
-    {
-      :id => "enter_date_result_given",
-      :helptext => "Date HIV Test Done <span class='helper'> Lab Results</span>",
-      :tt_onUnLoad => "parsedConceptName = '';",
-      :tt_onLoad => " parsedConceptName = 'HIV Test date';initializeDate(); gotoNextPage();",
-      :condition => "__$('new_test_result_at_current_facility').value != 'Not Done'
-                                && getSelected().match(/HIV/)"
-    }
-  %>
+    <% if (@test_date == true) %>
+      <!-- %= hidden_field_tag "encounter[patient_id]", @patient.id % -->
+      <%= touch_hidden_tag "HIV test date", @patient, "#{session[:datetime].to_date rescue Date.today if (@test_date == true)}", :tt_onLoad => "console.log(@test_date);" %>
+      <!-- %= touch_date_tag "HIV test date", @patient, "",
+        {
+          :id => "enter_date_result_given",
+          :helptext => "Date HIV Test Done <span class='helper'> Lab Results</span>",
+          :tt_onUnLoad => "parsedConceptName = '';",
+          :tt_onLoad => " parsedConceptName = 'HIV Test date';initializeDate();",
+          :condition => "__$('new_test_result_at_current_facility').value != 'Not Done'
+                        && getSelected().match(/HIV/) !== null"
+        }
+      % -->
+    <%end%>
 
 
   <%= touch_text_field_tag "HB Test Result", @patient, nil,

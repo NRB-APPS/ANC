@@ -80,6 +80,13 @@
       .valueCell {
         border: 3px solid #000;
       }
+      table.report td {
+        padding-top: 10px;
+        padding-bottom: 5px;
+      }
+      table.report {
+        width: 100%;
+      }
     </style>
   </head>
   <body>
@@ -96,11 +103,18 @@
             <table width="100%" cellspacing="0" cellpadding="5">
               <tr>
                 <td style="width: 25%;">
-                  Name of Facility
+                  NAME OF FACILITY
                 </td>
-                <td colspan="3" style="border-left: 1px solid #999;
-                      border-bottom: 1px solid #999; font-style: italic;">
+                <td style="border-left: 1px solid #999; border-bottom: 1px solid #999;
+                      font-style: italic;width: 25%;">
                   <%= @facility %>&nbsp;
+                </td>
+                <td style="width: 25%; border-left: 1px solid #999; border-bottom: 1px solid #999;" align="right">
+                    DISTRICT
+                </td>
+                <td style="border-left: 1px solid #999; border-bottom: 1px solid #999;
+                      font-style: italic;width: 25%;">
+                  
                 </td>
               </tr>
               <tr>
@@ -108,14 +122,14 @@
                   MONTH OF
                 </td>
                 <td style="border-left: 1px solid #999; border-bottom: 1px solid #999;
-                      font-style: italic;">
+                      font-style: italic;width: 25%;">
                   <%= @start_date.to_date.strftime("%B") rescue "" %>&nbsp;
                 </td>
                 <td style="width: 25%; border-left: 1px solid #999; border-bottom: 1px solid #999;" align="right">
                     YEAR
                 </td>
                 <td style="border-left: 1px solid #999; border-bottom: 1px solid #999;
-                      font-style: italic;">
+                      font-style: italic;width: 25%;">
                   <%= @start_date.to_date.strftime("%Y") rescue "" %>&nbsp;
                 </td>
               </tr>
@@ -123,23 +137,227 @@
             </td>
           </tr>
           <tr>
-            <td>
-              TOTAL NUMBER OF ANTENATAL VISITS
-            </td>
-          </tr>
-          <tr>
-            <td>
-              NEW VISITS
-            </td>
-          </tr>
-          <tr>
-            <td>
-              SUBSEQUENT VISITS
-            </td>
-          </tr>
-          <tr>
-            <td>
-              DISTRIBUTION OF NEW VISITS
+            <td style="overflow: auto; border-bottom: 1px solid #999; vertical-align: top;">
+              <div id="main" style="width: 98%; overflow: auto; padding: 10px;">
+                <table class="report">
+                  <tr>
+                    <td  colspan="3">
+                      TOTAL NUMBER OF ANTENATAL VISITS
+                    </td>
+                    <td style="border: 1px solid #999; width: 25%; text-align: center;">
+                      <%= @total_no_of_anc_visits.length %>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      NEW VISITS
+                    </td>
+                    <td style="border: 1px solid #999; border-top: 0px; width: 25%; text-align: center;">
+                      <%= @new_visits.length %>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      SUBSEQUENT VISITS
+                    </td>
+                    <td style="border: 1px solid #999; border-top: 0px; width: 25%; text-align: center;">
+                      <%= @subseq_visits.length %>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colsan="4">
+                      <b><u>DISTRIBUTION OF NEW VISITS</u></b>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      1<sup>ST</sup> TRIMESTER
+                    </td>
+                    <td style="border: 1px solid #999; width: 25%; text-align: center;">
+                      <%= @first_trimester.length %>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      2<sup>ND</sup> TRIMESTER
+                    </td>
+                    <td style="border: 1px solid #999; border-top: 0px; width: 25%; text-align: center;">
+                      <%= @second_trimester.length %>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      3<sup>RD</sup> TRIMESTER
+                    </td>
+                    <td style="border: 1px solid #999; border-top: 0px; width: 25%; text-align: center;">
+                      <%= @third_trimester.length %>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      TEENEGER PREGNANCIES
+                    </td>
+                    <td style="border: 1px solid #999; border-top: 0px; width: 25%; text-align: center;">
+                      ...
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      WOMEN ATTENDING ALL FANC VISITS
+                    </td>
+                    <td style="border: 1px solid #999; border-top: 0px; width: 25%; text-align: center;">
+                      ...
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      WOMEN SCREENED FOR SYPHILIS
+                    </td>
+                    <td style="border: 1px solid #999; border-top: 0px; width: 25%; text-align: center;">
+                      <%= @screened_for_syphilis.length %>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      WOMEN CHECKED Hb
+                    </td>
+                    <td style="border: 1px solid #999; border-top: 0px; width: 25%; text-align: center;">
+                      ...
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      WOMEN RECEIVED SP1
+                    </td>
+                    <td style="border: 1px solid #999; border-top: 0px; width: 25%; text-align: center;">
+                      <%= @received_sp_1.length %>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      WOMEN RECEIVED SP2
+                    </td>
+                    <td style="border: 1px solid #999; border-top: 0px; width: 25%; text-align: center;">
+                      <%= @received_sp_2.length %>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      WOMEN RECEIVED SP3
+                    </td>
+                    <td style="border: 1px solid #999; border-top: 0px; width: 25%; text-align: center;">
+                      <%= @received_sp_3.length %>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      WOMEN RECEIVED  DOSES OF TTV OR HAS ADEQUETE TTV (5 doses)
+                    </td>
+                    <td style="border: 1px solid #999; border-top: 0px; width: 25%; text-align: center;">
+                      ...
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      WOMEN RECEIVED 120 TABLETS OF IRON/F/S4
+                    </td>
+                    <td style="border: 1px solid #999; border-top: 0px; width: 25%; text-align: center;">
+                      ...
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      WOMEN RECEIVED ALBENDAZOLE
+                    </td>
+                    <td style="border: 1px solid #999; border-top: 0px; width: 25%; text-align: center;">
+                      <%= @received_albendazole.length %>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      WOMEN RECEIVED ITN
+                    </td>
+                    <td style="border: 1px solid #999; border-top: 0px; width: 25%; text-align: center;">
+                      <%= @received_itn.length %>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      WOMEN TESTED HIV POSITIVE
+                    </td>
+                    <td style="border: 1px solid #999; border-top: 0px; width: 25%; text-align: center;">
+                      ...
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      WOMEN PREVIOUSLY HIV POSITIVE 
+                    </td>
+                    <td style="border: 1px solid #999; border-top: 0px; width: 25%; text-align: center;">
+                      ...
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      WOMEN ON CPT
+                    </td>
+                    <td style="border: 1px solid #999; border-top: 0px; width: 25%; text-align: center;">
+                      ...
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      WOMEN ON ART
+                    </td>
+                    <td style="border: 1px solid #999; border-top: 0px; width: 25%; text-align: center;">
+                      ...
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="4">
+                      <b><u>OUTREACH CLINIC</u></b>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      TOTAL NUMBER OF OUTREACH CLINICS
+                    </td>
+                    <td style="border: 1px solid #999; width: 25%; text-align: center;">
+                      ...
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      TOTAL NUMBER OF OUTREACH CLINICS ATTENDED
+                    </td>
+                    <td style="border: 1px solid #999; border-top: 0px; width: 25%; text-align: center;">
+                      ...
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                      REASONS TO THOSE NOT ATTEDED
+                    </td>
+                    <td style="border: 1px solid #999; border-top: 0px; width: 25%; text-align: center;">
+                      ...
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <b>COMPILED BY</b>
+                    </td>
+                    <td style="border-bottom: 1px dotted #999; width: 25%; text-align: center;">
+                      
+                    </td>
+                    <td>
+                      <b>DATE</b>
+                    </td>
+                    <td style="border-bottom: 1px dotted #999; width: 25%; text-align: center;">
+                      <b><%= @date_today %></b>
+                    </td>
+                  </tr>
+                </table>
+              </div>
             </td>
           </tr>
         </table>
