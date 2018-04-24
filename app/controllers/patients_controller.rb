@@ -687,9 +687,9 @@ class PatientsController < ApplicationController
           encs.collect{|e| e.encounter_id},
           ConceptName.find_by_name('Vacuum extraction delivery').concept_id]).length rescue nil
 
-      @symphosio = Observation.find(:last,
+      @episiotomy = Observation.find(:last,
         :conditions => ["person_id = ? AND encounter_id IN (?) AND concept_id = ?", @patient.id, @all_enc,
-          ConceptName.find_by_name('SYMPHYSIOTOMY').concept_id]).answer_string.upcase.squish rescue nil
+          ConceptName.find_by_name('EPISIOTOMY').concept_id]).answer_string.upcase.squish rescue nil
 
       @haemorrhage = Observation.find(:last,
         :conditions => ["person_id = ? AND encounter_id IN (?) AND concept_id = ?", @patient.id, @all_enc,

@@ -379,13 +379,14 @@
       ["Yes", "Yes"],
       ["No", "No"]
     ]),
-    {:id => "bed_net",
-    :helptext => "Mosquito net in good condition available at home for own use <span class='helper'> Current Pregnancy</span>" } %>
+    {
+      :id => "bed_net_1",
+      :helptext => "Mosquito net in good condition available at home for own use <span class='helper'> Current Pregnancy</span>" } %>
 
   <%= touch_date_tag "Date received", @patient, nil,
   {:id => "bed_date",
-  :helptext => "Date Bet Net Given",
-  :condition => "__$('bed_net').value == 'Yes'"
+    :helptext => "Date Bet Net Given",
+    :condition => "__$('bed_net_1').value == 'Yes'"
   } %>
 
   <% options = {

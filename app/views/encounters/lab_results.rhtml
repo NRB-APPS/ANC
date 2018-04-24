@@ -453,6 +453,13 @@ function remoteARTStatus(){
     <%= touch_hidden_tag "#{element}", @patient, "", :id => "#{element}_child_concept"%>
   <% end %>
 
+  <!-- HIV Test date -->
+  <%= touch_hidden_tag "HIV test date", @patient, "#{session[:datetime].to_date rescue Date.today}",
+    { 
+      :id => "test_date"
+    } 
+  %>
+
 	 <%= text_field_tag :showSummary, nil,
                       {
                           :tt_onLoad => "remoteARTStatus(); __$('keyboard').style.display = 'none'",
@@ -463,7 +470,7 @@ function remoteARTStatus(){
                       }
    %>
 
-  <% if params[:update].blank? %>
+  <!-- % if params[:update].blank? % -->
 
   <%= touch_select_tag "Previous HIV Test done", @patient, 
     options_for_select([["", ""],["Yes", "Yes"],["No", "No"]]),
@@ -567,7 +574,8 @@ function remoteARTStatus(){
         :id => "choice",
         :multiple => true,
         :optional => :true,
-        :condition => "__$('previous_hiv_test').value == 'Yes' && (__$('prev_hiv_test_results').value == 'Positive' || !checkHIVTestDate());"
+        :condition => "__$('previous_hiv_test').value == 'Yes' && (__$('prev_hiv_test_results').value == 'Positive' || !checkHIVTestDate());",
+        :tt_onLoad => "__$('test_date').value = '';"
       })
     %>
 
@@ -586,7 +594,7 @@ function remoteARTStatus(){
       })
     %>
 
-  <% else %>
+  <!-- % else % -->
 
     <!-- %= select_tag("choice",
       options_for_select([["", ""],
@@ -619,7 +627,7 @@ function remoteARTStatus(){
         })
     % -->
 
-  <%end%>
+  <!-- %end% -->
 
   <%= touch_select_tag "HIV status", @patient,
       options_for_select([["", ""],["Negative", "Negative"],
@@ -642,7 +650,7 @@ function remoteARTStatus(){
         :id => "new_on_art",
         :helptext => "Is Patient On ART? <span class='helper'> Lab Results</span>",
         :tt_onUnLoad => "parsedConceptName = '';",
-        :tt_onLoad => " parsedConceptName = 'On ART'; alertARTStatus()",
+        :tt_onLoad => " parsedConceptName = 'On ART'; alertARTStatus();",
         :condition => "__$('new_test_result_at_current_facility').value == 'Positive'"
                          }
     %>
@@ -662,10 +670,8 @@ function remoteARTStatus(){
     {
       :condition => "__$('new_test_result_at_current_facility').value != "" || __$('new_test_result_at_current_facility').value != 'Not Done'"
     } % -->
-
-    <% if (@test_date == true) %>
       <!-- %= hidden_field_tag "encounter[patient_id]", @patient.id % -->
-      <%= touch_hidden_tag "HIV test date", @patient, "#{session[:datetime].to_date rescue Date.today if (@test_date == true)}", :tt_onLoad => "console.log(@test_date);" %>
+      
       <!-- %= touch_date_tag "HIV test date", @patient, "",
         {
           :id => "enter_date_result_given",
@@ -676,7 +682,6 @@ function remoteARTStatus(){
                         && getSelected().match(/HIV/) !== null"
         }
       % -->
-    <%end%>
 
 
   <%= touch_text_field_tag "HB Test Result", @patient, nil,
