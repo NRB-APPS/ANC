@@ -768,10 +768,13 @@ class ReportsController < ApplicationController
         @first_trimester = report.first_trimester_visits
         @second_trimester = report.second_trimester_visits
         @third_trimester = report.third_trimester_visits
+        @teenegers = report.teeneger_pregnancies
         @screened_for_syphilis = report.women_screening_syphilis
         @received_sp_1 = report.women_received_sp_1
         @received_sp_2 = report.women_received_sp_2
         @received_sp_3 = report.women_received_sp_3
+        @received_ttv = report.women_received_ttv_doses
+        @received_iron = report.women_received_iron
         @received_albendazole = report.women_received_albendazole
         @received_itn = report.women_received_itn
         @tested_positive = report.women_tested_hiv_positive

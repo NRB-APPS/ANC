@@ -1493,6 +1493,11 @@ class Reports
   end
 
   def teeneger_pregnancies
+    Person.find_by_sql(["SELECT *, 
+      YEAR(date_created) - YEAR(birthdate) - IF(STR_TO_DATE(CONCAT(YEAR(date_created), 
+        '-', MONTH(birthdate), '-', DAY(birthdate)) ,'%Y-%c-%e') > date_created, 1, 0) AS age 
+    FROM person WHERE person_id in (?) GROUP BY person_id HAVING age < 20",
+     @new_monthly_visits]).collect { |e| e.person_id }
   end
 
   def women_attending_fanc_visits
@@ -1568,9 +1573,59 @@ class Reports
   end
 
   def women_received_ttv_doses
+    patients = {}
+    adq_ttv = Encounter.find(:all, 
+      :joins => [:observations],
+      :select => ["patient_id, 
+        (COALESCE(value_numeric,0)+COALESCE(value_text,0)) form_id"],
+      :conditions => ["concept_id = ? AND (value_numeric = 5 
+        OR value_text = 5) AND encounter.patient_id IN (?)",
+        ConceptName.find_by_name("TT STATUS").concept_id,
+        @new_monthly_visits]).collect { |e|
+          e.patient_id
+        };
+
+    rec_ttv = Order.find(:all, 
+      :joins => [[:drug_order => :drug], :encounter],
+      :select => ["encounter.patient_id, count(*) encounter_id"],
+      :group => [:patient_id], 
+      :conditions => ["drug.name LIKE ? AND encounter.patient_id IN (?) 
+        AND orders.voided = 0", "%TTV%",
+        @new_monthly_visits]
+      ).collect { |o|
+        o.patient_id
+
+        #}.delete_if { |p, e|
+         # v = 0;
+          #v = patients[p] if patients[p]
+          #v.to_i + e.to_i < 2
+        } #.collect { |x, y| x }.uniq
+
+      return (adq_ttv + rec_ttv).uniq
   end
 
   def women_received_iron
+    fefol = {}
+    results = []
+    Order.find(:all, 
+      :joins => [[:drug_order => :drug], :encounter],
+      :select => ["encounter.patient_id, count(*) datetime, drug.name instructions," +
+        "COALESCE(SUM(DATEDIFF(auto_expire_date, start_date)), 0) orderer"], 
+      :group => [:patient_id],
+      :conditions => ["drug.name = ? AND encounter.patient_id IN (?)", 
+        "Fefol (1 tablet)",@new_monthly_visits]
+    ).each { |o|
+      next if ! fefol[o.patient_id].blank?
+      fefol[o.patient_id] = o.orderer #if ! fefol[o.patient_id].include?(o.datetime)
+    }
+
+    fefol.each{|k, v|
+      if v.to_i >= 120
+        results << k
+      end
+    }
+
+    return results
   end
 
   def women_received_albendazole

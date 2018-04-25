@@ -68,7 +68,6 @@
         ["HB", "HB Test Result"],["Syphilis", "Syphilis Test Result"],
         ["Urine", "Urine Test Results"],["Malaria", "Malaria Test Result"],
         ["Blood Group", "Blood Group Test Result"]]
-      @test_date = false
   %>
 
   function readableMessage(){
@@ -453,13 +452,6 @@ function remoteARTStatus(){
     <%= touch_hidden_tag "#{element}", @patient, "", :id => "#{element}_child_concept"%>
   <% end %>
 
-  <!-- HIV Test date -->
-  <%= touch_hidden_tag "HIV test date", @patient, "#{session[:datetime].to_date rescue Date.today}",
-    { 
-      :id => "test_date"
-    } 
-  %>
-
 	 <%= text_field_tag :showSummary, nil,
                       {
                           :tt_onLoad => "remoteARTStatus(); __$('keyboard').style.display = 'none'",
@@ -637,7 +629,7 @@ function remoteARTStatus(){
         :id => "new_test_result_at_current_facility",
         :helptext => "HIV Test Result <span class='helper'> Lab Results</span>",
         :tt_BeforeUnload => "checkHIVTestUnknown();",
-        :tt_onUnLoad => "parsedConceptName = ''; #{@test_date = true};",
+        :tt_onUnLoad => "parsedConceptName = '';",
         :tt_onLoad => "parsedConceptName = 'HIV Status'; ",
         :condition => "getSelected().match(/HIV/)"
       }
@@ -666,11 +658,12 @@ function remoteARTStatus(){
       }
     %>
 
-  <!-- %= hidden_field_tag "HIV test date", "#{session[:datetime].to_date rescue Date.today}"
-    {
-      :condition => "__$('new_test_result_at_current_facility').value != "" || __$('new_test_result_at_current_facility').value != 'Not Done'"
-    } % -->
-      <!-- %= hidden_field_tag "encounter[patient_id]", @patient.id % -->
+    <!-- HIV Test date -->
+  <%= touch_hidden_tag "HIV test date", @patient, "#{session[:datetime].to_date rescue Date.today}",
+    { 
+      :id => "test_date"
+    } 
+  %>
       
       <!-- %= touch_date_tag "HIV test date", @patient, "",
         {
@@ -697,7 +690,7 @@ function remoteARTStatus(){
                                :condition => "getSelected().match(/HB/)"
                            }
   %>
-
+<% if (Settings["recency_test"] == true) %>
 <%= text_field_tag "advanced_rapid_recency_assay", nil, {
       :id => 'rapid_recency_assay',
       :tt_onLoad => "advancedRapidRecencyAssay(); __$('keyboard').style.display = 'none';",
@@ -706,6 +699,7 @@ function remoteARTStatus(){
       :tt_pageStyleClass => "NoControls",
       :condition => "__$('new_test_result_at_current_facility').value == 'Positive'
          || __$('prev_hiv_test_results').value == 'Positive';" } %>
+<%end%>
 
   <!-- %= touch_date_tag "HB Test Result Date", @patient, nil,
                      {
