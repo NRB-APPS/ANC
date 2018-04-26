@@ -98,6 +98,7 @@
           :tt_onLoad => "document.forms[0].reset(); disablePastVisits();",
           :tt_pageStyleClass => "NumbersOnly",
           :max => 7,
+          :absoluteMax => 12,
           :min => 1
         } %>
       <%
@@ -113,6 +114,7 @@
           :absoluteMax => 19,
           :max => 9,
           :min => 1,
+          :absoluteMin => 1,
           :tt_onUnLoad => "if(__$('category')){__$('content').removeChild(__$('category'))}
       if(__$('enter_gravida').value == 1){
       __$('enter_number_of_abortions').value = 0;

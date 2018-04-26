@@ -886,6 +886,8 @@ function remoteARTStatus(){
          :condition => "getUrineTest().match(/WBC/);",
          :tt_onUnLoad => "parsedConceptName = '';",
          :units => 'cmm',
+         :validationRule => "(^[+-]?([0-9]*[.])?[0-9]+$)",
+         :validationMessage => "You must enter a valid number",
          :tt_pageStyleClass => "Numeric NumbersOnlyWithDecimal"} %>
 
     <!-- %= touch_date_tag "WBC Test Date", @patient, nil,
@@ -899,19 +901,21 @@ function remoteARTStatus(){
                        } % -->
 
     <%= touch_text_field_tag "RBC", @patient, nil,
-                             {
-                                 :id => "red_blood_cells",
-                                 :field_type => 'number',
-                                 :helptext =>"Red Blood Cells Test Result (cmm) <span class='helper'> Lab Results</span>",
-                                 :allowFreeText => 'true',
-                                 :tt_onLoad => "parsedConceptName = 'RBC';",
-                                 :min => 0,
-                                 :max => 1000000,
-                                 :condition => "getUrineTest().match(/RBC/);",
-                                 :tt_onUnLoad => "parsedConceptName = '';",
-                                 :units => 'cmm',
-                                 :tt_pageStyleClass => "Numeric NumbersOnlyWithDecimal"
-                             } %>
+      {
+        :id => "red_blood_cells",
+        :field_type => 'number',
+        :helptext =>"Red Blood Cells Test Result (cmm) <span class='helper'> Lab Results</span>",
+        :allowFreeText => 'true',
+        :tt_onLoad => "parsedConceptName = 'RBC';",
+        :min => 0,
+        :max => 1000000,
+        :condition => "getUrineTest().match(/RBC/);",
+        :tt_onUnLoad => "parsedConceptName = '';",
+        :units => 'cmm',
+        :validationRule => "(^[+-]?([0-9]*[.])?[0-9]+$)",
+        :validationMessage => "You must enter a valid number",
+        :tt_pageStyleClass => "Numeric NumbersOnlyWithDecimal"
+      } %>
 
     <!-- %= touch_date_tag "RBC Test Date", @patient, nil,
                        {

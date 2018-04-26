@@ -1694,7 +1694,8 @@ class Reports
 
   end
 
-  def women_previously_tested_positive
+  def women_previously_tested_hiv_positive
+
     select = Encounter.find_by_sql([
                 "SELECT
                 e.patient_id,
@@ -1726,6 +1727,10 @@ class Reports
                 @monthly_end_date.to_date.end_of_month.strftime('%Y-%m-%d 23:59:59'),
                 @new_monthly_visits,@monthly_end_date.to_date, @monthly_end_date.to_date
                 ]).map(&:patient_id)
+  end
+
+  def women_on_art
+    #raise on_art_in_bart.inspect
   end
 
 

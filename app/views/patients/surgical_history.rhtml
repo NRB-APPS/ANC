@@ -73,7 +73,8 @@
     {:id => "surgical1",
     :helptext => "Surgical procedure  <span class='helper'> Surgical History</span>",
     :ajaxURL => "/encounters/procedure_done?#{str}search_string=",
-    :condition => "__$('surgicals_available').value.toUpperCase() == 'YES'"
+    :condition => "__$('surgicals_available').value.toUpperCase() == 'YES'",
+    :tt_pageStyleClass => "NoKeyboard"
   } %>
 
   <%= touch_date_tag "Date received", @patient, nil,

@@ -778,7 +778,9 @@ class ReportsController < ApplicationController
         @received_albendazole = report.women_received_albendazole
         @received_itn = report.women_received_itn
         @tested_positive = report.women_tested_hiv_positive
-        @prev_tested_positive = report.women_previously_tested_positive
+        @prev_tested_positive = report.women_previously_tested_hiv_positive
+
+        @on_art = report.women_on_art
 
         render :layout => "report"
       end
