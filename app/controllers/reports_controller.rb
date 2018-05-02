@@ -770,6 +770,7 @@ class ReportsController < ApplicationController
         @third_trimester = report.third_trimester_visits
         @teenegers = report.teeneger_pregnancies
         @screened_for_syphilis = report.women_screening_syphilis
+        @checked_hb = report.women_checked_hb
         @received_sp_1 = report.women_received_sp_1
         @received_sp_2 = report.women_received_sp_2
         @received_sp_3 = report.women_received_sp_3
@@ -780,7 +781,8 @@ class ReportsController < ApplicationController
         @tested_positive = report.women_tested_hiv_positive
         @prev_tested_positive = report.women_previously_tested_hiv_positive
 
-        @on_art = report.women_on_art
+        @women_on_art = report.women_on_art
+        @women_on_cpt = report.women_on_cpt
 
         render :layout => "report"
       end

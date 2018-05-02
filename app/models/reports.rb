@@ -1515,7 +1515,16 @@ class Reports
         @new_monthly_visits]).collect { |e| e.patient_id }
   end
 
-  def women_checked_hd
+  def women_checked_hb
+    Encounter.find(:all, 
+      :joins => [:observations], 
+      :select => ["DISTINCT patient_id"],
+      :conditions => ["concept_id = ? AND (DATE(encounter_datetime) >= ? " +
+        "AND DATE(encounter_datetime) <= ?) AND encounter.patient_id IN (?)",
+        ConceptName.find_by_name("HB TEST RESULT").concept_id,
+        @monthly_start_date.to_date.beginning_of_month, 
+        @monthly_end_date.to_date.end_of_month,
+        @new_monthly_visits]).collect { |e| e.patient_id }
   end
 
   def women_received_sp_1
@@ -1731,6 +1740,11 @@ class Reports
 
   def women_on_art
     #raise on_art_in_bart.inspect
+    return []
+  end
+
+  def women_on_cpt
+    return []
   end
 
 
