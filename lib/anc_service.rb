@@ -1156,7 +1156,7 @@ module ANCService
       label.draw_text("",28,138,0,2,1,1,false)
       label.draw_text("TTV",75,156,0,2,1,1,false)
 
-      label.draw_text("Signs/Symptoms",170,140,0,2,1,1,false)
+      label.draw_text("Diagnosis",170,140,0,2,1,1,false)
       label.draw_text("Medication/Outcome",370,140,0,2,1,1,false)
       label.draw_text("Next Vis.",600,140,0,2,1,1,false)
       label.draw_text("Date",622,158,0,2,1,1,false)
