@@ -848,8 +848,9 @@ module ANCService
       label.draw_text(@syphilis,345,196,0,2,1,1,false)
       label.draw_text(@hb,325,226,0,2,1,1,false)
       #label.draw_text(@hb2,325,256,0,2,1,1,false)
-      label.draw_text(@malaria,325,286,0,2,1,1,false)
-      label.draw_text(@blood_group,188,226,0,2,1,1,false)
+      label.draw_text(@malaria,325,256,0,2,1,1,false)
+      label.draw_text(@blood_group,325,286,0,2,1,1,false)
+      #label.draw_text(@malaria,188,226,0,2,1,1,false)
 
       label.print(1)
 
