@@ -124,7 +124,7 @@
 
   <%= select_tag "''[]", options_for_select(@conditions),
     {:id => "values",
-    :tt_onLoad => "__$('nextButton').style.display='block';",
+    :tt_onLoad => "__$('nextButton').style.display='block';__$('backButton').style.display = 'none';",
     :tt_pageStyleClass => "longSelectList",
     :multiple => "multiple",
     :selectAll => "selectAll",
