@@ -126,8 +126,9 @@
           :helptext => "Para <span class='helper'> Obstetric History</span>",
           :tt_pageStyleClass => "NumbersWithUnknown",
           :condition => "__$('enter_gravida').value > 1",
-          :tt_onLoad => " __$('touchscreenInput' + " +
-            "tstCurrentPage).setAttribute('absoluteMax', (__$('enter_gravida').value - 1))",
+          :tt_BeforeOnLoad => "",
+          :tt_onLoad => "data = {}; __$('touchscreenInput' + " +
+            "tstCurrentPage).setAttribute('absoluteMax', (__$('enter_gravida').value - 1)); details_available = []",
           :tt_onUnLoad => "if(__$('enter_number_of_deliveries').value == 0){
       }; __$('enter_number_of_abortions').setAttribute('absoluteMax', (parseInt(__$('enter_gravida').value - parseInt(__$('enter_number_of_deliveries').value) -1 )));
       __$('enter_number_of_abortions').setAttribute('absoluteMin', (parseInt(__$('enter_gravida').value - parseInt(__$('enter_number_of_deliveries').value) -1 )));
