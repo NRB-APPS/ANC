@@ -844,9 +844,10 @@ module ANCService
 
       label.draw_text(target_date,188,166,0,2,1,1,false)
       label.draw_text(target_date,188,196,0,2,1,1,false)
+      label.draw_text(target_date,188,226,0,2,1,1,false)
       label.draw_text(target_date,188,256,0,2,1,1,false)
       label.draw_text(target_date,188,286,0,2,1,1,false)
-      label.draw_text(target_date,188,326,0,2,1,1,false)
+
 
       label.draw_text(@hiv_test,345,166,0,2,1,1,false)
       label.draw_text(@syphilis,345,196,0,2,1,1,false)
