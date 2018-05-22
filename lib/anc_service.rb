@@ -742,6 +742,7 @@ module ANCService
     end
 
     def examination_label(target_date = Date.today)
+      #raise target_date.inspect
       @patient = self.patient rescue nil
 
       syphil = {}
@@ -844,7 +845,7 @@ module ANCService
       label.draw_text(@hb2_date,188,256,0,2,1,1,false)
       label.draw_text(@malaria_date,188,286,0,2,1,1,false)
 
-      label.draw_text(@hiv_test,345,166,0,2,1,1,false)
+      label.draw_text(target_date,345,166,0,2,1,1,false)
       label.draw_text(@syphilis,345,196,0,2,1,1,false)
       label.draw_text(@hb,325,226,0,2,1,1,false)
       #label.draw_text(@hb2,325,256,0,2,1,1,false)
