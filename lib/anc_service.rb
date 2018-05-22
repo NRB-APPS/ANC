@@ -792,6 +792,8 @@ module ANCService
 
       @height = current_height.to_i # rescue nil
 
+      @weight = current_weight.to_i
+
       @multiple = Observation.find(:last, :conditions => ["person_id = ? AND encounter_id IN (?) AND concept_id = ?",
           @patient.id, Encounter.find(:all, :conditions => ["encounter_type = ?",
               EncounterType.find_by_name("CURRENT PREGNANCY").id]).collect{|e| e.encounter_id},
@@ -807,7 +809,7 @@ module ANCService
       label.draw_line(180,160,250,1,0)
 
       label.draw_text("Height",28,76,0,2,1,1,false)
-      label.draw_text("Multiple Pregnancy",28,106,0,2,1,1,false)
+      label.draw_text("Weight",28,106,0,2,1,1,false)
 
       label.draw_text("Lab Results",28,131,0,1,1,2,false)
       label.draw_text("Date",190,140,0,2,1,1,false)
@@ -837,15 +839,15 @@ module ANCService
       label.draw_line(180,280,250,1,0)
 
       label.draw_text(@height,270,76,0,2,1,1,false)
-      label.draw_text(@multiple,270,106,0,2,1,1,false)
+      label.draw_text(@weight,270,106,0,2,1,1,false)
       # label.draw_text(@who,270,136,0,2,1,1,false)
 
-      label.draw_text(@hiv_test_date,188,166,0,2,1,1,false)
+      label.draw_text(target_date,188,166,0,2,1,1,false)
       label.draw_text(@syphilis_date,188,196,0,2,1,1,false)
       label.draw_text(@hb2_date,188,256,0,2,1,1,false)
       label.draw_text(@malaria_date,188,286,0,2,1,1,false)
 
-      label.draw_text(target_date,345,166,0,2,1,1,false)
+      label.draw_text(@hiv_test,345,166,0,2,1,1,false)
       label.draw_text(@syphilis,345,196,0,2,1,1,false)
       label.draw_text(@hb,325,226,0,2,1,1,false)
       #label.draw_text(@hb2,325,256,0,2,1,1,false)
