@@ -815,7 +815,7 @@ module ANCService
       label.draw_text("Syphilis",28,196,0,2,1,1,false)
       label.draw_text("Hb",28,226,0,2,1,1,false)
       #label.draw_text("Hb2",28,256,0,2,1,1,false)
-      label.draw_text("Malaria",28,286,0,2,1,1,false)
+      label.draw_text("Malariaggggggggggggggggggggggggggggggggg",28,286,0,2,1,1,false)
       label.draw_text("Blood Group",28,286,0,2,1,1,false)
       label.draw_line(260,70,170,1,0)
       label.draw_line(260,70,1,60,0)
