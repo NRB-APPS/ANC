@@ -97,6 +97,55 @@ module DDE2Service
     end
   end
 
+  def self.dde_login(params)
+    dde_address = "#{dde_settings["dde_address"]}/v1/login"
+    dde_username = params[:username]
+    dde_password = params[:password]
+    passed_params = {:username => dde_username, :password => dde_password}
+    headers = {:content_type => "json" }
+    received_params = RestClient.post(dde_address, passed_params.to_json, headers = headers){|response, request, result|response}
+    dde_token = JSON.parse(received_params)["access_token"]
+    return dde_token
+  end
+
+  def self.dde_settings
+    data = {}
+    dde_ip = GlobalProperty.find_by_property('dde.address').property_value 
+    dde_port = GlobalProperty.find_by_property('dde.port').property_value
+    # dde_username = GlobalProperty.find_by_property('dde.username').property_value
+    # dde_password = GlobalProperty.find_by_property('dde.password').property_value
+
+    data["dde_ip"] = dde_ip
+    data["dde_port"] = dde_port
+    # data["dde_username"] = dde_username
+    # data["dde_password"] = dde_password
+    data["dde_address"] = "http://#{dde_ip}:#{dde_port}"
+
+    return data
+  end
+
+  def self.dde_locations(token, name = "")
+    dde_address = "#{dde_settings["dde_address"]}/v1/get_locations"
+    passed_params = {:name => name}
+    headers = {:content_type => "json", :Authorization => token }
+    received_params = RestClient.post(dde_address, passed_params.to_json, headers = headers){|response, request, result|response}
+    return JSON.parse(received_params)
+  end
+
+  def self.add_dde_user(data, token)
+    dde_address = "#{dde_settings["dde_address"]}/v1/add_user"
+    passed_params = {
+      :username => data["username"],
+      :password => data["password"],
+      :email => "test@gmail.com",
+      :location => data["location"],
+    }
+    headers = {:content_type => "json", :Authorization => token }
+    received_params = RestClient.post(dde_address, passed_params.to_json, headers = headers){|response, request, result|response}
+    dde_status = JSON.parse(received_params)["status"]
+    return dde_status
+  end
+
   def self.format_params(params, date)
     gender = (params['person']['gender'].match(/F/i)) ? "Female" : "Male"
 

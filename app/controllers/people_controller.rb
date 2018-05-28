@@ -630,7 +630,9 @@ class PeopleController < GenericPeopleController
 
     remote_results = []
     if create_from_dde_server
-      remote_results = DDE2Service.search_from_dde2(params) if !params[:given_name].blank?
+      #remote_results = DDE2Service.search_from_dde2(params) if !params[:given_name].blank?
+                dde_search_results = PatientService.search_dde_by_identifier(params[:identifier], session[:dde_token])
+
     end
     #raise remote_results.inspect
 

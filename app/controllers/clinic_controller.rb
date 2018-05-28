@@ -123,33 +123,78 @@ class ClinicController < GenericClinicController
   end
 
   def enable_dde2
+    @dde_status = GlobalProperty.find_by_property('dde.status').property_value rescue ""
+    @dde_status = 'Yes' if @dde_status.match(/ON/i)
+    @dde_status = 'No' if @dde_status.match(/OFF/i)
+
     if request.post?
-      global_properties = {
-          'create.from.dde.server' => params[:create_from_dde2] == 'Yes' ? 'true' : 'false',
-          'dde_server_ip' => params[:create_from_dde2] == 'Yes' ? "#{params[:dde_server_ip]}:#{params[:dde_server_port]}" : "",
-          'dde_server_protocol' => params[:dde_server_protocol],
-          'dde_server_username' => params[:dde_server_username],
-          'dde_server_password' => params[:dde_server_password]
-      }
-
-      global_properties.each do |property, property_value|
-        global_property = GlobalProperty.find_by_property(property)
-        if global_property.blank?
-          global_property = GlobalProperty.new
-          global_property.description = 'DDE2 parameter'
-        end
-
-        global_property.property = property
-        global_property.property_value = property_value
-        global_property.save
+      dde_status = params[:create_from_dde2]
+      if dde_status.squish.downcase == 'yes'
+        dde_status = 'ON'
+      else
+        dde_status = 'OFF'
       end
 
-      redirect_to '/' and return
-    else
+      global_property_dde_status = GlobalProperty.find_by_property('dde.status') || GlobalProperty.new()
+      global_property_dde_status.property = 'dde.status'
+      global_property_dde_status.property_value = dde_status
+      global_property_dde_status.save
 
+      if (dde_status == 'ON') #Do this part only when DDE is activated
+        global_property_dde_address = GlobalProperty.find_by_property('dde.address') || GlobalProperty.new()
+        global_property_dde_address.property = 'dde.address'
+        global_property_dde_address.property_value = params[:dde_server_ip]
+        global_property_dde_address.save
+
+        global_property_dde_port = GlobalProperty.find_by_property('dde.port') || GlobalProperty.new()
+        global_property_dde_port.property = 'dde.port'
+        global_property_dde_port.property_value = params[:dde_server_port]
+        global_property_dde_port.save
+
+        data = {:username => params[:dde_server_username], :password => params[:dde_server_password]}
+        dde_token = DDE2Service.dde_login(data)
+        
+        if dde_token.blank?
+          flash[:notice] = "Failed to authorize user. Check your username and password"
+          redirect_to("/clinic/enable_dde2") and return
+        else
+          session[:dde_token] = dde_token
+          redirect_to("/clinic/dde_add_user") and return
+        end
+      end
     end
 
     render :layout => "application"
+  end
+
+  def dde_add_user
+    if request.post?
+      data = {
+        "username" => params[:username],
+        "password" => params[:password],
+        "location" => params[:location]
+      }
+      
+      dde_status = DDE2Service.add_dde_user(data, session[:dde_token])
+      unless dde_status.to_i == 200
+        flash[:notice] = "Failed to create user"
+        redirect_to("/clinic/dde_add_user") and return
+      end
+      redirect_to("/clinic") and return
+    end
+    render :layout => "application"
+  end
+
+  def get_dde_locations
+    dde_locations = DDE2Service.dde_locations(session[:dde_token], params[:name])
+    li_elements = "<li></li>"
+    dde_locations.each do |location|
+      doc_id = location["doc_id"]
+      location_name = location["name"]
+      li_elements += "<li value='#{doc_id}'>#{location_name}</li>"
+    end
+    li_elements += "<li></li>"
+    render :text => li_elements and return
   end
 
 end

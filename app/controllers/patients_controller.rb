@@ -2082,6 +2082,7 @@ class PatientsController < ApplicationController
   end
 
   def search
+    raise "kjknjkncvjjcvj"
     url_read = "http://#{CoreService.get_global_property_value('duplicates_check_url')}/read";
     patient_ids = []
     @duplicates = []
