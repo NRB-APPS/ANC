@@ -559,6 +559,20 @@ module DDEService
 
 		return nil
   end
+  
+  def self.get_patient_identifier(patient, identifier_type)
+    patient_identifier_type_id = PatientIdentifierType.find_by_name(identifier_type).patient_identifier_type_id rescue nil
+    patient_identifier = PatientIdentifier.find(:first, :select => "identifier",
+      :conditions  =>["patient_id = ? and identifier_type = ?", patient.id, patient_identifier_type_id],
+      :order => "date_created DESC" ).identifier rescue nil
+    return patient_identifier
+  end
+  
+  def self.get_attribute(person, attribute)
+    PersonAttribute.find(:first,:conditions =>["voided = 0 AND person_attribute_type_id = ? AND person_id = ?",
+        PersonAttributeType.find_by_name(attribute).id, person.id]).value rescue nil
+  end
+
 
 end
 

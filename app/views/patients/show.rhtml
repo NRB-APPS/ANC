@@ -228,8 +228,12 @@
           <% end %>
 
 
-          <% if current_user.activities.include?("Registration") %>
-              <option value='/patients/demographics?patient_id=<%= @patient.id %>'>Demographics</option>
+          <% if current_user.activities.include?("Registration") 
+              if create_from_dde %>
+                <option value='/dde/edit_demographics?patient_id=<%= @patient.id %>'>Edit Demographics</option>
+              <%else%>
+                <option value='/patients/demographics?patient_id=<%= @patient.id %>'>Demographics</option>
+              <%end%>
           <% end %>
         </select>
         <select id="tabs">

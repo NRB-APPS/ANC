@@ -19,7 +19,7 @@ class DdeController < ApplicationController
         :home_traditional_authority => params[:person][:addresses]['county_district'],
         :home_village     => params[:person][:addresses]['neighborhood_cell'],            
         :current_district => params[:person][:addresses]['state_province'],        
-        :current_traditional_authority => params[:person][:addresses]['township_division'],      
+        :current_traditional_authority => params[:person][:addresses]['address1'],      
         :current_village => params[:person][:addresses]['city_village']     
       },
       :identifiers => {}
@@ -438,6 +438,115 @@ class DdeController < ApplicationController
       end
       redirect_to("/clinic") and return
     end
+  end
+
+  def edit_demographics
+    patient = Patient.find(params[:patient_id])
+    person  = patient.person
+    doc_id = DDEService.get_patient_identifier(patient, "DDE person document ID")
+
+    name    = person.names.last rescue nil
+    address = person.addresses.last rescue nil
+     
+    @patient_obj = {
+      :given_name           => (name.given_name rescue nil),
+      :family_name          => (name.family_name rescue nil),
+      :middle_name          => (name.middle_name rescue nil),
+      :gender               => person.gender,
+      :birthdate            => person.birthdate,
+      
+      :home_district        => (address.address2 rescue nil),
+      :home_ta              => (address.county_district rescue nil),
+      :home_village         => (address.neighborhood_cell rescue nil),
+      :current_district     => (address.state_province rescue nil) ,
+      :current_ta           => (address.address1 rescue nil) ,
+      :current_village      => (address.city_village rescue nil) ,
+
+
+      :cell_phone_number    => DDEService.get_attribute(person, "Cell Phone Number"),
+      :home_phone_number    => DDEService.get_attribute(person, "Home Phone Number") ,
+      :occupation           => DDEService.get_attribute(person, "Occupation"),
+      :patient_id           => patient.id,
+      :doc_id               => doc_id 
+    }
+  end
+
+  def district
+    region_id = Region.find_by_name("#{params[:filter_value]}").id
+    region_conditions = ["name LIKE (?) AND region_id = ? ", "#{params[:search_string]}%", region_id]
+
+    districts = District.find(:all,:conditions => region_conditions, :order => 'name')
+    districts = districts.map do |d|
+      "<li value=\"#{d.name}\">#{d.name}</li>"
+    end
+    render :text => districts.join('') and return
+  end
+	
+  # List traditional authority containing the string given in params[:value]
+  def traditional_authority
+    district_id = District.find_by_name("#{params[:filter_value]}").id
+    traditional_authority_conditions = ["name LIKE (?) AND district_id = ?", "%#{params[:search_string]}%", district_id]
+
+    traditional_authorities = TraditionalAuthority.find(:all,:conditions => traditional_authority_conditions, :order => 'name')
+    traditional_authorities = traditional_authorities.map do |t_a|
+      "<li value=\"#{t_a.name}\">#{t_a.name}</li>"
+    end
+    render :text => traditional_authorities.join('') and return
+  end
+
+  # Villages containing the string given in params[:value]
+  def village
+    traditional_authority_id = TraditionalAuthority.find_by_name("#{params[:filter_value]}").id
+    village_conditions = ["name LIKE (?) AND traditional_authority_id = ?", "%#{params[:search_string]}%", traditional_authority_id]
+
+    villages = Village.find(:all,:conditions => village_conditions, :order => 'name')
+    villages = villages.map do |v|
+      "<li value=\"" + v.name + "\">" + v.name + "</li>"
+    end
+    render :text => villages.join('') and return
+  end
+
+  def update_address
+    #raise address_params.inspect
+    if params[:address_type] == 'home_district'
+      address_params = {
+        :attributes => {
+          :home_district  =>  params[:person][:addresses][:address2],
+          :home_traditional_authority => params[:person][:addresses][:county_district],
+          :home_village =>  params[:person][:addresses][:neighborhood_cell]
+        },
+        :doc_id => params[:document_id]
+      }
+    else
+      address_params = {
+        :attributes => {
+          :current_district  =>  params[:person][:addresses][:address2],
+          :current_traditional_authority => params[:person][:addresses][:county_district],
+          :current_village =>  params[:person][:addresses][:neighborhood_cell]
+        },
+        :doc_id => params[:document_id]
+      }
+    end
+
+    dde_url = DDEService.dde_settings['dde_address'] + "/v1/update_person"
+    output = RestClient::Request.execute( { :method => :post, :url => dde_url,
+      :payload => address_params, :headers => {:Authorization => session[:dde_token]} } )
+
+    addresses = PersonAddress.find(:all, :conditions =>["person_id = ?", params[:patient_id]])
+    
+    (addresses || []).each do |address|
+      if params[:address_type] == 'home_district'
+        address.update_attributes(:address2 => params[:person][:addresses][:address2],
+          :county_district => params[:person][:addresses][:county_district],
+          :neighborhood_cell => params[:person][:addresses][:neighborhood_cell])
+      else
+        address.update_attributes(:state_province => params[:person][:addresses][:address2],
+          :address1 => params[:person][:addresses][:county_district],
+          :city_village => params[:person][:addresses][:neighborhood_cell])
+      end
+    end
+
+    redirect_to "/dde/edit_demographics?patient_id=#{params[:patient_id]}" and return
   end
 
   private
