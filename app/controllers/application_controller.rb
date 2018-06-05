@@ -1,4 +1,24 @@
 class ApplicationController < GenericApplicationController
+  before_filter :set_dde_token
+
+  def set_dde_token
+    if create_from_dde
+      unless current_user.blank?
+        if session[:dde_token].blank?
+          dde_token = DDEService.dde_authentication_token
+          session[:dde_token] = dde_token
+        else
+          token_status = DDEService.verify_dde_token_authenticity(session[:dde_token])
+          if token_status.to_s == '401'
+            dde_token = DDEService.dde_authentication_token
+            session[:dde_token] = dde_token
+          end
+        end
+      end
+    else
+      session[:dde_token] = nil  
+    end
+  end
 
   def next_task(patient)
 

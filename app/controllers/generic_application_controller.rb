@@ -102,12 +102,17 @@ class GenericApplicationController < ActionController::Base
     CoreService.get_global_property_value('tb_dot_sites_tag') rescue nil
   end
 
-  def create_from_remote                                                        
-    CoreService.get_global_property_value('create.from.remote').to_s == "true" rescue false
+  def create_from_dde_server
+    return false
   end
 
-  def create_from_dde_server                                                    
-    CoreService.get_global_property_value('create.from.dde.server').to_s == "true" rescue false
+  def create_from_dde
+    dde_status = GlobalProperty.find_by_property('dde.status').property_value.to_s.squish rescue 'OFF'#New DDE API
+    if (dde_status.upcase == 'ON')
+      return true
+    else
+      return false
+    end
   end
 
   def concept_set(concept_name)
