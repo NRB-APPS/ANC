@@ -177,7 +177,7 @@ class DdeController < ApplicationController
     if create_from_dde_server
       @remote_duplicates = []
       #DDEService.search_dde_by_identifier(params[:search_params][:identifier], session[:dde_token])["data"]["hits"].each do |search_result|
-        #@remote_duplicates << PatientService.get_remote_dde_person(search_result)
+      #@remote_duplicates << PatientService.get_remote_dde_person(search_result)
       #end rescue nil
     end
 
@@ -369,15 +369,23 @@ class DdeController < ApplicationController
           redirect_to("/dde/dde_login") and return
         else
           session[:dde_token] = dde_token
-          create_dde_properties(params)
+          create_dde_properties(params, dde_status)
           redirect_to("/dde/dde_add_user") and return
         end
+      else
+        global_property_dde_status = GlobalProperty.find_by_property('dde.status')
+        global_property_dde_status = GlobalProperty.new if global_property_dde_status.blank?
+        global_property_dde_status.property = 'dde.status'
+        global_property_dde_status.property_value = dde_status
+        global_property_dde_status.save
+
+        redirect_to("/clinic") and return
       end
       
     end
   end
 
-  def create_dde_properties(params)
+  def create_dde_properties(params, dde_status)
     ActiveRecord::Base.transaction do
       global_property_dde_address = GlobalProperty.find_by_property('dde.address')
       global_property_dde_address = GlobalProperty.new if global_property_dde_address.blank?
@@ -406,7 +414,7 @@ class DdeController < ApplicationController
       global_property_dde_status = GlobalProperty.find_by_property('dde.status')
       global_property_dde_status = GlobalProperty.new if global_property_dde_status.blank?
       global_property_dde_status.property = 'dde.status'
-      global_property_dde_status.property_value = "ON"
+      global_property_dde_status.property_value = dde_status
       global_property_dde_status.save
     end
   end
@@ -463,12 +471,13 @@ class DdeController < ApplicationController
       :current_village      => (address.city_village rescue nil) ,
 
 
-      :cell_phone_number    => DDEService.get_attribute(person, "Cell Phone Number"),
+      :cell_phone           => DDEService.get_attribute(person, "Cell Phone Number"),
       :home_phone_number    => DDEService.get_attribute(person, "Home Phone Number") ,
       :occupation           => DDEService.get_attribute(person, "Occupation"),
       :patient_id           => patient.id,
       :doc_id               => doc_id 
     }
+    
   end
 
   def district
@@ -547,6 +556,160 @@ class DdeController < ApplicationController
     end
 
     redirect_to "/dde/edit_demographics?patient_id=#{params[:patient_id]}" and return
+  end
+
+  def update_names
+    # update given name
+    unless params[:person][:names][:given_name].blank?
+      name_params = {
+        :given_name  =>  params[:person][:names][:given_name],
+        :doc_id => params[:document_id]
+       }
+    end
+
+    # updates family name
+    unless params[:person][:names][:family_name].blank?
+      name_params = {
+        :family_name  =>  params[:person][:names][:given_name],
+        :doc_id => params[:document_id]
+       }
+    end
+    #raise name_params.inspect
+
+    dde_url = DDEService.dde_settings['dde_address'] + "/v1/update_person"
+    output = RestClient::Request.execute( { :method => :post, :url => dde_url,
+      :payload => name_params, :headers => {:Authorization => session[:dde_token]} } )
+
+    names = PersonName.find(:all, :conditions =>["person_id = ?", params[:patient_id]])
+
+    (names || []).each do |name|
+      unless params[:person][:names][:given_name].blank?
+        name.update_attributes(:given_name => params[:person][:names][:given_name])
+      end
+
+      unless params[:person][:names][:family_name].blank?
+        name.update_attributes(:family_name => params[:person][:names][:family_name])
+      end
+    end
+
+    redirect_to "/dde/edit_demographics?patient_id=#{params[:patient_id]}" and return
+
+  end
+
+  def update_attribute
+    attribute = ''
+    # update phone number
+    unless params[:person][:cell_phone_number].blank?
+      attr_params = {
+        :attributes => {
+          :cellphone_number => params[:person][:cell_phone_number]
+        },
+        :doc_id => params[:document_id]
+       }
+       attribute_type = PersonAttributeType.find_by_name('Cell Phone Number')
+    end
+
+    # updates occupation
+    unless params[:person][:occupation].blank?
+      attr_params = {
+        :attributes => {
+          :occupation => params[:person][:occupation]
+        },
+        :doc_id => params[:document_id]
+       }
+       attribute_type = PersonAttributeType.find_by_name('Occupation')
+    end
+
+    dde_url = DDEService.dde_settings['dde_address'] + "/v1/update_person"
+    output = RestClient::Request.execute( { :method => :post, :url => dde_url,
+      :payload => attr_params, :headers => {:Authorization => session[:dde_token]} } )
+
+
+    person_attributes = PersonAttribute.find(:all,
+      :conditions =>["voided = 0 AND person_attribute_type_id = ? AND person_id = ?",
+        attribute_type.id, params[:patient_id]])
+
+    #raise person_attributes.inspect
+
+    if !person_attributes.blank?
+      (person_attributes || []).each do |attr|
+        unless params[:person][:cell_phone_number].blank?
+          attr.update_attributes(:value => params[:person][:cell_phone_number])
+        end
+
+        unless params[:person][:occupation].blank?
+          attr.update_attributes(:value => params[:person][:occupation])
+        end 
+      end
+    else
+      unless params[:person][:cell_phone_number].blank?
+        attribute = params[:person][:cell_phone_number]
+      end
+
+      unless params[:person][:occupation].blank?
+        attribute = params[:person][:occupation]
+      end
+
+      PersonAttribute.create(
+        :person_id => params[:patient_id],
+        :value => attribute,
+        :person_attribute_type_id => attribute_type.id
+      )
+
+    end
+
+    redirect_to "/dde/edit_demographics?patient_id=#{params[:patient_id]}" and return
+  end
+
+  def update_birthdate
+    birthday_params = params[:person]
+    unless birthday_params.empty?
+		  if birthday_params["birth_year"] == "Unknown"
+			  birthdate = Date.new(Date.today.year - birthday_params["age_estimate"].to_i, 7, 1)
+        birthdate_estimated = 1
+		  else
+        
+			  year = birthday_params["birth_year"]
+        month = birthday_params["birth_month"]
+        day = birthday_params["birth_day"]
+
+        month_i = (month || 0).to_i
+        month_i = Date::MONTHNAMES.index(month) if month_i == 0 || month_i.blank?
+        month_i = Date::ABBR_MONTHNAMES.index(month) if month_i == 0 || month_i.blank?
+
+        if month_i == 0 || month == "Unknown"
+          birthdate = Date.new(year.to_i,7,1)
+          birthdate_estimated = 1
+        elsif day.blank? || day == "Unknown" || day == 0
+          birthdate = Date.new(year.to_i,month_i,15)
+          birthdate_estimated = 1
+        else
+          birthdate = Date.new(year.to_i,month_i,day.to_i)
+          birthdate_estimated = 0
+        end
+		  end
+    else
+      birthdate_estimated = 0
+		end
+
+    dob_params = {
+        :birthdate  =>  birthdate,
+        :birthdate_estimated => birthdate_estimated,
+        :doc_id => params[:document_id]
+       }
+
+    dde_url = DDEService.dde_settings['dde_address'] + "/v1/update_person"
+    output = RestClient::Request.execute( { :method => :post, :url => dde_url,
+      :payload => dob_params, :headers => {:Authorization => session[:dde_token]} } )
+
+    person = Person.find(params[:patient_id])
+    person.update_attributes(
+      :birthdate => birthdate,
+      :birthdate_estimated => birthdate_estimated
+    )
+
+    redirect_to "/dde/edit_demographics?patient_id=#{params[:patient_id]}" and return
+    
   end
 
   private
