@@ -1362,7 +1362,7 @@ function loadInputWindow(){
                     "Year of birth" : ["number", min_birth_year, abs_max_birth_year, abs_max_birth_year] ,
                     "Place of birth" : ["list", "Health facility", "In transit", "TBA", "Home"],
                     "Gestation (weeks)" : ["number", 5, 42, 42],
-                    "Method of delivery" : ["list", "Spontaneous Vortex", "Caesarean Section", "Vacuum Extraction", "Breech", "Forceps", "Others"],
+                    "Method of delivery" : ["list", "Spontaneous Vertex", "Caesarean Section", "Vacuum Extraction", "Breech", "Forceps", "Others"],
                     "Condition at birth" : ["list", "Alive", "Macerated Still Birth (MSB)", "Fresh Still Birth (FSB)"],
                     "Birth weight" : ["number", 1, 5],
                     "Alive Now" : ["list", "Yes", "No"],
