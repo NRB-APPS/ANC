@@ -580,7 +580,29 @@
     <%#= touch_hidden_tag "breech", @patient, nil, {:id => "breech"}%>
     <%#= touch_hidden_tag "Position", @patient, nil, {:id => "bed_net"}%>
 
-    <% @presentation = ["", "Cephalic", "Breech", "Ball", "Nill papable"] %>
+    <%= touch_select_tag "LIQUOR", @patient, 
+    options_for_select([["", ""],["Adequate", "Adequate"], 
+        ["Not Adequate", "Not Adequate"],["Unknown", "Unknown"]]),
+     {:id => "liquor",
+      :helptext => "Liquor <span class='helper'> ANC Examination</span>",
+      :condition => "__$('scan_question').value == 'Yes'" 
+     } %>
+
+     <%= touch_select_tag "lie", @patient, options_for_select([["", ""],
+        ["Longitudinal", "Longitudinal"], 
+        ["Transverse", "Transverse"],["Unknown", "Unknown"]]),
+     {:id => "lie",
+      :helptext => "Lie <span class='helper'> ANC Examination</span>",
+      :condition => "__$('scan_question').value == 'Yes'" 
+     } %>
+
+     <%= touch_select_tag "Fetal heart movement seen", @patient, options_for_select([["", ""],["Yes", "Yes"], ["No", "No"]]),
+     {:id => "fetal_heart_movement_seen",
+      :helptext => "Fetal heart movement seen <span class='helper'> ANC Examination</span>"     ,
+      :condition => "__$('scan_question').value == 'Yes'"  
+     } %>
+
+     <% @presentation = ["", "Cephalic", "Breech", "Ball", "Nill papable"] %>
 
     <%= touch_select_tag "PRESENTATION", @patient, options_for_select(@presentation),
      {:id => "presentation",
@@ -588,8 +610,7 @@
       :tt_onLoad => "__$('nextButton').onmousedown = function(){verifyFields()}; ajaxifyInput();",
       :tt_BeforeUnLoad => "",
       :optional => true,
-      :tt_pageStyleClass => "NoKeyboard",
-      :condition => "__$('scan_question').value == 'Yes'"
+      :tt_pageStyleClass => "NoKeyboard"
      }, session_date %>
 
     <% @cephalic = ["", "Right Occipito Anterior", "Left Occipito Anterior", "Unknown"] %>
@@ -623,28 +644,6 @@
        :tt_onLoad => "",
        :condition => false
       }, session_date %>
-
-    <%= touch_select_tag "LIQUOR", @patient, 
-    options_for_select([["", ""],["Adequate", "Adequate"], 
-        ["Not Adequate", "Not Adequate"],["Unknown", "Unknown"]]),
-     {:id => "liquor",
-      :helptext => "Liquor <span class='helper'> ANC Examination</span>",
-      :condition => "__$('scan_question').value == 'Yes'" 
-     } %>
-
-     <%= touch_select_tag "lie", @patient, options_for_select([["", ""],
-        ["Longitudinal", "Longitudinal"], 
-        ["Transverse", "Transverse"],["Unknown", "Unknown"]]),
-     {:id => "lie",
-      :helptext => "Lie <span class='helper'> ANC Examination</span>",
-      :condition => "__$('scan_question').value == 'Yes'" 
-     } %>
-
-     <%= touch_select_tag "Fetal heart movement seen", @patient, options_for_select([["", ""],["Yes", "Yes"], ["No", "No"]]),
-     {:id => "fetal_heart_movement_seen",
-      :helptext => "Fetal heart movement seen <span class='helper'> ANC Examination</span>",
-      :condition => "__$('scan_question').value == 'Yes'" 
-     } %>
 
     <%= touch_numeric_tag "FUNDUS", @patient, nil,
      {:id => "enter_fundal_height",
