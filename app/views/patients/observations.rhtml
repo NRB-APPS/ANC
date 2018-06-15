@@ -645,6 +645,17 @@
        :condition => false
       }, session_date %>
 
+    <%= touch_select_tag "FETAL HEART BEAT", @patient,
+        options_for_select([["", ""], 
+          ["Heard", "Heard"], 
+          ["Not heard", "Not heard"]]),
+        {
+          :id => "enter_fetal_heart",
+          :condition => "__$('presentation').value != 'Ball' || __$('presentation').value != 'Nill papable'",
+          :tt_onLoad => "",
+          :helptext => "Fetal Heart Beat <span class='helper'> ANC Examination</span>"
+        }, session_date %>
+
     <%= touch_numeric_tag "FUNDUS", @patient, nil,
      {:id => "enter_fundal_height",
       :helptext => "Fundus (weeks) <span class='helper'> ANC Examination</span>",
