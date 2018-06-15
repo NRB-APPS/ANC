@@ -561,7 +561,7 @@ Find more at: http://www.skillsyouneed.com/num/percent-change.html#ixzz4TIacWujf
         :absoluteMax => 250,
         :validationRule => "^([0-9]+)|Unknown$",
         :validationMessage => "You must enter numbers only (for example 157)",
-        :tt_pageStyleClass => "KeyboardNumeric NumbersOnly" } %>
+        :tt_pageStyleClass => "KeyboardNumeric NumbersWithUnknown" } %>
 
 
       <%= touch_text_field_tag "DIASTOLIC BLOOD PRESSURE", @patient, nil,{
@@ -573,7 +573,7 @@ Find more at: http://www.skillsyouneed.com/num/percent-change.html#ixzz4TIacWujf
         :absoluteMin => 30,
         :validationRule => "^([0-9]+)|Unknown$",
         :validationMessage => "You must enter numbers only (for example 157)",
-        :tt_pageStyleClass => "Keyboard Numeric NumbersOnly"} %>
+        :tt_pageStyleClass => "Keyboard Numeric  NumbersWithUnknown"} %>
 
     <% end %>
 
