@@ -76,6 +76,10 @@ class EncountersController < ApplicationController
       end
     end
     if params[:encounter][:encounter_type_name] == 'VITALS'
+      if params[:observations][0][:value_text].to_s.downcase == "unknown"
+        params[:observations][1][:value_text] = "Unknown"
+      end
+
       params[:concept].each{|concept|
 
         concept = concept.split(':')
@@ -87,7 +91,6 @@ class EncountersController < ApplicationController
             :encounter_id => encounter.id,
             :value_text => concept[0][1],
             :obs_datetime => encounter.encounter_datetime)
-
           obs.save
         end
       }
