@@ -763,10 +763,15 @@ module ANCService
 
       @malaria_date = syphil["MALARIA TEST RESULT"].match(/not done/i)? "" : syphil["DATE OF LABORATORY TEST"] rescue nil
 
-      @hiv_test = (syphil["HIV STATUS"].downcase == "positive" ? "=" :
-          (syphil["HIV STATUS"].downcase == "negative" ? "-" : "")) rescue ""
+      hiv_test = syphil["HIV STATUS"].blank? ? syphil["PREVIOUS HIV TEST RESULTS"] : syphil["HIV STATUS"] 
 
-      @hiv_test_date = syphil["HIV STATUS"].match(/not done/i) ? "" : syphil["HIV TEST DATE"] rescue nil
+      @hiv_test = (hiv_test.downcase == "positive" ? "=" :
+          (hiv_test.downcase == "negative" ? "-" : "")) rescue ""
+
+      #@hiv_test_date = syphil["HIV STATUS"].match(/not done/i) ? "" : syphil["HIV TEST DATE"] rescue nil
+      
+      hiv_test_date = syphil["PREVIOUS HIV TEST RESULTS"].match(/not done/i) ? "" : syphil["PREVIOUS HIV TEST DATE"] rescue nil
+      @hiv_test_date = hiv_test_date.to_date.strftime("%Y-%m-%d")
 
       hb = {}; pos = 1;
 
@@ -842,7 +847,7 @@ module ANCService
       label.draw_text(@weight,270,106,0,2,1,1,false)
       # label.draw_text(@who,270,136,0,2,1,1,false)
 
-      label.draw_text(target_date,188,166,0,2,1,1,false)
+      label.draw_text(@hiv_test_date,188,166,0,2,1,1,false)
       label.draw_text(target_date,188,196,0,2,1,1,false)
       label.draw_text(target_date,188,226,0,2,1,1,false)
       label.draw_text(target_date,188,256,0,2,1,1,false)
