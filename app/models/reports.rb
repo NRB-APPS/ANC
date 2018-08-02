@@ -13,7 +13,7 @@ class Reports
 
   # Initialize class
   def initialize(start_date, end_date, start_age, end_age, type, today=Date.today)
-
+    
     @monthly_start_date = start_date
     @monthly_end_date = end_date
     
@@ -28,7 +28,7 @@ class Reports
     @type = type
 
     @pregnant_range = (type == 'cohort') ? 6.months : (((end_date.to_time - start_date.to_time).round/(3600*24)) + 1).days
-
+     
     e_date = ((@start_date.to_date + @pregnant_range) - 1.day).to_date
     min_date = @start_date.to_date - 10.months
 
@@ -38,7 +38,7 @@ class Reports
     if type == 'cohort'
       # women registered in a booking cohort
       @cohort_patients = registrations(@start_date.to_date.beginning_of_month, @end_date.to_date.end_of_month)
-
+      
       # women registered in a reporting month
       @monthly_patients = registrations(@today.beginning_of_month, @today.end_of_month)
     else
@@ -52,15 +52,16 @@ class Reports
                           TYPE_OF_VISIT_CONCEPT.concept_id,
                           @start_date, @end_date]).collect { |e| e.patient_id }.uniq
     end
-
+    
+    
     @lmp = "(SELECT (max_patient_lmp(encounter.patient_id, '#{e_date.to_s}', '#{min_date.to_s}')))"
-
+     
     @monthly_lmp = "(SELECT (max_patient_lmp(encounter.patient_id, '#{@today.to_date.end_of_month}', '#{@today.to_date.beginning_of_month - 10.months}')))"
 
     lmp = "(SELECT DATE(MAX(o.value_datetime)) FROM obs o WHERE o.person_id = enc.patient_id
             AND o.concept_id = #{LMP_CONCEPT.concept_id} AND DATE(o.obs_datetime) <= '#{e_date.to_s}'
             AND DATE(o.obs_datetime) >= '#{min_date.to_s}')"
-
+    
     @anc_visits = Encounter.find_by_sql(["SELECT #{lmp} lmp, enc.patient_id patient_id, MAX(ob.value_numeric) form_id FROM encounter enc
                                         INNER JOIN obs ob ON ob.encounter_id = enc.encounter_id
                                         WHERE enc.patient_id IN (?) AND enc.encounter_type = ?
@@ -72,7 +73,7 @@ class Reports
                                          ConceptName.find_by_name("Reason for visit").concept_id,
                                          e_date
                                         ]).collect { |e| [e.patient_id, e.form_id] }
-
+  
     @cohort_patients = observations_total # uniq cohort patient ids
     #@monthly_patients = observations_monthly_total # uniq monthly patient ids
 
@@ -155,7 +156,7 @@ class Reports
 
   # Get women registered within a specified period
   def registrations(start_dt, end_dt)
-
+    
     Encounter.find(:all, :joins => ['INNER JOIN obs ON obs.person_id = encounter.patient_id'],
                    :group => [:patient_id],
                    :select => ['MAX(value_datetime) lmp, patient_id'],
@@ -519,7 +520,7 @@ class Reports
 
 
   def final_visit_hiv_test_result_prev_negative
-
+    
     first_visit_patient_ids = @anc_visits.reject { |x, y| y <= 1 }.collect { |x, y| x }.uniq
     first_visit_patient_ids = [0] if first_visit_patient_ids.blank?
 
@@ -547,7 +548,7 @@ class Reports
                 ",
                                        @cohort_patients, ((@start_date.to_date + @pregnant_range) - 1.day), ((@start_date.to_date + @pregnant_range) - 1.day)
                                    ]).map(&:patient_id) 
-    return select
+    return select.uniq
   end
 
   def final_visit_hiv_test_result_prev_positive
@@ -578,7 +579,7 @@ class Reports
                 ",
                                        @cohort_patients, ((@start_date.to_date + @pregnant_range) - 1.day), ((@start_date.to_date + @pregnant_range) - 1.day)
                                    ]).map(&:patient_id)
-    return select
+    return select.uniq
   end
 
   def final_visit_new_negative
@@ -611,8 +612,7 @@ class Reports
                 ",
                                        @cohort_patients, ((@start_date.to_date + @pregnant_range) - 1.day), ((@start_date.to_date + @pregnant_range) - 1.day)
                                    ]).map(&:patient_id)
-
-    return select
+    return select.uniq
   end
 
   def final_visit_new_positive
@@ -644,9 +644,13 @@ class Reports
                                        @cohort_patients,((@start_date.to_date + @pregnant_range) - 1.day), ((@start_date.to_date + @pregnant_range) - 1.day)
                                    ]).map(&:patient_id)
 
-    return select
+    return select.uniq
   end
-
+  
+  def total_on_booking_cohort
+     return @cohort_patients
+  end
+  
   def final_visit_hiv_not_done
 
     #This has to be revised -
@@ -661,7 +665,7 @@ class Reports
                                             ConceptName.find_by_name("HIV status").concept_id,
                                             ConceptName.find_by_name("Not done").concept_id, "Not Done",
                                             ((@start_date.to_date + @pregnant_range) - 1.day), first_visit_patient_ids]).collect { |e| e.patient_id }
-
+    
     return select
 
   end
@@ -729,9 +733,9 @@ class Reports
     limit_date = '2018-06-01'
     first_visit_patient_ids = @anc_visits.reject { |x, y| y <= 1 }.collect { |x, y| x }.uniq
     first_visit_patient_ids = [0] if first_visit_patient_ids.blank?
-
-    if @monthly_end_date.to_date.strftime('%Y-%m-%d') < limit_date.to_date.strftime('%Y-%m-%d')
-
+    
+   if (@today.to_date.beginning_of_month.strftime('%Y-%m-%d') >= limit_date.to_date.strftime('%Y-%m-%d'))
+           
          select = Encounter.find_by_sql(["
                   SELECT e.patient_id FROM encounter e INNER JOIN obs o ON 
                   o.encounter_id = e.encounter_id AND e.voided = 0 
@@ -744,7 +748,11 @@ class Reports
                   @monthly_patients,
                   @today.to_date.beginning_of_month.strftime('%Y-%m-%d 00:00:00'),
                   @today.to_date.end_of_month.strftime('%Y-%m-%d 23:59:59')]).map(&:patient_id)
+
+      
+         return select.uniq
     else
+
         select = Encounter.find_by_sql(["SELECT e.patient_id,
                  (select max(encounter_datetime) as date from encounter
                  inner join obs on obs.person_id = encounter.patient_id
@@ -773,9 +781,11 @@ class Reports
                  HIV_TEST_DATE_CONCEPT.concept_id,HIV_STATUS_CONCEPT.concept_id,
                  @monthly_patients, HIV_TEST_DATE_CONCEPT.concept_id,
                 @today.to_date, @today.to_date]).map(&:patient_id)
-    end
 
-    return select
+        return select.uniq
+    end
+    
+    
   end
 
   def first_visit_hiv_test_result_prev_positive
@@ -814,47 +824,30 @@ class Reports
                 @monthly_patients, @today.to_date, @today.to_date
                 ]).map(&:patient_id)
     
+
+ 
     new_select = Encounter.find_by_sql([
-                "SELECT
-                e.patient_id,
-                (select max(encounter_datetime) as date from encounter
-                inner join obs on obs.person_id = encounter.patient_id
-                where encounter_type = ? AND obs.concept_id = ? AND DATE(encounter_datetime) >= ?
-                AND DATE(encounter_datetime) <= ? AND encounter.voided = 0 AND encounter.patient_id = e.patient_id)
-                AS date,
-                (SELECT value_datetime FROM obs
-                WHERE encounter_id = e.encounter_id AND obs.concept_id =
-                (SELECT concept_id FROM concept_name WHERE name = 'Previous HIV Test Date' LIMIT 1)) AS test_date
-                FROM encounter e
-                INNER JOIN obs o ON o.encounter_id = e.encounter_id AND e.voided = 0
-                WHERE o.concept_id = (SELECT concept_id FROM concept_name WHERE name = 'Previous HIV Test Results' LIMIT 1)
-                AND ((o.value_coded = (SELECT concept_id FROM concept_name WHERE name = 'Positive' LIMIT 1))
-                OR (o.value_text = 'Positive'))
-                AND e.patient_id IN (?)
-                AND e.encounter_id = (SELECT MAX(encounter.encounter_id) FROM encounter
-                INNER JOIN obs ON obs.encounter_id = encounter.encounter_id AND obs.concept_id =
-                (SELECT concept_id FROM concept_name WHERE name = 'HIV test date' LIMIT 1)
-                WHERE encounter_type = e.encounter_type AND patient_id = e.patient_id
-                AND DATE(encounter.encounter_datetime) <= ?)
-                AND (DATE(e.encounter_datetime) <= ?)
-                GROUP BY e.patient_id
-                HAVING DATE(date) > DATE(test_date)
-                ",CURRENT_PREGNANCY_ENCOUNTER.id,
-                ConceptName.find_by_name("Date of Last Menstrual Period").concept_id,
+                "SELECT e.patient_id FROM encounter e INNER JOIN obs o ON 
+                  o.encounter_id = e.encounter_id AND e.voided = 0 
+                  WHERE o.concept_id = (SELECT concept_id FROM concept_name WHERE
+                    name = 'Previous HIV Test Results' LIMIT 1) AND (
+                    (o.value_coded = (SELECT concept_id FROM concept_name 
+                      WHERE name = 'Positive' LIMIT 1)) OR (o.value_text = 'Positive')) 
+                  AND e.patient_id IN (?) AND e.encounter_datetime >= ? AND 
+                  e.encounter_datetime <= ?
+                ",@monthly_patients,
                 @today.to_date.beginning_of_month.strftime('%Y-%m-%d 00:00:00'),
-                @today.to_date.end_of_month.strftime('%Y-%m-%d 23:59:59'),
-                @monthly_patients, @today.to_date, @today.to_date
+                @today.to_date.end_of_month.strftime('%Y-%m-%d 23:59:59')
                 ]).map(&:patient_id)
     
-
-    return select + new_select
+    return (select + new_select).uniq
 
   end
 
   def first_visit_new_negative
     first_visit_patient_ids = @anc_visits.reject { |x, y| y <= 1 }.collect { |x, y| x }.uniq
     first_visit_patient_ids = [0] if first_visit_patient_ids.blank?
-
+=begin
     select = Encounter.find_by_sql(["
       SELECT e.patient_id, (SELECT max(encounter_datetime) AS date FROM encounter
        INNER JOIN obs ON obs.person_id = encounter.patient_id 
@@ -879,8 +872,22 @@ class Reports
       HIV_TEST_DATE_CONCEPT.concept_id,HIV_STATUS_CONCEPT.concept_id,
       @monthly_patients, HIV_TEST_DATE_CONCEPT.concept_id,
       @today.to_date, @today.to_date]).map(&:patient_id)
+=end
 
-    return select
+         select = Encounter.find_by_sql(["
+                  SELECT e.patient_id FROM encounter e INNER JOIN obs o ON 
+                  o.encounter_id = e.encounter_id AND e.voided = 0 
+                  WHERE o.concept_id = (SELECT concept_id FROM concept_name WHERE
+                    name = 'HIV status' LIMIT 1) AND (
+                    (o.value_coded = (SELECT concept_id FROM concept_name 
+                      WHERE name = 'Negative' LIMIT 1)) OR (o.value_text = 'Negative')) 
+                  AND e.patient_id IN (?) AND e.encounter_datetime >= ? AND 
+                  e.encounter_datetime <= ?",
+                  @monthly_patients,
+                  @today.to_date.beginning_of_month.strftime('%Y-%m-%d 00:00:00'),
+                  @today.to_date.end_of_month.strftime('%Y-%m-%d 23:59:59')]).map(&:patient_id)
+         
+    return select.uniq
   end
 
   def first_visit_new_positive
@@ -918,8 +925,8 @@ class Reports
                 @today.to_date.end_of_month.strftime('%Y-%m-%d 23:59:59'),
                 @monthly_patients,(@today.to_date - 1.day), (@today.to_date - 1.day)
                 ]).map(&:patient_id)
-
-    return select
+    
+    return select.uniq
   end
 
   def first_visit_hiv_not_done
@@ -938,8 +945,8 @@ class Reports
                                             ConceptName.find_by_name("Not done").concept_id, "Not Done",
                                             @monthly_patients,@today.to_date.beginning_of_month, @today.to_date.end_of_month,
                                             @today.to_date, @monthly_patients]).collect { |e| e.patient_id }
-
-    return select
+    
+    return select.uniq
   end
 
   def hiv_test_result_neg
@@ -967,7 +974,7 @@ class Reports
                   ",
                   @cohort_patients, ((@start_date.to_date + @pregnant_range) - 1.day), ((@start_date.to_date + @pregnant_range) - 1.day)
                   ]).map(&:patient_id)
-      return select
+      return select.uniq
   end
 
 
