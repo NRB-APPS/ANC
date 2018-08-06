@@ -771,7 +771,7 @@ module ANCService
       #@hiv_test_date = syphil["HIV STATUS"].match(/not done/i) ? "" : syphil["HIV TEST DATE"] rescue nil
       
       hiv_test_date = syphil["PREVIOUS HIV TEST RESULTS"].match(/not done/i) ? "" : syphil["PREVIOUS HIV TEST DATE"] rescue nil
-      @hiv_test_date = hiv_test_date.to_date.strftime("%Y-%m-%d")
+      @hiv_test_date = hiv_test_date.to_date.strftime("%Y-%m-%d") rescue ""
 
       hb = {}; pos = 1;
 
