@@ -454,7 +454,7 @@
       "Prehypertension" : "")));
 
     var txt = "<div style='color:red;width:100%;text-align:center;' id='bpFlag'><i style='float=right;align:center;'>" + complication + "</i></div>";
-
+    
     if(!$('bp')){
       var div = document.createElement("div");
       div.id = "bp";
@@ -467,24 +467,24 @@
     var bp = ((sb > 0 ? sb.trim() : "?") + 
       "/" + (db > 0 ? db.trim() : "?"));
     
-    var bp = (sb || "?") + "/" + (db || "?")
+    var bp = (sb || "?") + "/" + (db || "?");
     
-    if((sb <= 140) || (db <= 90)){
-      console.log('within the normal range');
-      alreadyNoted = false;
-    }
-
     if(alreadyNoted == false){
 
       if(sb > 140 || db > 90) {
+        
         showMessage('Client is at risk of pre-eclampsia. Please refer her for Urine Protein Test.',false,false);
         alreadyNoted = true;
       }
-    } 
+    } //else if((sb <= 140) || (db <= 90)){
+      //console.log('within the normal range');
+       //alreadyNoted = false;
+    //}
 
-    $("bp").innerHTML = "Blood Pressure: <i style='font-size: 1.2em; float: right;'>" + bp + "</i>" + txt;
+    //$("bp").innerHTML = "Blood Pressure: <i style='font-size: 1.2em; float: right;'>" + bp + "</i>" + txt;
+    $("bp").innerHTML = txt;
        
-    timedEvent = setTimeout('_foo()', 100);
+    timedEvent = setTimeout('_foo()', 500);
   }
 
   function weightLossPercent(currentWeight){
@@ -497,10 +497,6 @@
     weight_loss_percent = (decrease/previousWeight) * 100;
     return Math.round(weight_loss_percent);
 
-  }
-
-  function test() {
-    alert();
   }
 
 </script>
@@ -624,8 +620,8 @@
       <%= touch_text_field_tag "SYSTOLIC BLOOD PRESSURE", @patient, nil,{
         :id => "systolic_bp",
         :field_type => "number",
-        # :tt_onLoad =>  "_foo()",
-        :tt_beforeUnLoad => "parsedConceptName = ''; clearTimeout(timedEvent); var result = test()",
+        :tt_onLoad =>  "_foo(); updateSBPValues();",
+        :tt_onUnLoad => "parsedConceptName = ''; clearTimeout(timedEvent); clearInterval(sbpInterval);",
         :helpText => "Systolic blood pressure (<span id='sbp'>&nbsp;</span>/<span id='dbp'>&nbsp;</span>)",
         :absoluteMin => 70,
         :absoluteMax => 250,
@@ -636,8 +632,8 @@
 
       <%= touch_text_field_tag "DIASTOLIC BLOOD PRESSURE", @patient, nil,{
         :id => "diastolic_blood_pressure",
-        :tt_onLoad => "updateDBPValues(); updateAbsoluteMaxValue();",
-        :tt_onUnLoad => "clearInterval(dbpInterval);",
+        :tt_onLoad => "_foo(); updateDBPValues(); updateAbsoluteMaxValue();",
+        :tt_onUnLoad => "clearTimeout(timedEvent);clearInterval(dbpInterval);",
         :field_type => "number",
         :helpText => "Diastolic blood pressure (<span id='sbp'>&nbsp;</span>/<span id='dbp'>&nbsp;</span>)",
         :absoluteMin => 30,
