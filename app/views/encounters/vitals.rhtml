@@ -435,6 +435,19 @@
     console.log(sbpValue);
   }
 
+  function patientComplication(sb, db){
+    var res = "";
+    if(sb != null || db != null){
+        res = (sb > 180) || (db > 110) ?
+              "Emergency Care Needed" : ((sb >= 160 && sb <= 180) || (db >= 100 && db <= 110) ?
+              "Hypertension Stage 2" : ((sb >= 140 && sb <= 159) || (db >= 90 && db <= 99)?
+              "Hypertension Stage 1" : ((sb >= 120 && sb <= 139) || (db >= 80 && db <= 89) ?
+              "Prehypertension" : "")));
+    }
+
+    return res;
+  }
+
   function _foo(){
 
     var sb = __$("systolic_blood_pressure").value = __$("touchscreenInput" + tstCurrentPage).value;
@@ -447,12 +460,14 @@
       gotoPage(tstCurrentPage + 1);
     }
 
-    var complication = (sb > 180) || (db > 110) ?
-      "Emergency Care Needed" : ((sb >= 160 && sb <= 180) || (db >= 100 && db <= 110) ?
+    /*var complication = (sb > 180) || (db > 110) ?
+       "Emergency Care Needed" : ((sb >= 160 && sb <= 180) || (db >= 100 && db <= 110) ?
       "Hypertension Stage 2" : ((sb >= 140 && sb <= 159) || (db >= 90 && db <= 99)?
       "Hypertension Stage 1" : ((sb >= 120 && sb <= 139) || (db >= 80 && db <= 89) ?
-      "Prehypertension" : "")));
+      "Prehypertension" : ""))); */
 
+    var complication = patientComplication(sb,db);
+    
     var txt = "<div style='color:red;width:100%;text-align:center;' id='bpFlag'><i style='float=right;align:center;'>" + complication + "</i></div>";
     
     if(!$('bp')){
