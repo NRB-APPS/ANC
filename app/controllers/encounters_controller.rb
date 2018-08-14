@@ -217,7 +217,7 @@ class EncountersController < ApplicationController
       end
       #@actual_array = periods.collect{|p| p if p > @weeks}
       #raise @actual_array.inspect
-      @days = @actual_array[0] * 7
+      @days = @actual_array[0] * 7 rescue nil
 
       if(@pregnancystart.blank?)
         lmp_value = (session[:datetime] ? session[:datetime].to_date : Date.today).strftime("%Y-%m-%d")
