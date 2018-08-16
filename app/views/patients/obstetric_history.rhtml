@@ -52,7 +52,18 @@
   console.log(data)
   anc_visits.push("zero");
   var parsedConceptName = "Visit Number";
+  
+    function disablePastVisits(){
+    console.log(anc_visits);
+    for(var i = 0; i < anc_visits.length; i++){
+      if(__$(anc_visits[i])){
+        __$(anc_visits[i]).className = "keyboardButton gray";
+        __$(anc_visits[i]).onmousedown = function(){}
+      }
+    }
+  }
 
+  setTimeout("disablePastVisits()", 200);
   
     </script>
     <%= stylesheet_link_tag "obstetric_history" %>
@@ -93,6 +104,7 @@
 
         <%= touch_numeric_tag "Type of visit", @patient, nil,
           {
+
           :id => "visit",
           :helptext => "ANC visit number <span class='helper'> ANC Visit</span>",
           :tt_onLoad => "document.forms[0].reset(); disablePastVisits();",
