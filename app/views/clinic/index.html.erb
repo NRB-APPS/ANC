@@ -31,7 +31,13 @@
 
   <select id="links">
     <option value='/logout' link='/logout'>Logout</option>
-    <option value='/people/search?gender=Female' link='/people/search' ttSize="290px">Find / Register Patient</option>
+    <%if create_from_dde
+      find_or_reg_patient = '/dde/search?gender=Female'
+    else
+      find_or_reg_patient = '/people/search'
+    end%>
+    <option value="<%= find_or_reg_patient%>" link="<%=find_or_reg_patient%>" ttSize="290px">Find / Register Patient</option>
+    <!-- option value='/people/search' link='/people/search' ttSize="290px">Find / Register Patient</option -->
     <option value='<%= ((session[:datetime].to_date.strftime("%Y-%m-%d") rescue Date.today.strftime("%Y-%m-%d") != 
           Date.today.strftime("%Y-%m-%d")) ?
                 "/people/reset_datetime" : "/people/set_datetime") %>'  ttSize="100px">
@@ -46,4 +52,7 @@
   tt_cancel_destination = "/logout";
   tt_register_destination = "/people/search";
   //-->
+<%if create_from_dde %>
+  tt_cancel_show = '/dde/search_by_name_and_gender'; //?identifier=' + this.value;
+<%end%>
 </script>

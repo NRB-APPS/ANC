@@ -1343,6 +1343,10 @@ module ANCService
       nationality
     end
 
+    def country_of_residence
+      get_attribute("Country of Residence")
+    end
+
     def age(today = Date.today)
       return nil if self.person.birthdate.nil?
 
@@ -1691,6 +1695,7 @@ module ANCService
     create_from_dde_server = CoreService.get_global_property_value('create.from.dde.server').to_s == "true" rescue false
     create_from_remote = CoreService.get_global_property_value('create.from.remote').to_s == "true" rescue false
 
+
     if create_from_dde_server
       dde_server = GlobalProperty.find_by_property("dde_server_ip").property_value rescue ""
       dde_server_username = GlobalProperty.find_by_property("dde_server_username").property_value rescue ""
@@ -1860,13 +1865,34 @@ module ANCService
   end
 
   def self.update_demographics(params)
-    person = Person.find(params['person_id'])
 
+    params['person']['attributes'] = {} if params['person']['attributes'].blank?
+    params['person']['addresses'] = {} if params['person']['addresses'].blank?
+
+    if params['person']['addresses']['state_province'] && District.find_by_name(params['person']['addresses']['state_province']).blank?
+      params['person']['attributes']['country_of_residence'] = params['person']['addresses']['state_province']
+      params['person']['addresses']['state_province'] = ''
+      params['person']['addresses']['city_village'] = ''
+    else
+
+    end
+
+    if !params['person']['attributes']['race'].blank?
+      params['person']['attributes']['citizenship'] = params['person']['attributes']['race']
+      params['person']['attributes']['race'] = nil
+
+      params['person']['addresses']['address2'] = ''
+      params['person']['addresses']['county_district'] = ''
+      params['person']['addresses']['neighborhood_cell'] = ''
+    end
+
+    person = Person.find(params['person_id'])
     if params.has_key?('person')
       params = params['person']
     end
 
     address_params = params["addresses"]
+
     names_params = params["names"]
     patient_params = params["patient"]
     person_attribute_params = params["attributes"]
@@ -1874,7 +1900,7 @@ module ANCService
     params_to_process = params.reject{|key,value| key.match(/addresses|patient|names|attributes/) }
     birthday_params = params_to_process.reject{|key,value| key.match(/gender/) }
 
-    person_params = params_to_process.reject{|key,value| key.match(/birth_|race|action|controller|cat|age_estimate/) }
+    person_params = params_to_process.reject{|key,value| key.match(/birth_|race|country_of_residence|action|controller|cat|age_estimate/) }
 
     if !birthday_params.empty?
 
@@ -1894,6 +1920,7 @@ module ANCService
 
     #update or add new person attribute
     person_attribute_params.each{|attribute_type_name, attribute|
+      next if attribute.blank?
       attribute_type = PersonAttributeType.find_by_name(attribute_type_name.humanize.titleize) || PersonAttributeType.find_by_name("Unknown id")
       #find if attribute already exists
       exists_person_attribute = PersonAttribute.find(:first, :conditions => ["person_id = ? AND person_attribute_type_id = ?", person.id, attribute_type.person_attribute_type_id]) rescue nil
@@ -1908,7 +1935,7 @@ module ANCService
     create_from_dde_server = CoreService.get_global_property_value('create.from.dde.server').to_s == "true" rescue false
     if create_from_dde_server
       patient_bean = PatientService.get_patient(person)
-      DDEService.update_demographics(patient_bean)
+      DDE2Service.update_demographics(patient_bean)
     end
 
   end
