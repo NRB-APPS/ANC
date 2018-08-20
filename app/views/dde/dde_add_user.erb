@@ -1,10 +1,11 @@
 
 <form action="/dde/dde_add_user" method="POST">
+  <% dde_location = "#{params[:dde_ipaddress]}:#{params[:dde_port]}" %>
   <%= text_field_tag "location", "", {
     :id => 'location',
     :field_type => 'alpha',
     :helpText => 'Select location',
-    :ajaxURL => "/dde/get_dde_locations?dde_token=#{params[:dde_token]}&name="
+    :ajaxURL => "/dde/get_dde_locations?dde_location=#{dde_location}&dde_token=#{params[:dde_token]}&name="
   } %>
   
   <%= text_field_tag "program", "", {

@@ -222,8 +222,10 @@
 
    client =   "person[names][given_name]="   + __$('given_name').value;
    client +=  "&person[names][family_name]="  + __$('family_name').value;
-   client +=  "&person[names][middle_name]="  +__$('middle_name').value;
-    
+   try{
+    client +=  "&person[names][middle_name]="  +__$('middle_name').value;
+   }catch(e){}
+
    client +=  "&person[gender]=" +  __$('gender').value;
    client +=  "&person[birthdate]=" + culBirthdate()[0];
    client +=  "&person[birthdate_estimated]=" + culBirthdate()[1];
@@ -282,6 +284,43 @@
   }
 
   var potential_duplicates_arr = [];
+
+
+  /* ....................................... */
+	function disablebutton() {
+		var nextbtn = document.getElementById("nextButton");
+		nextbtn.setAttribute("onmousedown","");
+		nextbtn.setAttribute("class","button navButton red");
+		nextbtn.innerHTML = "<span>Duplicate</span>";
+		
+		addButton();
+	}
+	
+	function resetButtons() {
+		var nextbtn = document.getElementById("nextButton");
+		nextbtn.setAttribute("onmousedown","gotoNextPage();");
+		nextbtn.setAttribute("class","button navButton green");
+		nextbtn.innerHTML = "<span>Next</span>";
+		
+		var footer = document.getElementById('buttons');
+		footer.removeChild(document.getElementById('newBtn')); 
+	}
+	
+	function addButton() {
+		var footer = document.getElementById('buttons');
+		var newbutton = document.createElement('button');
+		newbutton.setAttribute('id', 'newBtn');
+		newbutton.setAttribute('onmousedown', 'gotoNextPage();');
+		newbutton.innerHTML="<span>Not a duplicate</span>";
+		footer.appendChild(newbutton);
+	}
+
+	function setDOCID(doc_id) {
+		var nextbtn = document.getElementById("nextButton");
+		nextbtn.setAttribute("onmousedown","javascript:document.location='/dde/document/" + doc_id + "'");
+		nextbtn.setAttribute("class","button navButton green");
+		nextbtn.innerHTML = "<span>Select</span>";
+	}
 </script>
 
 <% form_for :person, @person, :url => { :action => "create" } do |f| %>
@@ -465,8 +504,9 @@
 
   <! -- DDE check for potential duplicates -->
   <%= text_field_tag :summary, nil, { 
-    :tt_onLoad => "potentialduplicateCheck();__$('keyboard').style.display = 'none';", 
+    :tt_onLoad => "potentialduplicateCheck();__$('keyboard').style.display = 'none'; disablebutton();", 
     :optional => "true",
+		:tt_onUnLoad => "resetButtons();",
     :condition => "duplicatesAvailable() == true;", 
     :helpText => "",
     :tt_pageStyleClass => "NoControls" } %>

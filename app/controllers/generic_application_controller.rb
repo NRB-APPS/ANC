@@ -76,6 +76,7 @@ class GenericApplicationController < ActionController::Base
       unless current_user.blank?
         if session[:dde_token].blank?
           dde_token = DDEService.dde_authentication_token
+          puts "Am in"
           session[:dde_token] = dde_token
         else
           token_status = DDEService.verify_dde_token_authenticity(session[:dde_token])
@@ -88,6 +89,10 @@ class GenericApplicationController < ActionController::Base
     else
       session[:dde_token] = nil  
     end
+  end
+
+  def create_from_dde
+    return false
   end
 
 	def rescue_action_in_public(exception)

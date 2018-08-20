@@ -3,10 +3,14 @@ module DDEService
   
   def self.dde_settings
     data = {}
-    dde_ip = GlobalProperty.find_by_property('dde.address').property_value
-    dde_port = GlobalProperty.find_by_property('dde.port').property_value
-    dde_username = GlobalProperty.find_by_property('dde.username').property_value
-    dde_password = GlobalProperty.find_by_property('dde.password').property_value
+    program_id  = YAML.load_file("#{Rails.root}/config/dde_connection.yml")[Rails.env]["program_id"]
+    dde_user = DdeApplicationUsers.find_by_program_id(program_id)
+    
+    dde_ip = dde_user.ipaddress
+    dde_port = dde_user.port
+    dde_username = dde_user.username
+    dde_password = dde_user.password
+
 
     data["dde_ip"] = dde_ip
     data["dde_port"] = dde_port
@@ -33,8 +37,9 @@ module DDEService
 
   def self.dde_authentication_token
     dde_address = "#{dde_settings["dde_address"]}/v1/login"
-    dde_username = GlobalProperty.find_by_property('dde.username').property_value
-    dde_password = GlobalProperty.find_by_property('dde.password').property_value
+    dde_username = dde_settings["dde_username"]
+    dde_password = dde_settings["dde_password"]
+
     passed_params = {:username => dde_username, :password => dde_password}
     headers = {:content_type => "json" }
     received_params = RestClient.post(dde_address, passed_params, headers = headers){|response, request, result|response}
@@ -64,16 +69,16 @@ module DDEService
     return dde_token
   end
 
-  def self.dde_locations(token, name = "")
-    dde_address = "#{dde_settings["dde_address"]}/v1/get_locations"
-    passed_params = {:name => name}
-    headers = {:content_type => "json", :Authorization => token }
-    received_params = RestClient.post(dde_address, passed_params.to_json, headers = headers){|response, request, result|response}
+  def self.dde_locations(dde_address, token, name = "")
+    dde_url = "#{dde_address}/v1/get_locations"
+    received_params = RestClient::Request.execute( { :method => :post, :url => dde_url,
+      :payload => {:name => name}, :headers => {:Authorization => token} } )
+
     return JSON.parse(received_params)
   end
 
-  def self.add_dde_user(data, token)
-    dde_address = "#{dde_settings["dde_address"]}/v1/add_user"
+  def self.add_dde_user(dde_address, data, token)
+    dde_address = "#{dde_address}/v1/add_user"
     passed_params = {
       :username => data["username"],
       :password => data["password"],
@@ -81,7 +86,7 @@ module DDEService
       :location => data["location"],
     }
     headers = {:content_type => "json", :Authorization => token }
-    received_params = RestClient.post(dde_address, passed_params.to_json, headers = headers){|response, request, result|response}
+    received_params = RestClient.post(dde_address, passed_params, headers = headers){|response, request, result|response}
     dde_status = JSON.parse(received_params)["status"]
     return dde_status
   end

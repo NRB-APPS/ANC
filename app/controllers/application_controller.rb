@@ -1,6 +1,6 @@
 class ApplicationController < GenericApplicationController
-  before_filter :set_dde_token
-
+  #before_filter :set_dde_token
+=begin
   def set_dde_token
     if create_from_dde
       unless current_user.blank?
@@ -19,7 +19,7 @@ class ApplicationController < GenericApplicationController
       session[:dde_token] = nil  
     end
   end
-
+=end
   def next_task(patient)
 
     session_date = session[:datetime].to_date rescue Date.today

@@ -61,7 +61,50 @@ class DdeController < ApplicationController
   def search
   end
 
+  def document
+    found = PatientIdentifier.find(:first, 
+      :conditions =>["identifier = ? AND identifier_type = ?",
+      params[:id], PatientIdentifierType.find_by_name('DDE person document ID').id]) 
+    
+    unless found.blank?
+      redirect_to "/people/confirm?found_person_id=#{found.patient_id}" and return
+    end
+
+    dde_url = DDEService.dde_settings['dde_address'] + "/v1/search_by_doc_id"
+    output = RestClient::Request.execute( { :method => :post, :url => dde_url,
+      :payload => {:doc_id => params[:id]}, :headers => {:Authorization => session[:dde_token]} } )
+
+    output = JSON.parse(output)[0]
+    local_people = DDEService.create_local_person(output)
+    redirect_to "/people/redirections?person_id=#{local_people.first.id}" and return
+  end
+
   def confirm
+    if request.post?
+      raise params.inspect
+    end
+
+    dde_url = DDEService.dde_settings['dde_address'] + "/v1/search_by_doc_id"
+    output = RestClient::Request.execute( { :method => :post, :url => dde_url,
+      :payload => {:doc_id => params[:doc_id]}, :headers => {:Authorization => session[:dde_token]} } )
+
+    names = PersonName.find(:last, :conditions =>["person_id = ?", params[:person_id]])
+    addresses = PersonAddress.find(:last, :conditions =>["person_id = ?", params[:person_id]])
+    person = Person.find(params[:person_id])  
+
+    @local_results = {
+      :name => "#{(names.given_name rescue nil)} #{names.family_name}",
+      :birthdate => "#{(person.birthdate.strftime('%d/%b/%Y') rescue nil)}",
+      :gender => person.gender,
+      :home_district => addresses.address2,
+      :home_ta => addresses.county_district,
+      :home_village => addresses.neighborhood_cell,
+      :current_district => addresses.state_province,
+      :current_district => addresses.address1,
+      :current_village =>  addresses.city_village
+    }
+
+    @dde_results  = JSON.parse(output)[0]
   end
 
   def search_by_name_and_gender
@@ -114,7 +157,7 @@ class DdeController < ApplicationController
           redirect_to "/people/confirm?found_person_id=#{person_id}" and return
         end
         
-        redirect_to "/dde/confirm?person_id=#{person_id}" and return
+        redirect_to "/dde/confirm?person_id=#{person_id}&doc_id=#{dde_person_doc_id}" and return
       elsif local_search_results.length == 1 && !dde_search_results.blank?
         redirect_to :controller => 'dde',
           :action => 'dde_duplicates', :npid => params[:identifier] and return
@@ -512,7 +555,10 @@ class DdeController < ApplicationController
   end
 
   def get_dde_locations
-    dde_locations = DDEService.dde_locations(params[:dde_token], params[:name])
+    dde_protocol = YAML.load_file("#{Rails.root}/config/dde_connection.yml")[Rails.env]["dde_protocol"]
+    dde_url = "#{dde_protocol}://#{params[:dde_location]}"
+    dde_locations = DDEService.dde_locations(dde_url, params[:dde_token], params[:name])
+
     li_elements = "<li></li>"
     dde_locations.each do |location|
       doc_id = location["doc_id"]
@@ -531,7 +577,10 @@ class DdeController < ApplicationController
         "location" => params[:location]
       }
 
-      dde_status = DDEService.add_dde_user(data, params[:dde_token])
+      dde_protocol = YAML.load_file("#{Rails.root}/config/dde_connection.yml")[Rails.env]["dde_protocol"]
+      dde_url = "#{dde_protocol}://#{params[:dde_ipaddress]}:#{params[:dde_port]}"
+
+      dde_status = DDEService.add_dde_user(dde_url, data, params[:dde_token])
       unless dde_status.to_i == 200
         flash[:notice] = "Failed to create user"
         redirect_to("/dde/dde_add_user") and return
