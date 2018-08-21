@@ -108,7 +108,7 @@
     var breech = 0;
     function ajaxify(cat, selected) {
 
-        if (selected == "Ball" || selected == "Nill papable") {
+        if (selected == "Ball" || selected == "Nil palpable") {
 
             __$("frame2").style.display = "none";
             __$("htext2").style.display = "none";
@@ -129,7 +129,7 @@
                 data = ["", "Right Occipito Anterior", "Left Occipito Anterior", "Unknown"].join('|')
                 handleResultData(cat, data, "cephalic_presentation");
             }
-            else if (selected.toLowerCase() == 'ball' || selected.toLowerCase() == 'nill papable') {
+            else if (selected.toLowerCase() == 'ball' || selected.toLowerCase() == 'nil palpable') {
 
                 data = "";
                 handleResultData(cat, data, "");
@@ -180,7 +180,7 @@
 
                 __$("position").value = "";
 
-                if(__$("presentation").value.toLowerCase().trim() == "ball" || __$("presentation").value.toLowerCase().trim() == "nill papable"){
+                if(__$("presentation").value.toLowerCase().trim() == "ball" || __$("presentation").value.toLowerCase().trim() == "nil palpable"){
 
                     __$("breech_presentation").value = "";
                     __$("cephalic_presentation").value = "";
@@ -602,7 +602,7 @@
       :condition => "__$('scan_question').value == 'Yes'"  
      } %>
 
-     <% @presentation = ["", "Cephalic", "Breech", "Ball", "Nill papable"] %>
+     <% @presentation = ["", "Cephalic", "Breech", "Ball", "Nil palpable"] %>
 
     <%= touch_select_tag "PRESENTATION", @patient, options_for_select(@presentation),
      {:id => "presentation",
@@ -661,7 +661,7 @@
           ["Not heard", "Not heard"]]),
         {
           :id => "enter_fetal_heart",
-          :condition => "__$('presentation').value != 'Ball' || __$('presentation').value != 'Nill papable'",
+          :condition => "__$('presentation').value != 'Ball' || __$('presentation').value != 'Nil palpable'",
           :tt_onLoad => "",
           :helptext => "Fetal Heart Beat <span class='helper'> ANC Examination</span>"
         }, session_date %>
@@ -748,7 +748,7 @@
     <%= touch_select_tag "FETAL MOVEMENT FELT", @patient,
                          options_for_select([["", ""], ["Yes", "Yes"], ["No", "No"]]),
                          {:id => "fetal_movemement_felt",
-                          :condition => "__$('presentation').value != 'Ball' || __$('presentation').value != 'Nill papable'",
+                          :condition => "__$('presentation').value != 'Ball' || __$('presentation').value != 'Nil palpable'",
                           :tt_onLoad => "",
                           :helptext => "Fetal Movement Felt <span class='helper'> ANC Examination</span>"}, session_date %>
 

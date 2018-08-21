@@ -778,7 +778,7 @@ class PatientsController < ApplicationController
   end
 
   def tab_lab_results
-
+    
     syphil = {}
     @patient.encounters.find(:all, :conditions => ["encounter_type IN (?)",
         EncounterType.find_by_name("LAB RESULTS").id]).each{|e|
@@ -786,17 +786,28 @@ class PatientsController < ApplicationController
         syphil[o.concept.concept_names.map(& :name).last.upcase] = o.answer_string.squish.upcase
       }
     }
-
+    
     @malaria = syphil["MALARIA TEST RESULT"].titleize rescue ""
 
     @malaria_date = syphil["MALARIA TEST RESULT"].match(/not done/i)? "" : syphil["DATE OF LABORATORY TEST"] rescue nil
 
     @syphilis = syphil["SYPHILIS TEST RESULT"].titleize rescue nil
+    
+    if syphil["SYPHILIS TEST RESULT"].present?
 
-    @syphilis_date = syphil["SYPHILIS TEST RESULT DATE"] rescue nil
+       id = ConceptName.find_by_name("Syphilis Test Result").concept_id
+       res = ActiveRecord::Base.connection.select_all("SELECT MAX(obs_datetime)as test_date FROM obs WHERE person_id = #{@patient.patient_id} AND concept_id = #{id}")
+       @syphilis_date = res[0]["test_date"].to_date.strftime('%Y-%m-%d')
 
+    else
+
+      @syphilis_date = syphil["SYPHILIS TEST RESULT DATE"] rescue nil
+
+    end
+    
+    
     @hiv_test = syphil["HIV STATUS"].titleize rescue nil
-
+     
     @hiv_test_date = syphil["HIV TEST DATE"] rescue nil
 
     hb = {}; pos = 1;

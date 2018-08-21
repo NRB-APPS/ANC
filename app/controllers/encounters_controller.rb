@@ -187,8 +187,20 @@ class EncountersController < ApplicationController
     # Go to the next task in the workflow (or dashboard)
     redirect_to next_task(@patient) 
   end
+  
+  def pregnancy_start_date_and_weeks
+
+      r = ConceptName.find_by_name('Date of last menstrual period').concept_id
+      lmp = ActiveRecord::Base.connection.select_all("select MAX(o.value_datetime) as lmp_date FROM obs o where o.person_id = #{@patient.patient_id}  and o.concept_id = #{r}")
+      diff = (Time.now.to_date - lmp[0]["lmp_date"].to_date rescue 0).to_i 
+      weeks = diff == 0 ? 0 : (diff / 7)
+      
+      return [lmp[0]["lmp_date"], weeks]
+  end
 
   def new
+
+    @weeks = 0
 
     d = (session[:datetime].to_date rescue Date.today)
     t = Time.now
@@ -197,8 +209,17 @@ class EncountersController < ApplicationController
     @current_range = @anc_patient.active_range(session_date.to_date) rescue nil
     
     @weeks = @anc_patient.fundus(session_date.to_date).to_i rescue 0
+    
+    if @weeks == 0
+
+       res = pregnancy_start_date_and_weeks
+       @weeks = res[1]
+       @pregnancystart = res[0].to_date rescue 0
        
-    @pregnancystart = session_date.to_date - (@weeks rescue 0).week
+    else
+      @pregnancystart = session_date.to_date - (@weeks rescue 0).week
+    end
+    
     @last_vitals = Encounter.find_by_sql("
                     SELECT * FROM  encounter e 
                     INNER JOIN encounter_type et ON et.encounter_type_id = e.encounter_type
@@ -217,7 +238,7 @@ class EncountersController < ApplicationController
       end
       #@actual_array = periods.collect{|p| p if p > @weeks}
       #raise @actual_array.inspect
-      @days = @actual_array[0] * 7
+      @days = @actual_array[0] * 7 rescue 0
 
       if(@pregnancystart.blank?)
         lmp_value = (session[:datetime] ? session[:datetime].to_date : Date.today).strftime("%Y-%m-%d")
@@ -225,7 +246,6 @@ class EncountersController < ApplicationController
       else
         @appointmentDate = @pregnancystart.to_date
       end
-
       @appointmentDate = (@appointmentDate + @days).strftime("%Y-%m-%d")
     end
        

@@ -60,7 +60,7 @@
               border-bottom: 1px solid #000;
               border-right: 1px solid #000; font-size: 1.5em;"
               align="center" <%= (!@hiv_test.nil? ? (@hiv_test.upcase == "POSITIVE" ? "class='selected'" : "") : "") %>>
-            <%= (!@hiv_test.nil? ? (@hiv_test.upcase == "POSITIVE" ? "=" : "-") : "") %>&nbsp;
+             <%= (!@hiv_test.blank? ? (@hiv_test.upcase == "POSITIVE" ? "=" : "-") : "") %>&nbsp;
           </td>
         </tr>
         <tr>
