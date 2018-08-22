@@ -81,11 +81,7 @@ class DdeController < ApplicationController
 
   def confirm
     if request.post?
-      PatientIdentifier.create(:patient_id => params[:person_id],
-        :identifier => params[:doc_id], 
-        :identifier_type => PatientIdentifierType.find_by_name('DDE person document ID').id)
-
-      redirect_to "/people/confirm?found_person_id=#{params[:person_id]}" and return
+      # raise params.inspect
     end
 
     dde_url = DDEService.dde_settings['dde_address'] + "/v1/search_by_doc_id"
@@ -168,6 +164,9 @@ class DdeController < ApplicationController
       elsif local_search_results.length > 1 
         redirect_to :controller => 'dde',
           :action => 'dde_duplicates', :npid => params[:identifier] and return
+      elsif local_search_results.blank? && dde_search_results.blank?
+        redirect_to :controller => "clinic", :action => "index", 
+        :message => "Patient not found!"  and return
       end
       ############################xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
@@ -351,7 +350,7 @@ class DdeController < ApplicationController
 
     end
 
-    render :layout => 'report'
+    #render :layout => 'report'
   end
   
   def select
@@ -895,19 +894,6 @@ class DdeController < ApplicationController
     render :text => output and return
   end
 
-  def reassign_local_client_npid
-		identifiers = PatientIdentifier.find(:all, 
-			:conditions => ["patient_id = ? AND identifier_type = 3", params[:person_id]])		
-	
-		(identifiers || []).each do |i|
-			i.update_attributes(:voided => 1, :void_reason => "Reassigned new ID")
-		end
-    
-    local_client_to_dde(params[:person_id])
-    next_url = "/people/confirm?found_person_id=#{params[:person_id]}"
-    print_and_redirect("/patients/national_id_label?patient_id=#{params[:person_id]}", next_url) and return
-  end
-
   private
 
   def birthdate_formatted(birthdate, birthdate_estimated)
@@ -1036,13 +1022,15 @@ class DdeController < ApplicationController
 		(identifiers || []).each do |i|
 			i.update_attributes(:identifier_type => 2)
 		end
+    
+    begin
+  		PatientIdentifier.create(:identifier => dde_results['npid'], 
+  			:patient_id => patient_id, :identifier_type => PatientIdentifierType.find_by_name('National id').id)
 
-		PatientIdentifier.create(:identifier => dde_results['npid'], 
-			:patient_id => patient_id, :identifier_type => PatientIdentifierType.find_by_name('National id').id)
-
-		PatientIdentifier.create(:identifier => dde_results['doc_id'], 
-			:patient_id => patient_id, :identifier_type => PatientIdentifierType.find_by_name('DDE person document ID').id)
-
+		  PatientIdentifier.create(:identifier => dde_results['doc_id'], 
+        :patient_id => patient_id, :identifier_type => PatientIdentifierType.find_by_name('DDE person document ID').id)
+      rescue
+    end
 
   end
 
