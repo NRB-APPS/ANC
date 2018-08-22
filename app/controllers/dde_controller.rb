@@ -81,7 +81,11 @@ class DdeController < ApplicationController
 
   def confirm
     if request.post?
-      raise params.inspect
+      PatientIdentifier.create(:patient_id => params[:person_id],
+        :identifier => params[:doc_id], 
+        :identifier_type => PatientIdentifierType.find_by_name('DDE person document ID').id)
+
+      redirect_to "/people/confirm?found_person_id=#{params[:person_id]}" and return
     end
 
     dde_url = DDEService.dde_settings['dde_address'] + "/v1/search_by_doc_id"
@@ -889,6 +893,19 @@ class DdeController < ApplicationController
       :payload => person_params, :headers => {:Authorization => session[:dde_token]} } )
 
     render :text => output and return
+  end
+
+  def reassign_local_client_npid
+		identifiers = PatientIdentifier.find(:all, 
+			:conditions => ["patient_id = ? AND identifier_type = 3", params[:person_id]])		
+	
+		(identifiers || []).each do |i|
+			i.update_attributes(:voided => 1, :void_reason => "Reassigned new ID")
+		end
+    
+    local_client_to_dde(params[:person_id])
+    next_url = "/people/confirm?found_person_id=#{params[:person_id]}"
+    print_and_redirect("/patients/national_id_label?patient_id=#{params[:person_id]}", next_url) and return
   end
 
   private

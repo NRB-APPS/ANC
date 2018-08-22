@@ -3,7 +3,8 @@ module DDEService
   
   def self.dde_settings
     data = {}
-    program_id  = YAML.load_file("#{Rails.root}/config/dde_connection.yml")[Rails.env]["program_id"]
+    program_id    = YAML.load_file("#{Rails.root}/config/dde_connection.yml")[Rails.env]["program_id"]
+    dde_protocol  = YAML.load_file("#{Rails.root}/config/dde_connection.yml")[Rails.env]["dde_protocol"]
     dde_user = DdeApplicationUsers.find_by_program_id(program_id)
     
     dde_ip = dde_user.ipaddress
@@ -16,7 +17,7 @@ module DDEService
     data["dde_port"] = dde_port
     data["dde_username"] = dde_username
     data["dde_password"] = dde_password
-    data["dde_address"] = "http://#{dde_ip}:#{dde_port}"
+    data["dde_address"] = "#{dde_protocol}://#{dde_ip}:#{dde_port}"
 
     return data
   end
