@@ -92,6 +92,14 @@ module DDEService
     return dde_status
   end
 
+  def self.get_dde_location(url, doc_id,token)
+    dde_location_uri = "#{url}/v1/find_location"
+    passed_params = {:location_id => doc_id}
+    headers = {:content_type => "json", :Authorization => token}
+    dde_response = RestClient.post(dde_location_uri, passed_params, headers = headers)
+    return JSON.parse(dde_response)
+  end
+
   def self.verify_dde_token_authenticity(dde_token)
 
     dde_address = "#{dde_settings["dde_address"]}/v1/verify_token"
