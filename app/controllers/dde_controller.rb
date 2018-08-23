@@ -42,9 +42,10 @@ class DdeController < ApplicationController
     local_people = DDEService.create_local_person(dde_results)
 
 		if params[:guardian_present] == "YES"
-			redirect_to "/relationships/search?patient_id=#{person.id}&return_to=/people/redirections?person_id=#{person.id}" and return
+			redirect_to "/relationships/search?patient_id=#{local_people.first.id}&return_to=/people/redirections?person_id=#{local_people.first.id}" and return
     else
-    	redirect_to "/people/redirections?person_id=#{local_people.first.id}" and return
+      print_and_redirect("/patients/national_id_label?patient_id=#{local_people.first.id}", next_task(local_people.first.patient))
+    	#redirect_to "/people/redirections?person_id=#{local_people.first.id}" and return
     end
 
   end
@@ -603,14 +604,14 @@ class DdeController < ApplicationController
       # Get location name from dde to compare with the current site.
       location = DDEService.get_dde_location(dde_url, params[:location], params[:dde_token])
       app_location = Location.current_health_center.name rescue ""
-
+=begin
       unless app_location == location["name"]
         redirect_to :controller => "dde", :action => "dde_add_user",
           :dde_token => params[:dde_token], :dde_username => params[:username],
           :dde_port => params[:dde_port], :dde_ipaddress => params[:dde_ipaddress],
           :message => "Please enter the collect location (i.e #{app_location})" and return
       end
-
+=end
       dde_status = DDEService.add_dde_user(dde_url, data, params[:dde_token])
       unless dde_status.to_i == 200
         flash[:notice] = "Failed to create user"
