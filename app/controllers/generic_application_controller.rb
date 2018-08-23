@@ -25,7 +25,7 @@ class GenericApplicationController < ActionController::Base
 	helper_method :next_task
 	filter_parameter_logging :password
 	before_filter :authenticate_user!, :except => ['normal_visits','transfer_in_visits', 're_initiation_visits','patients_without_any_encs','login', 'logout','remote_demographics','art_stock_info',
-    'create_remote', 'mastercard_printable', 'get_token',
+    'create_remote', 'mastercard_printable', 'get_token', 'given_names',
     'cohort','demographics_remote', 'export_on_art_patients', 'art_summary',
     'art_summary_dispensation', 'print_rules', 'rule_variables', 'print',
     'new_prescription', 'search_for_drugs','mastercard_printable',
@@ -37,7 +37,7 @@ class GenericApplicationController < ActionController::Base
     'revised_children_cohort_survival_analysis_to_print', 'create', 'render_date_enrolled_in_art', 'search_remote_people'
   ]
 
-  before_filter :set_current_user, :except => ['login', 'logout','remote_demographics','art_stock_info',
+  before_filter :set_current_user, :except => ['login', 'logout','given_names', 'remote_demographics','art_stock_info',
     'create_remote', 'mastercard_printable', 'get_token',
     'cohort','demographics_remote', 'export_on_art_patients', 'art_summary',
     'art_summary_dispensation', 'print_rules', 'rule_variables',
@@ -51,7 +51,7 @@ class GenericApplicationController < ActionController::Base
     'revised_children_cohort_survival_analysis_to_print', 'render_date_enrolled_in_art', 'search_remote_people'
   ]
 
-	before_filter :location_required, :except => ['patients_without_any_encs','login', 'logout', 'location',
+	before_filter :location_required, :except => ['patients_without_any_encs','given_names', 'login', 'logout', 'location',
     'demographics','create_remote',
     'mastercard_printable','art_stock_info',
     'remote_demographics', 'get_token',

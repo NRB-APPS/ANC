@@ -289,9 +289,8 @@
   /* ....................................... */
 	function disablebutton() {
 		var nextbtn = document.getElementById("nextButton");
-		nextbtn.setAttribute("onmousedown","");
-		nextbtn.setAttribute("class","button navButton red");
-		nextbtn.innerHTML = "<span>Duplicate</span>";
+		nextbtn.setAttribute("onmousedown","showMessage('Select client to continue');");
+		nextbtn.setAttribute("class","button navButton blue");
 		
 		addButton();
 	}
