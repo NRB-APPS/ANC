@@ -6,7 +6,11 @@ class PeopleController < GenericPeopleController
       if @patient.gender == "F"
         redirect_to next_task(@patient) and return
       else
-        redirect_to "/people/show_father/#{@patient.id}"
+        if create_from_dde_server
+          redirect_to "/dde/edit_demographics?patient_id=#{@patient.id}" and return
+        else
+          redirect_to "/people/show_father/#{@patient.id}"
+        end
       end
     else 
       redirect_to "/clinic" and return
@@ -602,7 +606,11 @@ class PeopleController < GenericPeopleController
 				else
           #raise params.inspect
           if gender == "M" && params[:patient].blank?
-            redirect_to "/people/show_father/#{found_person.id}" and return
+            if create_from_dde_server
+              redirect_to "/dde/edit_demographics?patient_id=#{found_patient.id]}" and return
+            else
+              redirect_to "/people/show_father/#{found_person.id}" and return
+            end
           elsif gender == "M" && !params[:patient].blank?
             relationship_type_id = RelationshipType.find_by_a_is_to_b('Spouse/Partner').id
             @relationship = Relationship.new(
