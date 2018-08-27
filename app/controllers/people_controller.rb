@@ -7,7 +7,9 @@ class PeopleController < GenericPeopleController
         redirect_to next_task(@patient) and return
       else
         if create_from_dde_server
-          redirect_to "/dde/edit_demographics?patient_id=#{@patient.id}" and return
+          redirect_to :controller => "dde",
+            :action => "edit_demographics", :patient_id => @patient.id 
+            and return
         else
           redirect_to "/people/show_father/#{@patient.id}"
         end
@@ -607,7 +609,9 @@ class PeopleController < GenericPeopleController
           #raise params.inspect
           if gender == "M" && params[:patient].blank?
             if create_from_dde_server
-              redirect_to "/dde/edit_demographics?patient_id=#{found_patient.id]}" and return
+              redirect_to :controller => "dde",
+                :action => "edit_demographics", :patient_id => @patient.id 
+                and return
             else
               redirect_to "/people/show_father/#{found_person.id}" and return
             end
