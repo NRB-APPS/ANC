@@ -9,7 +9,6 @@ class PeopleController < GenericPeopleController
         if create_from_dde_server
           redirect_to :controller => "dde",
             :action => "edit_demographics", :patient_id => @patient.id 
-            and return
         else
           redirect_to "/people/show_father/#{@patient.id}"
         end
@@ -611,7 +610,6 @@ class PeopleController < GenericPeopleController
             if create_from_dde_server
               redirect_to :controller => "dde",
                 :action => "edit_demographics", :patient_id => @patient.id 
-                and return
             else
               redirect_to "/people/show_father/#{found_person.id}" and return
             end
