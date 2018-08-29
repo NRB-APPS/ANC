@@ -26,7 +26,7 @@ production:
  maternity.links: localhost:3000
  use_portal: false
  portal_url: http://0.0.0.0:3000
- 
+ district:  Nkhotakota 
 development:
  create_from_remote: no
  use.user.selected.activities: yes
@@ -55,7 +55,8 @@ development:
  use.column.interface: true
  maternity.links: localhost:3000
  use_portal: false
- portal_url: http://0.0.0.0:3000 
+ portal_url: http://0.0.0.0:3000
+ district: Nkhotakota 
 
 test: &TEST
  create_from_remote: no

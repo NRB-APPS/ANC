@@ -748,4 +748,32 @@ class ReportsController < ApplicationController
         end
       end
 
+    def pepfar_report
+
+      start_date = "#{params[:start_year]}-#{params[:start_month]}-01".to_date
+      end_date   = "#{params[:end_year]}-#{params[:end_month]}-01".to_date
+      @start_date = start_date
+      @end_date   = end_date
+
+      @dates = []
+
+      while start_date - 1.month < end_date
+        @dates << start_date
+        start_date = start_date + 1.month
+      end
+
+      @facility = Location.current_health_center.name
+
+      @district = "Nkhotakota"
+
+      @age_groups = ["<10", "10-14", "15-19", "20-24", "25-29", "30-34",
+                     "30-49", "35-39", "40-49", "50+", "Unknown Age", "All"]
+
+      @indicators = [
+        "Newly on ART", "New ANC client", "Known status", "Already on ART", "Newly Identified Positive",
+         "Newly Identified Negative", "Known at Entry Positive"
+      ]
+
+    end
+
     end
