@@ -322,7 +322,7 @@ function stringfy(hash){
 }
 
 function disablePastVisits(){
-    if (last_visit < 7){
+    if (last_visit < 11){
         for(var i = 0; i < anc_visits.length; i++){
             if(__$(anc_visits[i])){
                 __$(anc_visits[i]).className = "keyboardButton gray";
