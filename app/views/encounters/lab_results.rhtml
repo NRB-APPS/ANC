@@ -470,7 +470,8 @@ function remoteARTStatus(){
       :id => "previous_hiv_test",
       :helptext => "Previous HIV Test Done <span class='helper'> Lab Results</span>",
       :tt_onUnLoad => "parsedConceptName = '';",
-      :tt_onLoad => "parsedConceptName = 'Previous HIV Test'; __$('backButton').style.display = 'none';"
+      :tt_onLoad => "parsedConceptName = 'Previous HIV Test'; __$('backButton').style.display = 'none';
+        alertARTStatus();"
 
     }
   %>
@@ -483,7 +484,7 @@ function remoteARTStatus(){
       :id => "prev_hiv_test_results",
       :helptext => "Previous HIV Test Results <span class='helper'> Lab Results</span>",
       :tt_onUnLoad => "parsedConceptName = '';",
-      :tt_onLoad => "parsedConceptName = 'Previous HIV Test Results';",
+      :tt_onLoad => "parsedConceptName = 'Previous HIV Test Results'; alertARTStatus();",
       :condition => "__$('previous_hiv_test').value == 'Yes'"
     }
   %>
@@ -494,43 +495,12 @@ function remoteARTStatus(){
       :helptext => "Previous HIV Test Date <span class='helper'> Lab Results</span>",
       :tt_onUnLoad => "parsedConceptName = '';",
       :tt_onLoad => " parsedConceptName = 'Previous HIV Test date';
-        initializeDate();",
+        initializeDate(); alertARTStatus(); ",
       :condition => "__$('prev_hiv_test_results').value != '' || 
       __$('previous_hiv_test').value == 'Yes'",
       :absoluteMax => "#{(session[:datetime].to_date - 1.days) rescue (Date.today - 1.days)}"
     }
   %>
-
-    <!-- %= touch_select_tag "HIV status", @patient,
-        options_for_select([["", ""],
-                            ["Negative", "Negative"],
-                            ["Positive", "Positive"],
-                            ["Inconclusive", "Inconclusive"],
-                            ["Unknown", "Unknown"],
-                            ["Not Done", "Not Done"]],
-                           status),
-                         {
-                             :id => "new_test_result_at_current_facility",
-                             :helptext => "HIV Test Result <span class='helper'> Lab Results</span>",
-                             :tt_BeforeUnload => "checkHIVTestUnknown()",
-                             :tt_onUnLoad => "parsedConceptName = '';",
-                             :tt_onLoad => "parsedConceptName = 'HIV Status'; alertStatus(); unknownToNotDone(); ",
-                             :condition => "#{["unknown", "old_negative"].include?(@patient.resent_hiv_status?(session_date))}"
-                         }
-    %>
-
-    < %= touch_date_tag "HIV test date", @patient, nil,
-                       {
-                           :id => "enter_date_result_given",
-                           :helptext => "HIV Test Date <span class='helper'> Lab Results</span>",
-                           :tt_onUnLoad => "parsedConceptName = '';",
-                           :tt_onLoad => " parsedConceptName = 'HIV Test date';initializeDate();",
-                           :condition => "__$('new_test_result_at_current_facility').value != 'Not Done' &&
-                                    #{["unknown", "old_negative"].include?(@patient.resent_hiv_status?(session_date))}",
-                           :tt_BeforeUnload => "checkHIVTestDate()",
-                           :max => "#{session[:datetime].to_date rescue Date.today}"
-                       }
-    % -->
 
     <%= touch_select_tag "On ART", @patient,
       options_for_select([["", ""],["Yes", "Yes"],
