@@ -492,7 +492,7 @@
       :condition => "__$('occupation').value.match(/MDF/i)")%>
   <% end %>
 
-  <% if params[:relation].blank? %>
+  <% if false %>
     <%= select_tag("guardian_present", options_for_select([['Yes','YES'],['No','NO']]),
       :id => "guardian_present",
       :helpText => "Guardian Present",
@@ -502,7 +502,7 @@
   <!-- Make sure patient is created -->
 
 
-  <! -- DDE check for potential duplicates -->
+  <!-- DDE check for potential duplicates -->
   <%= text_field_tag :summary, nil, { 
     :tt_onLoad => "potentialduplicateCheck();__$('keyboard').style.display = 'none'; disablebutton();", 
     :optional => "true",
