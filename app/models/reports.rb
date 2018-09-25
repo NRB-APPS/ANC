@@ -897,7 +897,7 @@ class Reports
     current_pregnancy_encounter = EncounterType.find_by_name("CURRENT PREGNANCY").encounter_type_id
     lmp_concept_id = ConceptName.find_by_name("Date of last menstrual period").concept_id
 
-    hiv_status_concept_id = ConceptName.find_by_name("HIV test date").concept_id
+    hiv_status_concept_id = ConceptName.find_by_name("HIV status").concept_id
     hiv_test_date_concept_id = ConceptName.find_by_name("HIV test date").concept_id
     positive_concept_id = ConceptName.find_by_name("Positive").concept_id
 
@@ -913,7 +913,7 @@ class Reports
              and obs.voided = 0 and obs.person_id = e.patient_id) as test_date
           FROM encounter e
            inner join obs ob where e.patient_id = ob.person_id
-          AND ob.concept_id = ? and ob.value_coded = ? or ob.value_text = 'Positive'
+          AND (ob.concept_id = ? and (ob.value_coded = ? or ob.value_text = 'Positive'))
           AND e.encounter_datetime between ?  AND ?
           AND e.patient_id in (?)
           AND e.voided = 0 and ob.voided = 0
