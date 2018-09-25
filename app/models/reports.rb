@@ -908,7 +908,9 @@ class Reports
               inner join obs o on o.person_id = enc.patient_id
              Where enc.encounter_type = ? and o.concept_id = ? and enc.voided = 0 and o.voided = 0 and enc.patient_id = e.patient_id
              and enc.encounter_datetime between ?  AND ?) as visit_date ,
-            (select ifnull(obs.value_datetime, obs.value_text) from obs obs where obs.concept_id = ? and DATE(obs.obs_datetime) = DATE(e.encounter_datetime) and obs.voided = 0) as test_date
+            (select ifnull(obs.value_datetime, obs.value_text) from obs obs 
+             where obs.concept_id = ? and DATE(obs.obs_datetime) = DATE(e.encounter_datetime) 
+             and obs.voided = 0 and obs.person_id = e.patient_id) as test_date
           FROM encounter e
            inner join obs ob where e.patient_id = ob.person_id
           AND ob.concept_id = ? and ob.value_coded = ? or ob.value_text = 'Positive'
