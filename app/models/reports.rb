@@ -910,7 +910,7 @@ class Reports
              and enc.encounter_datetime between ?  AND ?) as visit_date ,
             (select ifnull(obs.value_datetime, obs.value_text) from obs obs 
              where obs.concept_id = ? and DATE(obs.obs_datetime) = DATE(e.encounter_datetime) 
-             and obs.voided = 0 and obs.person_id = e.patient_id) as test_date
+             and obs.voided = 0 and obs.person_id = e.patient_id limit 1) as test_date
           FROM encounter e
            inner join obs ob where e.patient_id = ob.person_id
           AND (ob.concept_id = ? and (ob.value_coded = ? or ob.value_text = 'Positive'))
