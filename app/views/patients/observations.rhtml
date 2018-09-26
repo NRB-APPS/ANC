@@ -521,7 +521,7 @@
         jQuery('#touchscreenInput'+ tstCurrentPage).attr("absoluteMax", abMax);
     }
 
-    setTimeout("selectNone()", 50);
+    //setTimeout("selectNone()", 50);
     //-->
 </script>
 
@@ -792,7 +792,7 @@
     <%#= hidden_field_tag("observations[][patient_id]", @patient.id) %>
     <%#= hidden_field_tag("observations[][obs_datetime]", session_date) %>
 
-    <% options[:tt_onLoad] = "setTimeout(updateNextFinish, 20); changeUnknownToNone();" %>
+    <% options[:tt_onLoad] = "selectNone(); setTimeout(updateNextFinish, 20); changeUnknownToNone();" %>
     <script>
         // Every 500 milliseconds update the Next/Finish button
         function updateNextFinish() {
