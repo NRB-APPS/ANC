@@ -744,14 +744,16 @@ module ANCService
     def examination_label(target_date = Date.today)
       #raise target_date.inspect
       @patient = self.patient rescue nil
-
+      target_date = target_date.strftime("%Y-%m-%d")
       syphil = {}
       @patient.encounters.find(:all, :conditions => ["encounter_type IN (?)",
           EncounterType.find_by_name("LAB RESULTS").id]).each{|e|
+        @test_date = e.encounter_datetime
         e.observations.each{|o|
           syphil[o.concept.concept_names.map(& :name).last.upcase] = o.answer_string.squish.upcase
         }
       }
+      @test_results_date = @test_date.to_date.strftime("%Y-%m-%d") rescue target_date
 
       @syphilis = syphil["SYPHILIS TEST RESULT"].titleize rescue ""
 
@@ -770,7 +772,21 @@ module ANCService
 
       #@hiv_test_date = syphil["HIV STATUS"].match(/not done/i) ? "" : syphil["HIV TEST DATE"] rescue nil
       
-      hiv_test_date = syphil["PREVIOUS HIV TEST RESULTS"].match(/not done/i) ? "" : syphil["PREVIOUS HIV TEST DATE"] rescue nil
+      #hiv_test_date = syphil["PREVIOUS HIV TEST RESULTS"].match(/not done/i) ? "" : syphil["PREVIOUS HIV TEST DATE"] rescue nil
+      if (syphil["PREVIOUS HIV TEST DONE"].upcase == "NO")
+        unless (syphil["HIV TEST DATE"].blank?)
+           hiv_test_date = syphil["HIV TEST DATE"]
+        else
+           hiv_test_date = target_date
+        end
+      else
+        unless (syphil["HIV TEST DATE"].blank?)
+           hiv_test_date = syphil["HIV TEST DATE"]
+        else
+          hiv_test_date = syphil["PREVIOUS HIV TEST DATE"]
+        end
+      end
+
       @hiv_test_date = hiv_test_date.to_date.strftime("%Y-%m-%d") rescue ""
 
       hb = {}; pos = 1;
@@ -848,10 +864,10 @@ module ANCService
       # label.draw_text(@who,270,136,0,2,1,1,false)
 
       label.draw_text(@hiv_test_date,188,166,0,2,1,1,false)
-      label.draw_text(target_date,188,196,0,2,1,1,false)
-      label.draw_text(target_date,188,226,0,2,1,1,false)
-      label.draw_text(target_date,188,256,0,2,1,1,false)
-      label.draw_text(target_date,188,286,0,2,1,1,false)
+      label.draw_text(@test_results_date,188,196,0,2,1,1,false)
+      label.draw_text(@test_results_date,188,226,0,2,1,1,false)
+      label.draw_text(@test_results_date,188,256,0,2,1,1,false)
+      label.draw_text(@test_results_date,188,286,0,2,1,1,false)
 
 
       label.draw_text(@hiv_test,345,166,0,2,1,1,false)
