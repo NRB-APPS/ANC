@@ -498,10 +498,13 @@ class EncountersController < ApplicationController
     unless params[:nonone]
       @procedure_done = @procedure_done.insert(0, @procedure_done.delete_at(@procedure_done.index("None")))
     end
-
+    
+    @patient = Patient.find(params[:patient_id])
+    gravida = ANCService::ANC.new(@patient).gravida
+    
     @procedure_done.delete_if{|procedure| !procedure.match(/#{params[:search_string]}/i)}
-    @procedure_done.delete_if{|procedure| params[:excludecs].present? and
-        procedure.match(/Caesarean section/i)}
+    @procedure_done.delete_if{|procedure| (params[:excludecs].present? or
+        gravida.to_i <= 1) and procedure.match(/Caesarean section/i)}
     
     render :text => "<li>" + @procedure_done.join("</li><li>") + "</li>"
   end
