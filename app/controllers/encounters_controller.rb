@@ -169,7 +169,7 @@ class EncountersController < ApplicationController
     ## Check if one of the surgical procedures is hysterectomy
     if params[:encounter][:encounter_type_name].upcase == "SURGICAL HISTORY"
       (params[:observations] || []).each do |ob|
-        if ob[:value_text].downcase == "hysterectomy"
+        if ob[:value_text].downcase.match(/hysterectom/)
           redirect_to "/clinic/no_hysterectomy" and return
         end
       end
