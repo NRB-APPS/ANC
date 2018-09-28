@@ -533,12 +533,12 @@ class ApplicationController < GenericApplicationController
   # Try to find the next task for the patient at the given location
   def main_next_task(location, patient, session_date = Date.today)
     
-    @anc_patient = ANCService::ANC.new(patient) if @anc_patient.blank?
+    @anc_patient = ANCService::ANC.new(patient) rescue nil if @anc_patient.blank?
     if @anc_patient.hysterectomy_condition
       task = Task.new
       task.url = "/clinic/no_hysterectomy" 
       return task
-    end
+    end rescue nil
 
     if use_user_selected_activities
       return next_form(location , patient , session_date)
