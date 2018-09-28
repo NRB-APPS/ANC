@@ -1590,7 +1590,7 @@ module ANCService
 
     def hysterectomy_condition(session_date = Date.today)
       value = self.patient.encounters.last(:joins => [:observations], :conditions => 
-        ["encounter_type = ? and obs.concept_id = ? AND (obs.value_text = 'Hysterectomy'"+
+        ["encounter_type = ? and obs.concept_id = ? AND (obs.value_text like '%hysterectomy%'"+
           " OR obs.value_coded = ?)", EncounterType.find_by_name("SURGICAL HISTORY").id,
           ConceptName.find_by_name("Procedure done").concept_id,
           ConceptName.find_by_name("Hysterectomy").concept_id
