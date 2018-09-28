@@ -1588,6 +1588,21 @@ module ANCService
         }.compact.last.squish.to_date).to_i / 30.0 rescue 0
     end
 
+    def hysterectomy_condition(session_date = Date.today)
+      value = self.patient.encounters.last(:joins => [:observations], :conditions => 
+        ["encounter_type = ? and obs.concept_id = ? AND (obs.value_text = 'Hysterectomy'"+
+          " OR obs.value_coded = ?)", EncounterType.find_by_name("SURGICAL HISTORY").id,
+          ConceptName.find_by_name("Procedure done").concept_id,
+          ConceptName.find_by_name("Hysterectomy").concept_id
+        ])
+      
+      unless value.blank?
+        return true
+      end
+
+      return false
+    end
+
     def birth_year
       self.person.birthdate.year rescue (Date.today - 13.year).year
     end
