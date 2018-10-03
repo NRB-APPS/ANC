@@ -744,7 +744,7 @@ module ANCService
     def examination_label(target_date = Date.today)
       #raise target_date.inspect
       @patient = self.patient rescue nil
-      target_date = target_date.strftime("%Y-%m-%d")
+      target_date = target_date.strftime("%Y-%m-%d") rescue nil
       syphil = {}
       @patient.encounters.find(:all, :conditions => ["encounter_type IN (?)",
           EncounterType.find_by_name("LAB RESULTS").id]).each{|e|
@@ -773,7 +773,7 @@ module ANCService
       #@hiv_test_date = syphil["HIV STATUS"].match(/not done/i) ? "" : syphil["HIV TEST DATE"] rescue nil
       
       #hiv_test_date = syphil["PREVIOUS HIV TEST RESULTS"].match(/not done/i) ? "" : syphil["PREVIOUS HIV TEST DATE"] rescue nil
-      if (syphil["PREVIOUS HIV TEST DONE"].upcase == "NO" rescue true)
+      if (syphil["PREVIOUS HIV TEST DONE"].upcase == "NO" rescue false)
         unless (syphil["HIV TEST DATE"].blank?)
            hiv_test_date = syphil["HIV TEST DATE"]
         else

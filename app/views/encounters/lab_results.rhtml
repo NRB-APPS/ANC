@@ -662,7 +662,7 @@ function remoteARTStatus(){
     %>
 
     <!-- HIV Test date -->
-  <%= touch_hidden_tag "HIV test date", @patient, today.to_date %>
+  <%= touch_hidden_tag "HIV test date", @patient, (!@hiv_status.blank? && new_hiv_status.blank?) ? "" : today.to_date %>
       
       <!-- %= touch_date_tag "HIV test date", @patient, "",
         {
