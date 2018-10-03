@@ -773,7 +773,7 @@ module ANCService
       #@hiv_test_date = syphil["HIV STATUS"].match(/not done/i) ? "" : syphil["HIV TEST DATE"] rescue nil
       
       #hiv_test_date = syphil["PREVIOUS HIV TEST RESULTS"].match(/not done/i) ? "" : syphil["PREVIOUS HIV TEST DATE"] rescue nil
-      if (syphil["PREVIOUS HIV TEST DONE"].upcase == "NO")
+      if (syphil["PREVIOUS HIV TEST DONE"].upcase == "NO" rescue true)
         unless (syphil["HIV TEST DATE"].blank?)
            hiv_test_date = syphil["HIV TEST DATE"]
         else
