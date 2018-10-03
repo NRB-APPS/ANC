@@ -569,7 +569,7 @@ function remoteARTStatus(){
         :helpText => "New Test Results Available Today <span class='helper'> Lab Results</span>",
         :id => "choice",
         :multiple => true,
-        :optional => :true,
+        :optional => true,
         :condition => "#{!@hiv_status.blank?} || __$('previous_hiv_test').value == 'Yes' && (__$('prev_hiv_test_results').value == 'Positive' || !checkHIVTestDate());",
         :tt_onLoad => "__$('test_date').value = '';"
       })
@@ -585,7 +585,7 @@ function remoteARTStatus(){
         :helpText => "New Test Results Available Today <span class='helper'> Lab Results</span>",
         :id => "choice1",
         :multiple => true,
-        :optional => :true,
+        :optional => true,
         :condition => "__$('previous_hiv_test').value == 'No' || (__$('prev_hiv_test_results').value == 'Negative' && checkHIVTestDate());"
       })
     %>
@@ -604,7 +604,7 @@ function remoteARTStatus(){
                        :helpText => "New Test Results Available Today <span class='helper'> Lab Results</span>",
                        :id => "choice",
                        :multiple => true,
-                       :optional => :true
+                       :optional => true
                    })
     % -->
 
@@ -618,7 +618,7 @@ function remoteARTStatus(){
           :helpText => "New Test Results Available Today <span class='helper'> Lab Results</span>",
           :id => "choice",
           :multiple => true,
-          :optional => :true,
+          :optional => true,
           :condition => "__$('prev_hiv_test') == 'Negative' && checkHIVTestDate()"
         })
     % -->
@@ -658,12 +658,12 @@ function remoteARTStatus(){
         :tt_onLoad => " parsedConceptName = 'ARV Number'; alertARVNumber();",
         :helptext => "ARV Number <span class='helper'> Lab Results</span>",
         :tt_onUnLoad => "parsedConceptName = '';",
-        :condition => "__$('new_on_art').value == 'Yes'"
+        :condition => "__$('new_on_art').value == 'Yes';"
       }
     %>
 
     <!-- HIV Test date -->
-  <%= touch_hidden_tag "HIV test date", @patient, "#{Date.today}",
+  <%= touch_hidden_tag "HIV test date", @patient, "#{session[:datetime] rescue Date.today}",
     { 
       :id => "test_date"
     } 
