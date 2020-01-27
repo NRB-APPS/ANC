@@ -48,6 +48,10 @@
   .cRow {
     line-height: 30px;
   }
+
+  #category{
+	top: 20px !important;
+  }
 </style>
 
 <%= javascript_include_tag "dateformat" %>
@@ -367,7 +371,7 @@ clinic_holidays = clinic_holidays.split(',').map{|day|day.to_date}.join(',')
       :value => "#{@appointmentDate}",
       :startweekdate => "#{@pregnancystart.strftime("%Y-%m-%d")}",
       :endweekdate => "#{(@pregnancystart + 9.month).strftime("%Y-%m-%d")}",
-      :tt_onLoad => "__$('category').style.opacity = 0.75; setGestationWeekLabel();",
+      :tt_onLoad => "__$('category').style.opacity = 0.75; setGestationWeekLabel();showCategory('Next Appointment')",
       :minDate => "#{ ((session[:datetime] ? session[:datetime].to_date : Date.today) + 6.month).strftime("%Y-%m-%d") }",
       :ajaxCalendarUrl => "/patients/number_of_booked_patients?date=",
       :tt_onUnLoad => "hideInfo();"}) %>
@@ -378,3 +382,8 @@ clinic_holidays = clinic_holidays.split(',').map{|day|day.to_date}.join(',')
 <div id = 'information'>
   Total number of booked patients on this day:<br /> 0
 </div>
+
+<script>
+
+	setTimeout(function(){showCategory("Next Appointment")}, 200)
+</script>
