@@ -275,7 +275,7 @@
       </button>
     <%end
 
-       if (@patient.in_bart? && (@patient.hiv_positive? rescue false))%>
+    if (@patient.in_bart? && (@patient.hiv_positive? rescue false) rescue false)%>
         <button class="button navButton blue" style="margin-top: 10px;"
                 onclick="window.location = '/patients/proceed_to_pmtct?patient_id=<%= @patient.id  %>&to_art=yes'">
           <span>ART</span></button>
